@@ -1,29 +1,29 @@
 {
     "frames": {
-        "btn_add_gold.png": {
+        "mm.png": {
             "frame": {
                 "x": 0,
                 "y": 0,
-                "w": 45,
-                "h": 135,
+                "w": 497,
+                "h": 1024,
                 "idx": 0
             },
             "spriteSourceSize": {
                 "x": 0,
                 "y": 0,
-                "w": 45,
-                "h": 135
+                "w": 497,
+                "h": 1024
             },
             "sourceSize": {
-                "w": 45,
-                "h": 135
+                "w": 497,
+                "h": 1024
             },
             "rotated": false,
             "trimed": true
         },
         "btn_create.png": {
             "frame": {
-                "x": 47,
+                "x": 499,
                 "y": 0,
                 "w": 370,
                 "h": 1245,
@@ -44,7 +44,7 @@
         },
         "btn_join.png": {
             "frame": {
-                "x": 419,
+                "x": 871,
                 "y": 0,
                 "w": 370,
                 "h": 1245,
@@ -63,72 +63,9 @@
             "rotated": false,
             "trimed": true
         },
-        "gold_bg.png": {
-            "frame": {
-                "x": 0,
-                "y": 1247,
-                "w": 208,
-                "h": 38,
-                "idx": 0
-            },
-            "spriteSourceSize": {
-                "x": 0,
-                "y": 0,
-                "w": 208,
-                "h": 38
-            },
-            "sourceSize": {
-                "w": 208,
-                "h": 38
-            },
-            "rotated": false,
-            "trimed": true
-        },
-        "icon_gold.png": {
-            "frame": {
-                "x": 0,
-                "y": 137,
-                "w": 40,
-                "h": 39,
-                "idx": 0
-            },
-            "spriteSourceSize": {
-                "x": 0,
-                "y": 0,
-                "w": 40,
-                "h": 39
-            },
-            "sourceSize": {
-                "w": 40,
-                "h": 39
-            },
-            "rotated": false,
-            "trimed": true
-        },
-        "mm.png": {
-            "frame": {
-                "x": 791,
-                "y": 0,
-                "w": 497,
-                "h": 1024,
-                "idx": 0
-            },
-            "spriteSourceSize": {
-                "x": 0,
-                "y": 0,
-                "w": 497,
-                "h": 1024
-            },
-            "sourceSize": {
-                "w": 497,
-                "h": 1024
-            },
-            "rotated": false,
-            "trimed": true
-        },
         "notice_bg.png": {
             "frame": {
-                "x": 210,
+                "x": 0,
                 "y": 1247,
                 "w": 1020,
                 "h": 66,
@@ -147,10 +84,31 @@
             "rotated": false,
             "trimed": true
         },
+        "btn_add_gold.png": {
+            "frame": {
+                "x": 0,
+                "y": 1026,
+                "w": 45,
+                "h": 135,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 45,
+                "h": 135
+            },
+            "sourceSize": {
+                "w": 45,
+                "h": 135
+            },
+            "rotated": false,
+            "trimed": true
+        },
         "notice_icon.png": {
             "frame": {
-                "x": 1232,
-                "y": 1026,
+                "x": 1022,
+                "y": 1247,
                 "w": 101,
                 "h": 60,
                 "idx": 0

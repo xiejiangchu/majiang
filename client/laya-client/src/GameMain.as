@@ -76,7 +76,7 @@ package
             this._profile = profile;
             trace(this);
             //初始化引擎
-            Stat.show(0, 100);
+            // Stat.show(0, 100);
             UiManager.instance.init();
             GlobalResource.instance.init();
             //加载引擎需要的资源
