@@ -124,19 +124,19 @@ package mj.manager
             }
             if (msg.payInfo == null)
             {
-                msg.payInfo = ";"
+                msg.payInfo = "暂无"
             }
             if (msg.radio == null)
             {
-                msg.radio = ";"
+                msg.radio = "暂无"
             }
             if (msg.agreement == null)
             {
-                msg.agreement = ";"
+                msg.agreement = "暂无"
             }
             if (msg.notice == null)
             {
-                msg.notice = ";"
+                msg.notice = "暂无"
             }
             this._sysSetting = msg;
 

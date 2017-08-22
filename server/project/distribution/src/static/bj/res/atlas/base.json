@@ -1,8 +1,50 @@
 {
     "frames": {
-        "btn_basic.png": {
+        "wait.png": {
             "frame": {
                 "x": 0,
+                "y": 0,
+                "w": 232,
+                "h": 248,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 0,
+                "w": 232,
+                "h": 248
+            },
+            "sourceSize": {
+                "w": 250,
+                "h": 250
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "tab_normal.png": {
+            "frame": {
+                "x": 0,
+                "y": 250,
+                "w": 232,
+                "h": 204,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 232,
+                "h": 204
+            },
+            "sourceSize": {
+                "w": 232,
+                "h": 204
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "btn_basic.png": {
+            "frame": {
+                "x": 234,
                 "y": 0,
                 "w": 232,
                 "h": 204,
@@ -24,7 +66,7 @@
         "btn_normal.png": {
             "frame": {
                 "x": 0,
-                "y": 206,
+                "y": 456,
                 "w": 222,
                 "h": 212,
                 "idx": 0
@@ -45,7 +87,7 @@
         "btn_danger.png": {
             "frame": {
                 "x": 234,
-                "y": 0,
+                "y": 206,
                 "w": 182,
                 "h": 212,
                 "idx": 0
@@ -65,7 +107,7 @@
         },
         "btn_close.png": {
             "frame": {
-                "x": 418,
+                "x": 468,
                 "y": 0,
                 "w": 93,
                 "h": 279,
@@ -86,8 +128,8 @@
         },
         "dialog_bg.png": {
             "frame": {
-                "x": 0,
-                "y": 420,
+                "x": 563,
+                "y": 0,
                 "w": 126,
                 "h": 147,
                 "idx": 0
@@ -105,10 +147,10 @@
             "rotated": false,
             "trimed": true
         },
-        "shezhi.png": {
+        "tongzhi.png": {
             "frame": {
-                "x": 224,
-                "y": 214,
+                "x": 563,
+                "y": 149,
                 "w": 120,
                 "h": 122,
                 "idx": 0
@@ -128,7 +170,28 @@
         },
         "history.png": {
             "frame": {
-                "x": 128,
+                "x": 418,
+                "y": 281,
+                "w": 120,
+                "h": 122,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 120,
+                "h": 122
+            },
+            "sourceSize": {
+                "w": 120,
+                "h": 122
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "shezhi.png": {
+            "frame": {
+                "x": 234,
                 "y": 420,
                 "w": 120,
                 "h": 122,
@@ -149,8 +212,8 @@
         },
         "quit.png": {
             "frame": {
-                "x": 250,
-                "y": 338,
+                "x": 224,
+                "y": 544,
                 "w": 120,
                 "h": 122,
                 "idx": 0
@@ -170,8 +233,8 @@
         },
         "hslider.png": {
             "frame": {
-                "x": 128,
-                "y": 544,
+                "x": 0,
+                "y": 670,
                 "w": 294,
                 "h": 19,
                 "idx": 0
@@ -189,10 +252,10 @@
             "rotated": false,
             "trimed": true
         },
-        "checkbox.png": {
+        "radio.png": {
             "frame": {
-                "x": 372,
-                "y": 281,
+                "x": 356,
+                "y": 420,
                 "w": 59,
                 "h": 176,
                 "idx": 0
@@ -210,10 +273,10 @@
             "rotated": false,
             "trimed": true
         },
-        "radio.png": {
+        "checkbox.png": {
             "frame": {
-                "x": 433,
-                "y": 281,
+                "x": 417,
+                "y": 420,
                 "w": 59,
                 "h": 176,
                 "idx": 0
@@ -227,14 +290,182 @@
             "sourceSize": {
                 "w": 60,
                 "h": 180
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "wait2.png": {
+            "frame": {
+                "x": 346,
+                "y": 598,
+                "w": 95,
+                "h": 94,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 3,
+                "w": 95,
+                "h": 94
+            },
+            "sourceSize": {
+                "w": 100,
+                "h": 100
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "wait1.png": {
+            "frame": {
+                "x": 478,
+                "y": 405,
+                "w": 95,
+                "h": 94,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 3,
+                "w": 95,
+                "h": 94
+            },
+            "sourceSize": {
+                "w": 100,
+                "h": 100
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "wait8.png": {
+            "frame": {
+                "x": 478,
+                "y": 501,
+                "w": 95,
+                "h": 94,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 3,
+                "w": 95,
+                "h": 94
+            },
+            "sourceSize": {
+                "w": 100,
+                "h": 100
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "wait7.png": {
+            "frame": {
+                "x": 443,
+                "y": 598,
+                "w": 95,
+                "h": 94,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 3,
+                "w": 95,
+                "h": 94
+            },
+            "sourceSize": {
+                "w": 100,
+                "h": 100
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "wait4.png": {
+            "frame": {
+                "x": 540,
+                "y": 597,
+                "w": 95,
+                "h": 94,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 3,
+                "w": 95,
+                "h": 94
+            },
+            "sourceSize": {
+                "w": 100,
+                "h": 100
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "wait3.png": {
+            "frame": {
+                "x": 540,
+                "y": 281,
+                "w": 95,
+                "h": 94,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 3,
+                "w": 95,
+                "h": 94
+            },
+            "sourceSize": {
+                "w": 100,
+                "h": 100
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "wait5.png": {
+            "frame": {
+                "x": 637,
+                "y": 273,
+                "w": 95,
+                "h": 94,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 3,
+                "w": 95,
+                "h": 94
+            },
+            "sourceSize": {
+                "w": 100,
+                "h": 100
+            },
+            "rotated": false,
+            "trimed": true
+        },
+        "wait6.png": {
+            "frame": {
+                "x": 575,
+                "y": 377,
+                "w": 95,
+                "h": 94,
+                "idx": 0
+            },
+            "spriteSourceSize": {
+                "x": 2,
+                "y": 3,
+                "w": 95,
+                "h": 94
+            },
+            "sourceSize": {
+                "w": 100,
+                "h": 100
             },
             "rotated": false,
             "trimed": true
         },
         "hslider$bar.png": {
             "frame": {
-                "x": 494,
-                "y": 281,
+                "x": 691,
+                "y": 0,
                 "w": 46,
                 "h": 135,
                 "idx": 0
@@ -254,8 +485,8 @@
         },
         "volume.png": {
             "frame": {
-                "x": 494,
-                "y": 418,
+                "x": 575,
+                "y": 473,
                 "w": 50,
                 "h": 104,
                 "idx": 0
@@ -275,8 +506,8 @@
         },
         "number_bg.png": {
             "frame": {
-                "x": 250,
-                "y": 462,
+                "x": 672,
+                "y": 369,
                 "w": 68,
                 "h": 68,
                 "idx": 0
@@ -296,8 +527,8 @@
         },
         "wait_bg.png": {
             "frame": {
-                "x": 346,
-                "y": 214,
+                "x": 627,
+                "y": 473,
                 "w": 60,
                 "h": 60,
                 "idx": 0
@@ -317,8 +548,8 @@
         },
         "dialog_content.png": {
             "frame": {
-                "x": 320,
-                "y": 462,
+                "x": 685,
+                "y": 149,
                 "w": 54,
                 "h": 64,
                 "idx": 0
@@ -338,8 +569,8 @@
         },
         "dialog_icon.png": {
             "frame": {
-                "x": 376,
-                "y": 459,
+                "x": 627,
+                "y": 535,
                 "w": 63,
                 "h": 39,
                 "idx": 0
@@ -359,8 +590,8 @@
         },
         "line_vertical.png": {
             "frame": {
-                "x": 224,
-                "y": 206,
+                "x": 739,
+                "y": 0,
                 "w": 3,
                 "h": 1,
                 "idx": 0
