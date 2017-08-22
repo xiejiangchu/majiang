@@ -1,12 +1,11 @@
 package mj.net.message.login;
 
-import java.io.IOException;
-
 import com.isnowfox.core.io.Input;
 import com.isnowfox.core.io.Output;
 import com.isnowfox.core.io.ProtocolException;
-
 import com.isnowfox.core.net.message.AbstractMessage;
+
+import java.io.IOException;
 
 /**
  * 创建房间
