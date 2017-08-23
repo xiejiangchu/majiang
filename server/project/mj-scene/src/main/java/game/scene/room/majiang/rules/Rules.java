@@ -14,6 +14,8 @@ public abstract class Rules {
         switch (name) {
             case "zhongyouGD":
                 return new ZhongyouGdRules(config);
+            case "hongzhongHN":
+                return new HongzhongHnRules(config);
             default:
                 return new ZhongyouGdRules(config);
         }

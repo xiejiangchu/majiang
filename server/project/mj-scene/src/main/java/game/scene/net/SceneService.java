@@ -3,7 +3,6 @@ package game.scene.net;
 import com.isnowfox.core.net.message.Message;
 import com.isnowfox.game.proxy.message.PxMsg;
 import game.scene.msg.*;
-import game.scene.net.BossClient;
 import game.scene.room.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,9 +25,12 @@ public class SceneService {
 
     @Autowired
     private BossClient bossClient;
+
     @Autowired
     private RoomService roomService;
-    @Autowired GatewayManager gatewayManager;
+
+    @Autowired
+    GatewayManager gatewayManager;
 
     public void onBossConnect() {
         bossClient.writeAndFlush(new RegSceneMsg((short) sceneId, address, port));

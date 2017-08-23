@@ -13,8 +13,7 @@ public class ComputeFan {
     private MajiangChapter chapter;
     private ChapterEndResult endResult;
 
-    public ComputeFan(MajiangChapter chapter,
-                      int huPaiIndex, int fangPaoIndex, boolean isGangShangHua) {
+    public ComputeFan(MajiangChapter chapter, int huPaiIndex, int fangPaoIndex, boolean isGangShangHua) {
         this.chapter = chapter;
         endResult = new ChapterEndResult();
         endResult.setHuPai(huPaiIndex != -1);

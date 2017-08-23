@@ -20,6 +20,12 @@ class ZhongyouGdRules extends Rules {
     public static final Map<JiaFanType, FanInfo> jiaFanMap = initJiaFanMap();
     public static final Map<BaseFanType, FanInfo> baseFanMap = initBaseFanMap();
 
+    private Pai[] huiErs;
+
+    ZhongyouGdRules(Config config) {
+        super(config);
+    }
+
     private static Map<JiaFanType, FanInfo> initJiaFanMap() {
         Map<JiaFanType, FanInfo> map = new HashMap<>();
         map.put(JiaFanType.ZHUANG_HU, new FanInfo("庄胡", 1));
@@ -61,7 +67,6 @@ class ZhongyouGdRules extends Rules {
 
     private static ArrayList<Pai> createGuiDaoHuAllList() {
         ArrayList<Pai> list = createGuiAllList();
-
         list.add(Pai.SANYUAN_ZHONG);
         list.add(Pai.SANYUAN_FA);
         list.add(Pai.SANYUAN_BEI);
@@ -80,13 +85,6 @@ class ZhongyouGdRules extends Rules {
             list.add(pai);
         }
         return list;
-    }
-
-    private Pai[] huiErs;
-
-
-    ZhongyouGdRules(Config config) {
-        super(config);
     }
 
 
@@ -122,9 +120,9 @@ class ZhongyouGdRules extends Rules {
         String binType = config.getString(Config.BIAN_TYPE);
         if (Config.BIAN_TYPE_DAN_GUI.equals(binType) || Config.BIAN_TYPE_SHUANG_GUI.equals(binType)) {
             return ALL_PAI_LIST_GUI;
-        } else if(Config.BIAN_TYPE_TUI_DAO_HU.equals(binType)) {
+        } else if (Config.BIAN_TYPE_TUI_DAO_HU.equals(binType)) {
             return ALL_PAI_LIST_TUI_DAOHU;
-        }else {
+        } else {
             return ALL_PAI_LIST;
         }
     }
@@ -135,9 +133,9 @@ class ZhongyouGdRules extends Rules {
         String binType = config.getString(Config.BIAN_TYPE);
         if (Config.BIAN_TYPE_DAN_GUI.equals(binType) || Config.BIAN_TYPE_SHUANG_GUI.equals(binType)) {
             return false;
-        }  else if(Config.BIAN_TYPE_TUI_DAO_HU.equals(binType)) {
+        } else if (Config.BIAN_TYPE_TUI_DAO_HU.equals(binType)) {
             return false;
-        }else {
+        } else {
             return true;
         }
     }
