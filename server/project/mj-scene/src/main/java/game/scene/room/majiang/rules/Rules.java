@@ -1,7 +1,10 @@
 package game.scene.room.majiang.rules;
 
+import game.scene.SceneMain;
 import game.scene.room.majiang.PaiPool;
 import mj.data.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -10,26 +13,29 @@ import java.util.Map;
  * @author zuoge85@gmail.com on 2017/1/17.
  */
 public abstract class Rules {
+
+    private static final Logger log = LoggerFactory.getLogger(SceneMain.class);
+    protected Config config;
+    private int baoliuLength = 12;
+    private int shouTimeMillisecond = 15000;
+
+
     public static Rules createRules(String name, Config config) {
         String binType = config.getString(Config.BIAN_TYPE);
+        log.info("麻将类型" + binType);
         if (binType.equals(Config.BIAN_TYPE_HONG_ZHONG)) {
             return new HongzhongHnRules(config);
-        }
-        switch (name) {
-            case "zhongyouGD":
-                return new ZhongyouGdRules(config);
-            default:
-                return new ZhongyouGdRules(config);
+        } else {
+            switch (name) {
+                case "zhongyouGD":
+                    return new ZhongyouGdRules(config);
+                default:
+                    return new ZhongyouGdRules(config);
+            }
         }
     }
 
     public abstract boolean rest();
-
-    protected Config config;
-    private int baoliuLength = 12;
-
-
-    private int shouTimeMillisecond = 15000;
 
     public Rules(Config config) {
         this.config = config;

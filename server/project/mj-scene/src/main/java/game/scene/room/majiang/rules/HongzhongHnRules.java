@@ -12,8 +12,6 @@ import java.util.Map;
  */
 public class HongzhongHnRules extends Rules {
 
-    private static final ArrayList<Pai> ALL_PAI_LIST = createTBWAllList();
-
     public static final Map<JiaFanType, FanInfo> jiaFanMap = initJiaFanMap();
     public static final Map<BaseFanType, FanInfo> baseFanMap = initBaseFanMap();
 
@@ -44,7 +42,13 @@ public class HongzhongHnRules extends Rules {
 
     @Override
     public ArrayList<Pai> getAllPai() {
-        return ALL_PAI_LIST;
+        ArrayList<Pai> list = new ArrayList<>();
+        for (int paiIndex = Pai.TONG_1.getIndex(); paiIndex <= Pai.WAN_9.getIndex(); paiIndex++) {
+            Pai pai = Pai.fromIndex(paiIndex);
+            list.add(pai);
+        }
+        list.add(Pai.SANYUAN_ZHONG);
+        return list;
     }
 
     @Override
@@ -88,15 +92,6 @@ public class HongzhongHnRules extends Rules {
         return true;
     }
 
-    private static ArrayList<Pai> createTBWAllList() {
-        ArrayList<Pai> list = new ArrayList<>();
-        for (int paiIndex = Pai.TONG_1.getIndex(); paiIndex <= Pai.WAN_9.getIndex(); paiIndex++) {
-            Pai pai = Pai.fromIndex(paiIndex);
-            list.add(pai);
-        }
-        list.add(Pai.SANYUAN_ZHONG);
-        return list;
-    }
 
     public int getBaoliuLength() {
         int maiMa = config.getInt(Config.MAI_MA);
