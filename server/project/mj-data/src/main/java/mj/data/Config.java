@@ -27,7 +27,7 @@ public class Config {
     public static final String BIAN_TYPE_DAN_GUI = "danGui";
     public static final String BIAN_TYPE_SHUANG_GUI = "shuangGui";
     public static final String BIAN_TYPE_TUI_DAO_HU = "tuiDaoHu";
-    public static final String BIAN_TYPE_HONG_ZHONG = "hongZhongMaJiang";
+    public static final String BIAN_TYPE_HONG_ZHONG = "hongzhongmajiang";
 
     private final Map<String, String> options;
 

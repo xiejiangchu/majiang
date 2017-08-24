@@ -23,7 +23,7 @@ public abstract class Rules {
     public static Rules createRules(String name, Config config) {
         String binType = config.getString(Config.BIAN_TYPE);
         log.info("麻将类型" + binType);
-        if (binType.equals(Config.BIAN_TYPE_HONG_ZHONG)) {
+        if (binType.equalsIgnoreCase(Config.BIAN_TYPE_HONG_ZHONG)) {
             return new HongzhongHnRules(config);
         } else {
             switch (name) {
