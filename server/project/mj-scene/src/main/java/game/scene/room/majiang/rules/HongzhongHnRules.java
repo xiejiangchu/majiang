@@ -85,7 +85,7 @@ public class HongzhongHnRules extends Rules {
 
     @Override
     public boolean isHuiGang() {
-        return false;
+        return true;
     }
 
     private static ArrayList<Pai> createTBWAllList() {

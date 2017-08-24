@@ -11,22 +11,25 @@ import java.util.Map;
  */
 public abstract class Rules {
     public static Rules createRules(String name, Config config) {
+        String binType = config.getString(Config.BIAN_TYPE);
+        if (binType.equals(Config.BIAN_TYPE_HONG_ZHONG)) {
+            return new HongzhongHnRules(config);
+        }
         switch (name) {
             case "zhongyouGD":
                 return new ZhongyouGdRules(config);
-            case "hongzhongHN":
-                return new HongzhongHnRules(config);
             default:
                 return new ZhongyouGdRules(config);
         }
     }
+
     public abstract boolean rest();
 
     protected Config config;
     private int baoliuLength = 12;
 
 
-    private int shouTimeMillisecond =15000;
+    private int shouTimeMillisecond = 15000;
 
     public Rules(Config config) {
         this.config = config;
@@ -53,9 +56,11 @@ public abstract class Rules {
     public abstract boolean isFangPao();
 
     public abstract boolean isZaMa();
+
     public abstract int getZaMa();
 
     public abstract Map<JiaFanType, FanInfo> getJiaFanMap();
+
     public abstract Map<BaseFanType, FanInfo> getBaseFanMap();
 
     public abstract boolean isHuiGang();

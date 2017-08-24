@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"View",
-    "selectedBox":1,
-    "selecteID":1,
+    "selectedBox":42,
+    "selecteID":44,
     "props":{"y":0,"x":0,"width":1520,"sceneWidth":1442,"sceneHeight":687,"sceneColor":"#000000","sceneBg":"laya/views/test/CreateOpt.jpg","labelSize":42,"height":608},
     "nodeParent":-1,
     "label":"View",
@@ -99,7 +99,7 @@
                                 {
                                     "x":60,
                                     "type":"RadioGroup",
-                                    "props":{"y":-6,"x":177,"width":807,"var":"typeRadio","space":40,"skin":"base/radio.png","selectedIndex":0,"labels":"推倒胡,红中变,白板变,单鬼,双鬼","labelSize":42,"labelPadding":"7,0,0,0","labelColors":"#000000","height":68,"direction":"horizontal"},
+                                    "props":{"y":-6,"x":177,"width":807,"var":"typeRadio","space":10,"skin":"base/radio.png","selectedIndex":0,"labels":"推倒胡,红中变,白板变,单鬼,双鬼,红中麻将","labelSize":42,"labelPadding":"7,0,0,0","labelColors":"#000000","height":68,"direction":"horizontal"},
                                     "nodeParent":42,
                                     "label":"RadioGroup(typeRadio)",
                                     "isDirectory":false,
@@ -114,7 +114,9 @@
                                         }],
                                     "compId":44,
                                     "child":[
-                                        ]
+                                        ],
+                                    "$LOCKED":false,
+                                    "$HIDDEN":false
                                 }]
                         },
                         {
@@ -159,7 +161,7 @@
                                 {
                                     "x":60,
                                     "type":"RadioGroup",
-                                    "props":{"y":-6,"x":177,"width":643,"var":"chapterMaxRadio","space":40,"skin":"base/radio.png","selectedIndex":0,"labels":"8局(1房卡),16局(2房卡)","labelSize":42,"labelPadding":"7,0,0,0","labelColors":"#000000","height":68,"direction":"horizontal"},
+                                    "props":{"y":-6,"x":177,"width":643,"var":"chapterMaxRadio","space":10,"skin":"base/radio.png","selectedIndex":0,"labels":"8局(1房卡),16局(2房卡)","labelSize":42,"labelPadding":"7,0,0,0","labelColors":"#000000","height":68,"direction":"horizontal"},
                                     "nodeParent":17,
                                     "label":"RadioGroup(chapterMaxRadio)",
                                     "isDirectory":false,
@@ -219,7 +221,7 @@
                                 {
                                     "x":60,
                                     "type":"RadioGroup",
-                                    "props":{"y":2,"x":177,"var":"maiMaRadio","selectedIndex":1},
+                                    "props":{"y":2,"x":177,"var":"maiMaRadio","selectedIndex":1,"direction":"horizontal"},
                                     "nodeParent":18,
                                     "label":"RadioGroup(maiMaRadio)",
                                     "isOpen":true,
@@ -357,7 +359,8 @@
                     "compId":28,
                     "child":[
                         ]
-                }]
+                }],
+            "$HIDDEN":false
         }],
     "animations":[
         {
@@ -367,5 +370,6 @@
             "id":1,
             "frameRate":24,
             "action":0
-        }]
+        }],
+    "$HIDDEN":false
 }

@@ -1,6 +1,6 @@
 site:
-    title: 北京麻将
-    serverUrl: ws://182.92.100.147:8011/g
+    title: 闲来麻将
+    serverUrl: ws://103.213.249.247:8011/g
 application:
     message: Hello, Andy
 
