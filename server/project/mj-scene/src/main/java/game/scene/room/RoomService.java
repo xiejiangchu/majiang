@@ -189,10 +189,10 @@ public class RoomService extends FrameQueueContainer implements ApplicationConte
                                 long gatewayIdUnionSessionId = getGatewayIdUnionSessionId(u.getSessionId(), u.getGatewayId());
                                 gatewayIdUnionSessionIdMap.remove(gatewayIdUnionSessionId);
                                 gatewayIdUnionSessionIdUserMap.remove(gatewayIdUnionSessionId);
-                                u.sendMessage(new GameDelRoom(room.isEnd(),room.isStart()));
-                                if(room.isEnd()){
+                                u.sendMessage(new GameDelRoom(room.isEnd(), room.isStart()));
+                                if (room.isEnd()) {
 //                                    u.noticeError("room.endRoom");
-                                }else{
+                                } else {
 //                                    u.noticeError("room.delRoom");
                                 }
                                 userInfos.add(new SceneUserInfo((short) u.getSessionId(), u.getGatewayId(), u.getUserId()));

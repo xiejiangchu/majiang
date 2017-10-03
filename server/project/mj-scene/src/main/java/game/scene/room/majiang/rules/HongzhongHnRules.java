@@ -19,13 +19,19 @@ public class HongzhongHnRules extends Rules {
 
     private static Map<JiaFanType, FanInfo> initJiaFanMap() {
         Map<JiaFanType, FanInfo> map = new HashMap<>();
-        map.put(JiaFanType.WU_HUN_ER, new FanInfo("无鬼", 2));
+        map.put(JiaFanType.WU_HUN_ER, new FanInfo("无鬼", 1));
         return map;
     }
 
     private static Map<BaseFanType, FanInfo> initBaseFanMap() {
         Map<BaseFanType, FanInfo> map = new HashMap<>(BaseFanType.baseFanMap);
+        map.replace(BaseFanType.HUI_ER_GANG, new FanInfo("自摸", 1));
         map.replace(BaseFanType.ZI_MO, new FanInfo("自摸", 1));
+        map.replace(BaseFanType.JI_HU, new FanInfo("", 1));
+        map.replace(BaseFanType.DUI_DUI_HU, new FanInfo("对对胡", 1));
+        map.replace(BaseFanType.QI_DUI, new FanInfo("七对子", 1));
+        map.replace(BaseFanType.TIAN_HU, new FanInfo("天胡", 1));
+        map.replace(BaseFanType.DI_HU, new FanInfo("地胡", 1));
         return map;
     }
 

@@ -1,7 +1,5 @@
 package mj.data;
 
-import org.apache.commons.collections.map.CompositeMap;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -41,7 +39,7 @@ public enum JiaFanType {
     WU_HUN_ER("无“混儿”", 2) {
         @Override
         public int compute(FanResult fanResult, ChapterEndResult chapterResult, UserPlace userPlace, UserPaiInfo userPaiInfo) {
-            return userPlace.existShouPai(chapterResult.getHuiEr()) ? 1 : 0;
+            return userPlace.existShouPai(chapterResult.getHuiEr()) ? 0 : 1;
         }
     },
     YI_TIAO_LONG("一条龙", 3) {
@@ -120,11 +118,13 @@ public enum JiaFanType {
         }
     },
     JIA_MING_GANG("加明杠", 1) {
+        @Override
         public int compute(FanResult fanResult, ChapterEndResult chapterResult, UserPlace userPlace, UserPaiInfo userPaiInfo) {
             return userPlace.getDaMingGang().size() + userPlace.getXiaoMingGang().size();
         }
     },
     DAI_GENG("带跟", 1) {
+        @Override
         public int compute(FanResult fanResult, ChapterEndResult chapterResult, UserPlace userPlace, UserPaiInfo userPaiInfo) {
             return userPlace.getGengCount();
         }
@@ -134,12 +134,20 @@ public enum JiaFanType {
             Collectors.toMap(r-> r,v->new FanInfo(v.name, v.fan))
     );
 
-    public final int fan;
-    public final String name;
+    private final int fan;
+    private final String name;
 
     JiaFanType(String name, int fan) {
         this.fan = fan;
         this.name = name;
+    }
+
+    public int getFan() {
+        return fan;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public int compute(FanResult fanResult, ChapterEndResult chapterResult, UserPlace userPlace, UserPaiInfo userPaiInfo) {
