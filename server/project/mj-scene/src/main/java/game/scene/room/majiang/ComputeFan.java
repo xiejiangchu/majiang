@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 public class ComputeFan {
     private MajiangChapter chapter;
     private ChapterEndResult endResult;
+    private final static int ZAMA_FAN = 1;
 
     public ComputeFan(MajiangChapter chapter, int huPaiIndex, int fangPaoIndex, boolean isGangShangHua) {
         this.chapter = chapter;
@@ -159,7 +160,7 @@ public class ComputeFan {
                                 freePai.getDian() == 5 ||
                                 freePai.getDian() == 9 || freePai.equals(Pai.SANYUAN_ZHONG)) {
                             zaMaPai.add(freePai);
-                            zamaScore += 2;
+                            zamaScore += ZAMA_FAN;
                         }
                     }
                 }
