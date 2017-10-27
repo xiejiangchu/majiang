@@ -251,23 +251,71 @@ public class UserPlace {
         String bingType = config.getString(Config.BIAN_TYPE);
         if (Objects.equals(bingType, Config.BIAN_TYPE_YI_CHUN)) {
             if (pai.equals(Pai.FENG_DONG)) {
-                result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_XI});
-                result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_BEI});
-                result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_XI, Pai.FENG_BEI});
+                if (shouPaiMap.containsKey(Pai.FENG_NAN) && shouPaiMap.containsKey(Pai.FENG_XI)) {
+                    result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_XI});
+                }
+
+                if (shouPaiMap.containsKey(Pai.FENG_NAN) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
+                    result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_BEI});
+                }
+
+                if (shouPaiMap.containsKey(Pai.FENG_XI) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
+                    result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_XI, Pai.FENG_BEI});
+                }
+
             } else if (pai.equals(Pai.FENG_NAN)) {
-                result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_DONG, Pai.FENG_XI});
-                result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_DONG, Pai.FENG_BEI});
-                result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_XI, Pai.FENG_BEI});
+
+                if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_XI)) {
+                    result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_NAN, Pai.FENG_XI});
+                }
+
+                if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
+                    result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_NAN, Pai.FENG_BEI});
+                }
+
+                if (shouPaiMap.containsKey(Pai.FENG_XI) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
+                    result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_XI, Pai.FENG_BEI});
+                }
             } else if (pai.equals(Pai.FENG_XI)) {
-                result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_DONG, Pai.FENG_NAN});
-                result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_DONG, Pai.FENG_BEI});
-                result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_NAN, Pai.FENG_BEI});
+
+                if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_NAN)) {
+                    result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_DONG, Pai.FENG_NAN});
+                }
+
+                if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
+                    result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_DONG, Pai.FENG_BEI});
+                }
+
+                if (shouPaiMap.containsKey(Pai.FENG_NAN) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
+                    result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_NAN, Pai.FENG_BEI});
+                }
+
             } else if (pai.equals(Pai.FENG_BEI)) {
-                result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_DONG, Pai.FENG_XI});
-                result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_DONG, Pai.FENG_NAN});
-                result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_XI, Pai.FENG_NAN});
-            } else if (pai.equals(Pai.SANYUAN_ZHONG) || pai.equals(Pai.SANYUAN_FA) || pai.equals(Pai.SANYUAN_BEI)) {
-                result.add(new Pai[]{Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI});
+
+                if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_XI)) {
+                    result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_DONG, Pai.FENG_XI});
+                }
+
+                if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_NAN)) {
+                    result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_DONG, Pai.FENG_NAN});
+                }
+
+                if (shouPaiMap.containsKey(Pai.FENG_XI) && shouPaiMap.containsKey(Pai.FENG_NAN)) {
+                    result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_XI, Pai.FENG_NAN});
+                }
+
+            } else if (pai.equals(Pai.SANYUAN_ZHONG)) {
+                if (shouPaiMap.containsKey(Pai.SANYUAN_FA) && shouPaiMap.containsKey(Pai.SANYUAN_BEI)) {
+                    result.add(new Pai[]{Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI});
+                }
+            } else if (pai.equals(Pai.SANYUAN_FA)) {
+                if (shouPaiMap.containsKey(Pai.SANYUAN_ZHONG) && shouPaiMap.containsKey(Pai.SANYUAN_BEI)) {
+                    result.add(new Pai[]{Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI});
+                }
+            } else if (pai.equals(Pai.SANYUAN_BEI)) {
+                if (shouPaiMap.containsKey(Pai.SANYUAN_ZHONG) && shouPaiMap.containsKey(Pai.SANYUAN_FA)) {
+                    result.add(new Pai[]{Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI});
+                }
             }
             return result;
         }
