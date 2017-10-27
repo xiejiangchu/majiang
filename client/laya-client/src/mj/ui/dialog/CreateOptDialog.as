@@ -24,7 +24,7 @@ package mj.ui.dialog
 
         private static const CHAPTER_MAX_VALUES:Array = ["8", "16"];
         private static const MAI_MA_VALUES:Array = ["0", "-1", "2", "4", "6"];
-        private static const TYPE_VALUES:Array = ["tuiDaoHu", "hongZhongBian", "baiBanBian", "danGui", "shuangGui","hongZhongMaJiang"];
+        private static const TYPE_VALUES:Array = ["tuiDaoHu", "hongZhongBian", "danGui", "shuangGui","hongZhongMaJiang","yichunmajiang"];
 
         private var nWidth:Number;
         private var nHeight:Number;

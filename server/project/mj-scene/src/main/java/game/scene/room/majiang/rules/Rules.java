@@ -25,21 +25,22 @@ public abstract class Rules {
         log.info("麻将类型" + binType);
         if (binType.equalsIgnoreCase(Config.BIAN_TYPE_HONG_ZHONG)) {
             return new HongzhongHnRules(config);
+        } else if (binType.equalsIgnoreCase(Config.BIAN_TYPE_YI_CHUN)) {
+            return new YiChunRules(config);
         } else {
             switch (name) {
-                case "zhongyouGD":
-                    return new ZhongyouGdRules(config);
                 default:
                     return new ZhongyouGdRules(config);
             }
         }
     }
 
-    public abstract boolean rest();
-
-    public Rules(Config config) {
+    Rules(Config config) {
         this.config = config;
     }
+
+    public abstract boolean rest();
+
 
     public int getBaoliuLength() {
         return baoliuLength;

@@ -16,11 +16,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SessionService {
     private final static Logger log = LoggerFactory.getLogger(SessionService.class);
 
-    //private final Config config;
     private final User[] userArray;
     private final TreeSet<Short> idPool = new TreeSet<>();
     private int max;
-
     private final int maxConnect;
     private final int freeWaitNums;
     /**

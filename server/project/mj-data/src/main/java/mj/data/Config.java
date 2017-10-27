@@ -17,10 +17,8 @@ public class Config {
     public static final String IS_HUIER = "IS_HUIER";
     public static final String MAI_MA = "maiMa";
 
-
     public static final String IS_TUI_DAO_HU = "isTuiDaoHu";
     public static final String BIAN_TYPE = "bianType";
-
 
     public static final String BIAN_TYPE_HONG_ZHONG_BIAN = "hongZhongBian";
     public static final String BIAN_TYPE_BAI_BAN_BIAN = "baiBanBian";
@@ -28,6 +26,7 @@ public class Config {
     public static final String BIAN_TYPE_SHUANG_GUI = "shuangGui";
     public static final String BIAN_TYPE_TUI_DAO_HU = "tuiDaoHu";
     public static final String BIAN_TYPE_HONG_ZHONG = "hongzhongmajiang";
+    public static final String BIAN_TYPE_YI_CHUN = "yichunmajiang";
 
     private final Map<String, String> options;
 

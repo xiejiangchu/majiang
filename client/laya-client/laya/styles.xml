@@ -17,5 +17,12 @@
    <item name="ui/game/user_head_mask.png" type="Image" compress="0" pack="0" quality="80" props="sizeGrid=60,60,60,60" picType="0"/>
    <item name="ui/game/user_head_bg.png" type="Image" compress="0" pack="0" quality="80" props="sizeGrid=60,60,60,60" picType="0"/>
    <item name="ui/loading/bg.jpg" type="Image" compress="0" pack="1" quality="80" props="" picType="0"/>
-   <item name="ui/loading/progress.png" type="ProgressBar" compress="0" pack="2" quality="80" props="" picType="0"/>
+   <item name="ui/loading/progress.png" type="ProgressBar" compress="0" pack="1" quality="80" props="" picType="0"/>
+   <item name="ui/game" type="" compress="0" pack="1" quality="80" props="" picType="0"/>
+   <item name="ui/loading" type="" compress="0" pack="1" quality="80" props="" picType="0"/>
+   <item name="ui/majiang" type="" compress="0" pack="1" quality="80" props="" picType="0"/>
+   <item name="ui/home" type="" compress="0" pack="1" quality="80" props="" picType="0"/>
+   <item name="ui" type="" compress="0" pack="1" quality="80" props="" picType="0"/>
+   <item name="ui/loading/login.png" type="Image" compress="0" pack="2" quality="80" props="" picType="0"/>
+   <item name="ui/loading/login.jpg" type="Image" compress="0" pack="1" quality="80" props="" picType="0"/>
 </res>

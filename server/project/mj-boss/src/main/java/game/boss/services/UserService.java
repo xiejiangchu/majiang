@@ -143,7 +143,7 @@ public class UserService extends FrameQueueContainer implements BaseService {
                     Date now = new Date();
                     userDO.setUpdateDate(now);
                     userDO.setCreateDate(now);
-                    userDO.setGold(settingService.getSetting().getInitGold());
+                    userDO.setGold(settingService.getSettingDO().getInitGold());
 
                     if (msg.getType().equals(LOGIN_TYPE_SMS)) {
                         userDO.setMobile(openId);

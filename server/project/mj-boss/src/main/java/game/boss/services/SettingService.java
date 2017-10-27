@@ -1,16 +1,11 @@
 package game.boss.services;
 
-import com.isnowfox.core.net.message.Message;
-import com.isnowfox.service.AbstractAsyncService;
 import game.admin.SettingMsg;
 import game.boss.dao.dao.SettingDao;
 import game.boss.dao.entity.SettingDO;
-import game.boss.model.User;
 import game.boss.net.BossService;
-import mj.net.handler.MessageHandler;
 import mj.net.message.login.Radio;
 import mj.net.message.login.SysSetting;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +28,7 @@ public final class SettingService {
     @Autowired
     private BossService bossService;
 
-    private SettingDO setting;
+    private SettingDO settingDO;
 
 
     @PostConstruct
@@ -43,11 +38,11 @@ public final class SettingService {
             setting = new SettingDO();
             setting.setId(DEFAULT_ID);
         }
-        this.setting = setting;
+        this.settingDO = setting;
     }
 
-    public SettingDO getSetting() {
-        return setting;
+    public SettingDO getSettingDO() {
+        return settingDO;
     }
 
     public SysSetting getSettingMsg() {
@@ -55,32 +50,32 @@ public final class SettingService {
     }
 
     public void change(SettingMsg payMsg) {
-        if(!StringUtils.equals(payMsg.getRadio(), setting.getRadio())){
+        if(!StringUtils.equals(payMsg.getRadio(), settingDO.getRadio())){
             bossService.writeToAll(new Radio(payMsg.getRadio()));
         }
-        BeanUtils.copyProperties(payMsg, setting);
+        BeanUtils.copyProperties(payMsg, settingDO);
     }
 
 
     private SysSetting settingMsg = new SysSetting(){
         @Override
         public String getRadio() {
-            return setting.getRadio();
+            return settingDO.getRadio();
         }
 
         @Override
         public String getNotice() {
-            return setting.getNotice();
+            return settingDO.getNotice();
         }
 
         @Override
         public String getPayInfo() {
-            return setting.getPayInfo();
+            return settingDO.getPayInfo();
         }
 
         @Override
         public String getAgreement() {
-            return setting.getAgreement();
+            return settingDO.getAgreement();
         }
     };
 }

@@ -95,7 +95,7 @@ public class MajiangChapter {
         this.room = room;
 
         for (int i = 0; i < userPlaces.length; i++) {
-            userPlaces[i] = new UserPlace();
+            userPlaces[i] = new UserPlace(room.getConfig());
             userPlaces[i].setLocationIndex(i);
         }
     }
@@ -111,7 +111,6 @@ public class MajiangChapter {
         for (int i = 0; i < userPlaces.length; i++) {
             paiPool.faPai(i, userPlaces[i]);
         }
-
 
         huiEr = paiPool.getHuiEr();
         //发牌完毕！
@@ -382,13 +381,10 @@ public class MajiangChapter {
             );
         }
         if (!userPlace.checkShouPai(pai)) {
-//            throw new RuntimeException("打出的不是手牌：" + pai);
             log.error("打出的不是手牌：" + pai);
             return;
         }
-//        if (userPlace.getFa() == null) {
-//            throw new RuntimeException("操作用户未发牌？：" + userPlace);
-//        }
+
         //开始出来操作
         currentPai = pai;
 
@@ -457,8 +453,6 @@ public class MajiangChapter {
     private void checkCPGH() {
         if (checkResults.size() > 0) {
             CheckResult checkResult = checkResults.remove(0);
-
-
             operationCPGH = new OperationCPGH();
             operationCPGH.setChi(MajiangUtils.toIndexByDyadicArray(checkResult.getChi()));
             operationCPGH.setIsPeng(checkResult.isPeng());
@@ -518,7 +512,7 @@ public class MajiangChapter {
         m.setBianType(bingType);
         if (Objects.equals(bingType, Config.BIAN_TYPE_DAN_GUI) || Objects.equals(bingType, Config.BIAN_TYPE_SHUANG_GUI)) {
             m.setBianSource(huiEr[0].prev().getIndex());
-        }else{
+        } else {
             m.setBianSource(Pai.NOT_PAI_INDEX);
         }
 

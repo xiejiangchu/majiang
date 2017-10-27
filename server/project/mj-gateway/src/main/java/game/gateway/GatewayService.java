@@ -8,7 +8,6 @@ import com.isnowfox.core.net.message.Packet;
 import com.isnowfox.game.platform.User;
 import com.isnowfox.game.proxy.message.*;
 import com.isnowfox.util.collect.primitive.ShortList;
-import game.boss.SceneUserInfo;
 import game.boss.msg.*;
 import game.gateway.server.BossClient;
 import game.gateway.server.SceneClient;
@@ -24,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -81,7 +79,7 @@ public class GatewayService {
     /**
      * 转发消息到 boss 服务器或者场景服务器
      */
-    private void forwardFormUser(Packet msg) throws IOException, ProtocolException {
+    private void forwardFromUser(Packet msg) throws IOException, ProtocolException {
         User u = msg.<User>getSession().get();
         msg.getBuf().retain();
         SinglePxMsg sm = new SinglePxMsg(u.getId(), msg.getBuf());
@@ -127,7 +125,7 @@ public class GatewayService {
      * 处理客户端过来的消息
      */
     public void handlerClient(Packet msg) throws IOException, ProtocolException {
-        forwardFormUser(msg);
+        forwardFromUser(msg);
     }
 
     /**

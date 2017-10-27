@@ -154,7 +154,6 @@ public class RoomImpi extends Room {
 
     public void chapterStart(SceneUser user) {
         checkThread();
-
         bossClient.writeAndFlush(new ChapterStartMsg());
         if (user.getUserId() == roomInfo.getCreateUserId()) {
             if (roomInfo.isFull()) {

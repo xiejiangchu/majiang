@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"View",
-    "selectedBox":371,
-    "selecteID":1299,
+    "selectedBox":370,
+    "selecteID":1273,
     "props":{"width":1920,"var":"turntableDong","text":"剩余：7盘","sizeGrid":"70,70,70,70,1","sceneColor":"#000000","sceneBg":"laya/views/test/GameTable.jpg","height":1080},
     "nodeParent":-1,
     "label":"View(turntableDong)",
@@ -25,7 +25,7 @@
             "props":{"y":0,"x":0,"width":1920,"var":"bg","height":1080},
             "nodeParent":1,
             "label":"Sprite(bg)",
-            "isOpen":false,
+            "isOpen":true,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
@@ -39,6 +39,7 @@
             "compId":370,
             "child":[
                 {
+                    "x":30,
                     "type":"Image",
                     "props":{"y":0,"x":0,"width":1920,"var":"bgImage","skin":"ui/game/bg.png","sizeGrid":"150,150,150,150,1","height":1080},
                     "nodeParent":370,
@@ -58,6 +59,7 @@
                         ]
                 },
                 {
+                    "x":30,
                     "type":"Image",
                     "props":{"y":0,"x":0,"width":327,"skin":"ui/game/room_info_bg.png","scaleY":1.2,"scaleX":1.2,"height":83},
                     "nodeParent":370,
@@ -76,6 +78,7 @@
                     "compId":1236,
                     "child":[
                         {
+                            "x":45,
                             "type":"Label",
                             "props":{"y":13,"x":5,"width":304,"var":"roomCheckId","text":"房间号: 0000000","height":39,"fontSize":38,"color":"#ffffff","align":"center"},
                             "nodeParent":1236,
@@ -97,8 +100,9 @@
                     "$LOCKED":false
                 },
                 {
+                    "x":30,
                     "type":"Image",
-                    "props":{"y":147,"x":426.5,"width":1067,"var":"logo","skin":"ui/game/game_name.png","height":786,"alpha":0.5},
+                    "props":{"y":140,"x":560,"width":800,"var":"logo","skin":"ui/game/logo.png","height":800,"alpha":0.5},
                     "nodeParent":370,
                     "label":"Image(logo)",
                     "isOpen":false,
@@ -117,6 +121,7 @@
                         ]
                 },
                 {
+                    "x":30,
                     "type":"Label",
                     "props":{"y":92.4,"x":4.799999999999993,"width":164,"var":"leftGameNums","text":"剩余：7盘","height":42,"fontSize":34,"color":"#ffffff","align":"center"},
                     "nodeParent":370,
@@ -143,7 +148,7 @@
             "props":{"y":0,"x":3,"var":"heads"},
             "nodeParent":1,
             "label":"Sprite(heads)",
-            "isOpen":true,
+            "isOpen":false,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
@@ -157,7 +162,6 @@
             "compId":936,
             "child":[
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":589,"x":0,"width":153,"var":"userHead3","scaleY":1.3,"scaleX":1.3,"height":217},
                     "nodeParent":936,
@@ -388,7 +392,6 @@
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":261,"x":0,"width":147,"var":"userHead0","scaleY":1.3,"scaleX":1.3,"height":216},
                     "nodeParent":936,
@@ -618,7 +621,6 @@
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":365,"x":1693,"width":172,"var":"userHead2","scaleY":1.3,"scaleX":1.3,"height":220},
                     "nodeParent":936,
@@ -637,7 +639,6 @@
                     "compId":371,
                     "child":[
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":57,"x":14,"width":133,"skin":"ui/game/user_head_bg.png","height":133},
                             "nodeParent":371,
@@ -733,7 +734,6 @@
                                 }]
                         },
                         {
-                            "x":45,
                             "type":"Text",
                             "props":{"y":31,"x":15,"width":127,"var":"userId2","text":"ID:7777777","height":19,"fontSize":20,"color":"#f8f8f8","align":"center"},
                             "nodeParent":371,
@@ -753,7 +753,6 @@
                                 ]
                         },
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":185,"x":3,"width":193,"var":"goldBg2","skin":"ui/game/gold_bg.png","sizeGrid":"18,19,19,29","scaleY":0.8,"scaleX":0.8,"height":38},
                             "nodeParent":371,
@@ -811,7 +810,6 @@
                                 }]
                         },
                         {
-                            "x":45,
                             "type":"Text",
                             "props":{"y":0,"x":9,"width":141,"var":"userName2","text":"用户名称","height":31,"fontSize":28,"color":"#ffcc01","align":"center"},
                             "nodeParent":371,
@@ -831,7 +829,6 @@
                                 ]
                         },
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":39,"x":0,"var":"zhuang2","skin":"ui/game/zhangjia.png"},
                             "nodeParent":371,
@@ -851,7 +848,6 @@
                                 ]
                         },
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":228,"x":34,"var":"sbSourceBian0","skin":"ui/majiang/zheng_bg.png","scaleY":0.6,"scaleX":0.6},
                             "nodeParent":371,
@@ -890,7 +886,6 @@
                                 }]
                         },
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":228,"x":93,"var":"sbSourceBian1","skin":"ui/majiang/zheng_bg.png","scaleY":0.6,"scaleX":0.6},
                             "nodeParent":371,
@@ -931,7 +926,6 @@
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":5,"x":383,"width":169,"var":"userHead1","scaleY":1.3,"scaleX":1.3,"height":212},
                     "nodeParent":936,
@@ -1167,7 +1161,6 @@
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Box",
                     "props":{"y":1.9999999999999811,"x":1720.9999999999998,"width":240,"var":"buttons","scaleY":0.8,"scaleX":0.8,"height":150},
                     "nodeParent":936,
@@ -8074,7 +8067,7 @@
                         ]
                 }],
             "$LOCKED":true,
-            "$HIDDEN":false
+            "$HIDDEN":true
         },
         {
             "x":15,
@@ -8082,7 +8075,7 @@
             "props":{"var":"movieSprite","mouseEnabled":false},
             "nodeParent":1,
             "label":"Sprite(movieSprite)",
-            "isOpen":true,
+            "isOpen":false,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
@@ -8096,7 +8089,6 @@
             "compId":1257,
             "child":[
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":547,"x":888,"width":82,"var":"outPaiMovie3","scaleY":1.6,"scaleX":1.6,"height":128},
                     "nodeParent":1257,
@@ -8155,7 +8147,6 @@
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":418,"x":1225,"width":82,"var":"outPaiMovie2","scaleY":1.6,"scaleX":1.6,"height":128},
                     "nodeParent":1257,
@@ -8214,7 +8205,6 @@
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":290,"x":885,"width":82,"var":"outPaiMovie1","scaleY":1.6,"scaleX":1.6,"height":128},
                     "nodeParent":1257,
@@ -8273,7 +8263,6 @@
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":418,"x":568,"width":82,"var":"outPaiMovie0","scaleY":1.6,"scaleX":1.6,"height":128},
                     "nodeParent":1257,
@@ -8332,12 +8321,11 @@
                     "$HIDDEN":false
                 },
                 {
-                    "x":30,
                     "type":"Sprite",
                     "props":{"y":441,"x":659,"width":412,"var":"bianMove","scaleY":1.6,"scaleX":1.6,"height":129},
                     "nodeParent":1257,
                     "label":"Sprite(bianMove)",
-                    "isOpen":true,
+                    "isOpen":false,
                     "isDirectory":true,
                     "isAniNode":true,
                     "hasChild":true,
@@ -8351,7 +8339,6 @@
                     "compId":1291,
                     "child":[
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":0,"x":0,"var":"sourcePai","skin":"ui/majiang/zheng_bg.png"},
                             "nodeParent":1291,
@@ -8390,7 +8377,6 @@
                                 }]
                         },
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":0,"x":330,"var":"sourceBian0","skin":"ui/majiang/zheng_bg.png"},
                             "nodeParent":1291,
@@ -8429,7 +8415,6 @@
                                 }]
                         },
                         {
-                            "x":45,
                             "type":"Image",
                             "props":{"y":0,"x":239,"var":"sourceBian1","skin":"ui/majiang/zheng_bg.png"},
                             "nodeParent":1291,
@@ -8468,7 +8453,6 @@
                                 }]
                         },
                         {
-                            "x":45,
                             "type":"Text",
                             "props":{"y":15,"x":123,"width":85,"text":"变","height":83,"fontSize":"80","color":"#cd5216"},
                             "nodeParent":1291,
@@ -8490,7 +8474,7 @@
                     "$HIDDEN":false
                 }],
             "$LOCKED":false,
-            "$HIDDEN":false
+            "$HIDDEN":true
         }],
     "animations":[
         {

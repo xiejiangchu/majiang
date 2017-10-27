@@ -390,3 +390,11 @@ gulp.task('webclient', ['htmlImage', 'laya', 'images', 'json', 'favicon', 'docke
         .pipe(plumber())
         .pipe(gulp.dest("../../server/project/distribution/src/static/" + profile));
 });
+
+gulp.task('web', ['htmlImage', 'laya', 'images', 'json', 'favicon', 'docker', 'audio'], function () {
+    // 现在任务 'one' 已经完成了
+    console.log("web start");
+    return gulp.src(['dist/web/**/*'])
+        .pipe(plumber())
+        .pipe(gulp.dest("../../server/project/mj-client/src/main/resources/static/"));
+});

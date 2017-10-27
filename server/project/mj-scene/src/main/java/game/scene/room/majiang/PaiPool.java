@@ -21,7 +21,9 @@ public class PaiPool {
 
     private Rules rules;
 
-    public PaiPool(Rules rules) {
+    private int[][] faPaiss;
+
+    PaiPool(Rules rules) {
         this.rules = rules;
     }
 
@@ -40,7 +42,6 @@ public class PaiPool {
             pais.set(i, pais.get(randomIndex));
             pais.set(randomIndex, temp);
         }
-//        initTest();
     }
 
     public void clear() {
@@ -71,8 +72,6 @@ public class PaiPool {
         return null;
     }
 
-    private int[][] faPaiss;
-
     public void faPai(int index, UserPlace userPlace) {
         if (faPaiss != null) {
             int[] faPais = faPaiss[index];
@@ -89,22 +88,6 @@ public class PaiPool {
             }
         }
 
-    }
-
-    public void initTest() {
-        faPaiss = new int[][]{
-                new int[]{0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 31, 31, 31},
-                new int[]{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19},
-                new int[]{10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 21, 21, 21},
-                new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 20, 20, 20, 20},
-        };
-
-//        faPaiss = new int[][]{
-//                new int[]{0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6},
-//                new int[]{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19},
-//                new int[]{10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 21, 21, 21},
-//                new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 20, 20, 20, 20},
-//        };
     }
 
     public ArrayList<Pai> getLeftPai() {

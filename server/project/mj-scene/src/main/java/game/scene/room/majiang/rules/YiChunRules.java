@@ -10,12 +10,10 @@ import java.util.Map;
 /**
  * Created by xie on 17/8/23.
  */
-public class HongzhongHnRules extends Rules {
+public class YiChunRules extends Rules {
 
     private static final Map<JiaFanType, FanInfo> jiaFanMap = initJiaFanMap();
     private static final Map<BaseFanType, FanInfo> baseFanMap = initBaseFanMap();
-
-    private Pai[] huiErs;
 
     private static Map<JiaFanType, FanInfo> initJiaFanMap() {
         Map<JiaFanType, FanInfo> map = new HashMap<>();
@@ -28,59 +26,56 @@ public class HongzhongHnRules extends Rules {
         map.replace(BaseFanType.HUI_ER_GANG, new FanInfo("自摸", 1));
         map.replace(BaseFanType.ZI_MO, new FanInfo("自摸", 1));
         map.replace(BaseFanType.JI_HU, new FanInfo("", 1));
-        map.replace(BaseFanType.DUI_DUI_HU, new FanInfo("对对胡", 1));
-        map.replace(BaseFanType.QI_DUI, new FanInfo("七对子", 1));
-        map.replace(BaseFanType.TIAN_HU, new FanInfo("天胡", 1));
-        map.replace(BaseFanType.DI_HU, new FanInfo("地胡", 1));
+        map.replace(BaseFanType.DUI_DUI_HU, new FanInfo("对对胡", 3));
+        map.replace(BaseFanType.QI_DUI, new FanInfo("七对子", 4));
+        map.replace(BaseFanType.TIAN_HU, new FanInfo("天胡", 8));
+        map.replace(BaseFanType.DI_HU, new FanInfo("地胡", 4));
         return map;
     }
 
 
-    HongzhongHnRules(Config config) {
+    YiChunRules(Config config) {
         super(config);
     }
 
     @Override
     public boolean rest() {
-        huiErs = new Pai[]{Pai.SANYUAN_ZHONG};
         return false;
     }
 
     @Override
     public ArrayList<Pai> getAllPai() {
         ArrayList<Pai> list = new ArrayList<>();
-        for (int paiIndex = Pai.TONG_1.getIndex(); paiIndex <= Pai.WAN_9.getIndex(); paiIndex++) {
+        for (int paiIndex = Pai.TONG_1.getIndex(); paiIndex <= Pai.SANYUAN_BEI.getIndex(); paiIndex++) {
             Pai pai = Pai.fromIndex(paiIndex);
             list.add(pai);
         }
-        list.add(Pai.SANYUAN_ZHONG);
         return list;
     }
 
     @Override
     public Pai[] getHuiEr(PaiPool paiPool) {
-        return huiErs;
+        return null;
     }
 
     @Override
     public boolean isChi() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isFangPao() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isZaMa() {
-        int maiMa = config.getInt(Config.MAI_MA);
-        return maiMa != 0;
+        return false;
     }
 
     @Override
     public int getZaMa() {
-        return config.getInt(Config.MAI_MA);
+        return 0;
     }
 
     @Override

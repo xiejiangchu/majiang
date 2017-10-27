@@ -2,6 +2,8 @@ package mj.data;
 
 import com.google.common.collect.ArrayListMultimap;
 import mj.data.majiang.AgariUtils;
+import mj.data.majiang.ShiSanYao;
+import mj.data.majiang.YiChunPingHu;
 import mj.net.message.game.UserPlaceMsg;
 
 import java.util.*;
@@ -65,9 +67,10 @@ public class UserPlace {
 
     private int userId;
     private String userName;
+    private Config config;
 
-    public UserPlace() {
-
+    public UserPlace(Config config) {
+        this.config = config;
     }
 
 
@@ -244,7 +247,31 @@ public class UserPlace {
     }
 
     public List<Pai[]> isChi(Pai pai) {
-//        List<Pai> pais = shouPai.get(pai.getType());
+        List<Pai[]> result = new ArrayList<>();
+        String bingType = config.getString(Config.BIAN_TYPE);
+        if (Objects.equals(bingType, Config.BIAN_TYPE_YI_CHUN)) {
+            if (pai.equals(Pai.FENG_DONG)) {
+                result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_XI});
+                result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_BEI});
+                result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_XI, Pai.FENG_BEI});
+            } else if (pai.equals(Pai.FENG_NAN)) {
+                result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_DONG, Pai.FENG_XI});
+                result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_DONG, Pai.FENG_BEI});
+                result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_XI, Pai.FENG_BEI});
+            } else if (pai.equals(Pai.FENG_XI)) {
+                result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_DONG, Pai.FENG_NAN});
+                result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_DONG, Pai.FENG_BEI});
+                result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_NAN, Pai.FENG_BEI});
+            } else if (pai.equals(Pai.FENG_BEI)) {
+                result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_DONG, Pai.FENG_XI});
+                result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_DONG, Pai.FENG_NAN});
+                result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_XI, Pai.FENG_NAN});
+            } else if (pai.equals(Pai.SANYUAN_ZHONG) || pai.equals(Pai.SANYUAN_FA) || pai.equals(Pai.SANYUAN_BEI)) {
+                result.add(new Pai[]{Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI});
+            }
+            return result;
+        }
+
         Pai next0 = pai.nextPaiType();
         Pai next1 = next0 != null ? next0.nextPaiType() : null;
         Pai prev0 = pai.prevPaiType();
@@ -255,7 +282,7 @@ public class UserPlace {
         prev0 = shouPaiMap.containsKey(prev0) ? prev0 : null;
         prev1 = shouPaiMap.containsKey(prev1) ? prev1 : null;
 
-        List<Pai[]> result = new ArrayList<>();
+
         if (next0 != null && prev0 != null) {
             result.add(new Pai[]{prev0, pai, next0});
         }
@@ -275,6 +302,12 @@ public class UserPlace {
         return false;
     }
 
+    /**
+     * 七对
+     *
+     * @param pai
+     * @return
+     */
     public boolean isQiDui(Pai pai) {
         if (shouPaiMap.size() == 14) {
             Stream<Pai> concat = Stream.concat(shouPai.values().stream(), Stream.of(pai));
@@ -285,21 +318,81 @@ public class UserPlace {
         return false;
     }
 
+    /**
+     * 十三幺
+     *
+     * @param pai
+     * @return
+     */
+    public boolean isShiSanYao(Pai pai) {
+        if (shouPaiMap.size() == 14) {
+            List<Pai> all = Stream.concat(shouPai.values().stream(), Stream.of(pai)).collect(Collectors.toList());
+            return ShiSanYao.check(all);
+        }
+        return false;
+    }
+
+    /**
+     * 十三幺
+     *
+     * @return
+     */
+    public boolean isShiSanYao() {
+        if (shouPaiMap.size() == 14) {
+            List<Pai> all = new ArrayList<>(shouPai.values());
+            return ShiSanYao.check(all);
+        }
+        return false;
+    }
+
 
     public boolean isHuPai(boolean isHuihuiGang, ArrayList<Pai> all, Pai huiEr[]) {
+        String bingType = config.getString(Config.BIAN_TYPE);
+        if (Objects.equals(bingType, Config.BIAN_TYPE_YI_CHUN)) {
+            return isQiDui() || isShiSanYao() || YiChunPingHu.check(shouPai.values());
+        }
         return isHuiErGang(isHuihuiGang, huiEr) || isQiDui() || AgariUtils.isHuiErHuPai(all, shouPai.values(), huiEr);
     }
 
     public ArrayList<Pai> checkTingPai(boolean isHuihuiGang, ArrayList<Pai> all, Pai huiEr[]) {
         ArrayList<Pai> tingPais = new ArrayList<>();
+
+
+        ArrayList<Pai> testPais = new ArrayList<>(shouPai.values());
+        /**
+         * 扩充成14个
+         */
+        testPais.add(Pai.FENG_BEI);
+        int shuPaiLen = shouPai.values().size();
+
+
+        /**
+         * 宜春麻将检测
+         */
+        String bingType = config.getString(Config.BIAN_TYPE);
+        if (Objects.equals(bingType, Config.BIAN_TYPE_YI_CHUN)) {
+            for (int i = 0; i < all.size(); i++) {
+                Pai pai = all.get(i);
+                testPais.set(shuPaiLen, pai);
+                if (isQiDui(pai)) {
+                    tingPais.add(pai);
+                } else if (ShiSanYao.check(testPais)) {
+                    tingPais.add(pai);
+                } else if (YiChunPingHu.check(testPais)) {
+                    tingPais.add(pai);
+                }
+            }
+
+            return tingPais;
+        }
+
         if (isHuiErGang(isHuihuiGang, huiEr)) {
             Collections.addAll(tingPais, huiEr);
         }
 
-        ArrayList<Pai> testPais = new ArrayList<>(shouPai.values());
-        testPais.add(Pai.FENG_BEI);
-        int shuPaiLen = shouPai.values().size();
-
+        /**
+         * 其他检测
+         */
         for (int i = 0; i < all.size(); i++) {
             Pai pai = all.get(i);
             testPais.set(shuPaiLen, pai);
@@ -358,6 +451,7 @@ public class UserPlace {
         }
         return false;
     }
+
 
     public PaiType isYiTiaoLong() {
         PaiType type = isYiTiaoLong(Pai.TONG_1);

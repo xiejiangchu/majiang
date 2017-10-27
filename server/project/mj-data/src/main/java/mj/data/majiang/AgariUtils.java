@@ -85,15 +85,16 @@ public class AgariUtils {
         if (huiErPai == null || !checkContains(shouPai, huiErPai)) {
             return isHuPai(shouPai);
         } else {
+            /**
+             * 赖子
+             */
             //会儿需要当做任何牌，现在只能遍历
             int[] pos = new int[14];
             return checkHuiEr(pos, allPai, shouPai, huiErPai) != null;
         }
     }
 
-    private static Map.Entry<int[], int[]> checkHuiEr(
-            int[] pos, ArrayList<Pai> allPai, Collection<Pai> shouPai, Pai[] huiErPai
-    ) {
+    private static Map.Entry<int[], int[]> checkHuiEr(int[] pos, ArrayList<Pai> allPai, Collection<Pai> shouPai, Pai[] huiErPai) {
         ArrayList<Pai> curShouPai = new ArrayList<>(shouPai);
         int[] curPaiIndexs = new int[shouPai.size()];
 

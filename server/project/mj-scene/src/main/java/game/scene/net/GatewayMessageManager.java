@@ -89,15 +89,6 @@ public class GatewayMessageManager {
 
         if (handler != null) {
             roomService.handler(handler, message, sessionId, (short) gateway.getId());
-//            if (Login.TYPE == message.getMessageType() && Login.ID == message.getMessageId()) {
-//                handler.handler(message, user);
-//            } else {
-////                if (user.getUserDO() == null) {
-////                    log.info("还未登录!:{}", message);
-////                } else {
-////                    asyncService.excuete(handler, message, user);
-////                }
-//            }
         } else {
             log.info("没有处理器的消息:{}", message);
         }

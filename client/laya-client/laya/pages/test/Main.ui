@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"View",
-    "selectedBox":20,
-    "selecteID":42,
+    "selectedBox":19,
+    "selecteID":4,
     "props":{"text":"ID:3213124","sceneWidth":1920,"sceneHeight":1080,"sceneColor":"#000000","sceneBg":"laya/views/test/Main.jpg"},
     "nodeParent":-1,
     "label":"View",
@@ -10,13 +10,6 @@
     "isDirectory":true,
     "isAniNode":true,
     "hasChild":true,
-    "frames":[
-        {
-            "type":1,
-            "props":{"text":"ID:3213124","sceneWidth":1920,"sceneHeight":1080,"sceneColor":"#000000","sceneBg":"laya/views/test/Main.jpg"},
-            "frame":0,
-            "__InPool":false
-        }],
     "compId":1,
     "child":[
         {
@@ -29,31 +22,17 @@
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
-            "frames":[
-                {
-                    "type":1,
-                    "props":{"y":0,"x":0,"var":"bg"},
-                    "frame":0,
-                    "__InPool":false
-                }],
             "compId":19,
             "child":[
                 {
                     "x":30,
                     "type":"Image",
-                    "props":{"y":0,"x":0,"var":"mainBg","skin":"ui/home/bg.jpg"},
+                    "props":{"y":0,"x":0,"width":1920,"var":"mainBg","skin":"ui/home/bg.jpg","height":1080},
                     "nodeParent":19,
                     "label":"Image(mainBg)",
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"y":0,"x":0,"var":"mainBg","skin":"ui/home/bg.jpg"},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":4,
                     "child":[
                         ]
@@ -67,13 +46,6 @@
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"y":216,"x":161,"width":419,"skin":"ui/home/mm.png","height":865},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":7,
                     "child":[
                         ],
@@ -90,13 +62,6 @@
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
-            "frames":[
-                {
-                    "type":1,
-                    "props":{"var":"mainSprite"},
-                    "frame":0,
-                    "__InPool":false
-                }],
             "compId":20,
             "child":[
                 {
@@ -109,13 +74,6 @@
                     "isDirectory":true,
                     "isAniNode":true,
                     "hasChild":true,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"y":18,"x":71,"width":370,"var":"userHead","height":168},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":23,
                     "child":[
                         {
@@ -128,13 +86,6 @@
                             "isDirectory":true,
                             "isAniNode":true,
                             "hasChild":true,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"y":12,"x":14},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":33,
                             "child":[
                                 {
@@ -146,13 +97,6 @@
                                     "isDirectory":true,
                                     "isAniNode":true,
                                     "hasChild":true,
-                                    "frames":[
-                                        {
-                                            "type":1,
-                                            "props":{"y":14,"x":12,"width":133,"skin":"ui/game/user_head_bg.png","height":133},
-                                            "frame":0,
-                                            "__InPool":false
-                                        }],
                                     "compId":24,
                                     "child":[
                                         {
@@ -163,13 +107,6 @@
                                             "isDirectory":false,
                                             "isAniNode":true,
                                             "hasChild":false,
-                                            "frames":[
-                                                {
-                                                    "type":1,
-                                                    "props":{"y":0,"x":0,"width":133,"var":"userHeadMask","skin":"ui/game/user_head_mask.png","height":133},
-                                                    "frame":0,
-                                                    "__InPool":false
-                                                }],
                                             "compId":25,
                                             "child":[
                                                 ]
@@ -185,13 +122,6 @@
                                             "isDirectory":true,
                                             "isAniNode":true,
                                             "hasChild":true,
-                                            "frames":[
-                                                {
-                                                    "type":1,
-                                                    "props":{"y":0,"x":0,"width":133,"var":"userHeadIconOut","height":133},
-                                                    "frame":0,
-                                                    "__InPool":false
-                                                }],
                                             "compId":26,
                                             "child":[
                                                 {
@@ -202,13 +132,6 @@
                                                     "isDirectory":false,
                                                     "isAniNode":true,
                                                     "hasChild":false,
-                                                    "frames":[
-                                                        {
-                                                            "type":1,
-                                                            "props":{"y":4,"x":7,"width":119,"var":"userHeadIcon","skin":"ui/game/user_head_default.png","pivotY":0,"pivotX":0,"height":115},
-                                                            "frame":0,
-                                                            "__InPool":false
-                                                        }],
                                                     "compId":27,
                                                     "child":[
                                                         ]
@@ -222,20 +145,14 @@
                             "props":{"y":19.00000000000002,"x":145.00000000000006,"width":219.99999999999983,"var":"addFangkaSprite","mouseThrough":false,"mouseEnabled":true,"height":121.99999999999997},
                             "nodeParent":23,
                             "label":"Sprite(addFangkaSprite)",
-                            "isOpen":false,
+                            "isOpen":true,
                             "isDirectory":true,
                             "isAniNode":true,
                             "hasChild":true,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":41,
                             "child":[
                                 {
+                                    "x":60,
                                     "type":"Text",
                                     "props":{"y":46.000000000000036,"x":-1.0000000000000568,"width":204,"var":"userId","text":"ID:7777777","height":35,"fontSize":30,"color":"#ffcc01","align":"center"},
                                     "nodeParent":41,
@@ -243,18 +160,12 @@
                                     "isDirectory":false,
                                     "isAniNode":true,
                                     "hasChild":false,
-                                    "frames":[
-                                        {
-                                            "type":1,
-                                            "props":{"y":65,"x":144,"width":204,"var":"userId","text":"ID:7777777","height":35,"fontSize":30,"color":"#ffcc01","align":"center"},
-                                            "frame":0,
-                                            "__InPool":false
-                                        }],
                                     "compId":28,
                                     "child":[
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Image",
                                     "props":{"y":80.99999999999994,"x":5,"skin":"ui/game/gold_bg.png"},
                                     "nodeParent":41,
@@ -262,18 +173,12 @@
                                     "isDirectory":false,
                                     "isAniNode":true,
                                     "hasChild":false,
-                                    "frames":[
-                                        {
-                                            "type":1,
-                                            "props":{"y":100,"x":150,"skin":"ui/game/gold_bg.png"},
-                                            "frame":0,
-                                            "__InPool":false
-                                        }],
                                     "compId":29,
                                     "child":[
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Text",
                                     "props":{"y":84,"x":3,"width":183,"var":"gold","text":"房卡:888888","height":35,"fontSize":28,"color":"#ffcc01","align":"center"},
                                     "nodeParent":41,
@@ -281,18 +186,12 @@
                                     "isDirectory":false,
                                     "isAniNode":true,
                                     "hasChild":false,
-                                    "frames":[
-                                        {
-                                            "type":1,
-                                            "props":{"y":103,"x":184,"width":166,"var":"gold","text":888888,"height":35,"fontSize":28,"color":"#ffcc01","align":"center"},
-                                            "frame":0,
-                                            "__InPool":false
-                                        }],
                                     "compId":31,
                                     "child":[
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Text",
                                     "props":{"y":0,"x":0,"width":195,"var":"userName","text":"用户名称","height":46,"fontSize":40,"color":"#ffcc01","align":"center"},
                                     "nodeParent":41,
@@ -301,18 +200,12 @@
                                     "isDirectory":false,
                                     "isAniNode":true,
                                     "hasChild":false,
-                                    "frames":[
-                                        {
-                                            "type":1,
-                                            "props":{"y":19,"x":145,"width":195,"var":"userName","text":"用户名称","height":46,"fontSize":40,"color":"#ffcc01","align":"center"},
-                                            "frame":0,
-                                            "__InPool":false
-                                        }],
                                     "compId":32,
                                     "child":[
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Button",
                                     "props":{"y":76.99999999999997,"x":174.99999999999983,"var":"addBtn","skin":"ui/home/btn_add_gold.png"},
                                     "nodeParent":41,
@@ -320,13 +213,6 @@
                                     "isDirectory":false,
                                     "isAniNode":true,
                                     "hasChild":false,
-                                    "frames":[
-                                        {
-                                            "type":1,
-                                            "props":{"y":96,"x":320,"var":"addBtn","skin":"ui/home/btn_add_gold.png"},
-                                            "frame":0,
-                                            "__InPool":false
-                                        }],
                                     "compId":10,
                                     "child":[
                                         ]
@@ -343,13 +229,6 @@
                     "isDirectory":true,
                     "isAniNode":true,
                     "hasChild":true,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"y":169.00000000000003,"x":476.99999999999983,"var":"notice"},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":14,
                     "child":[
                         {
@@ -361,13 +240,6 @@
                             "isDirectory":false,
                             "isAniNode":true,
                             "hasChild":false,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"y":0,"x":0,"var":"noticeBg","skin":"ui/home/notice_bg.png"},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":8,
                             "child":[
                                 ]
@@ -381,13 +253,6 @@
                             "isDirectory":false,
                             "isAniNode":true,
                             "hasChild":false,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"y":5,"x":3,"skin":"ui/home/notice_icon.png"},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":9,
                             "child":[
                                 ]
@@ -401,13 +266,6 @@
                             "isDirectory":false,
                             "isAniNode":true,
                             "hasChild":false,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"y":12,"x":111,"width":897,"var":"noticeLabel","text":"我是跑马灯我是跑马灯我是跑马灯我是跑马灯我是跑马灯我是跑马灯我是跑马灯我是跑马灯","overflow":"hidden","height":40,"fontSize":40,"color":"#ffcc01","bold":false,"align":"left"},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":18,
                             "child":[
                                 ]
@@ -423,13 +281,6 @@
                     "isDirectory":true,
                     "isAniNode":true,
                     "hasChild":true,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":42,
                     "child":[
                         {
@@ -442,13 +293,6 @@
                             "isDirectory":false,
                             "isAniNode":true,
                             "hasChild":false,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"y":422,"x":605,"var":"crateBtn","skin":"ui/home/btn_create.png","label":"label"},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":5,
                             "child":[
                                 ]
@@ -462,13 +306,6 @@
                             "isDirectory":false,
                             "isAniNode":true,
                             "hasChild":false,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"y":422,"x":1026,"var":"joinBtn","skin":"ui/home/btn_join.png","label":"label"},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":6,
                             "child":[
                                 ]
@@ -483,13 +320,6 @@
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"label":"label"},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":38,
                     "child":[
                         ]
@@ -503,13 +333,6 @@
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"label":"label"},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":39,
                     "child":[
                         ]
@@ -523,13 +346,6 @@
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"label":"label"},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":40,
                     "child":[
                         ]
@@ -544,13 +360,6 @@
                     "isDirectory":true,
                     "isAniNode":true,
                     "hasChild":true,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":48,
                     "child":[
                         {
@@ -563,13 +372,6 @@
                             "isDirectory":false,
                             "isAniNode":true,
                             "hasChild":false,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"y":559,"x":260,"skin":"base/dialog_bg.png"},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":47,
                             "child":[
                                 ]
@@ -583,13 +385,6 @@
                             "isDirectory":false,
                             "isAniNode":true,
                             "hasChild":false,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"text":"text"},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":49,
                             "child":[
                                 ]
@@ -603,13 +398,6 @@
                             "isDirectory":false,
                             "isAniNode":true,
                             "hasChild":false,
-                            "frames":[
-                                {
-                                    "type":1,
-                                    "props":{"text":"text"},
-                                    "frame":0,
-                                    "__InPool":false
-                                }],
                             "compId":50,
                             "child":[
                                 ]
@@ -624,13 +412,6 @@
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"y":1025.5,"x":0,"wordWrap":true,"width":1920,"text":"抵制不良游戏，拒绝盗版游戏。注意自我保护，谨防上当受骗。","fontSize":38,"color":"#ffffff","alpha":0.5,"align":"center"},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":43,
                     "child":[
                         ]
@@ -644,13 +425,6 @@
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "frames":[
-                        {
-                            "type":1,
-                            "props":{"y":978.4999999999999,"x":0,"wordWrap":true,"width":1920,"text":"适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。","fontSize":38,"color":"#ffffff","alpha":0.5,"align":"center"},
-                            "frame":0,
-                            "__InPool":false
-                        }],
                     "compId":44,
                     "child":[
                         ]

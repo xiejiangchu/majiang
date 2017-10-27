@@ -10,11 +10,14 @@ import java.util.stream.Collectors;
  * 2	七对子	14张牌为7个对子的和牌方法叫“七对子”	例：2条x2+5条x2+8条x2+1万x2+3万x2+八筒x2+发财x2
  * 40	天和	庄家在一局还没有出过牌的时候构成可和牌牌型时称“天和”。
  * 40	地和	闲家在一局还没有出过牌的时候构成可和牌牌型时称“地和”
+ *
  * @author zuoge85@gmail.com on 2016/11/4.
  */
 public enum BaseFanType {
     JI_HU("鸡胡", 1),
     ZI_MO("自摸", 2),
+    SHI_SAN_YAO("十三幺", 2),
+    QI_XING("七星", 3),
     DUI_DUI_HU("对对胡", 2),
     QI_DUI("七对子", 2),
     TIAN_HU("天胡", 40),
@@ -22,9 +25,8 @@ public enum BaseFanType {
     DI_HU("地胡", 40);
 
 
-
     public static final Map<BaseFanType, FanInfo> baseFanMap = Arrays.stream(BaseFanType.values()).collect(
-            Collectors.toMap(r-> r, v->new FanInfo(v.name, v.fan))
+            Collectors.toMap(r -> r, v -> new FanInfo(v.name, v.fan))
     );
 
     public final int fan;

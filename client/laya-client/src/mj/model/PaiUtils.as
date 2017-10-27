@@ -88,6 +88,7 @@ package mj.model
                 paiImage.addChild(huiErImage);
             }
             paiImage.skin = paiImage.skin.replace(/[0-9]+\.png/gi, pai.toString() + ".png");
+            paiImage.sizeGrid = '4,4,4,4,1';
         }
 
         public static function toUserPlace(result:GameFanResult):UserPlaceMsg
