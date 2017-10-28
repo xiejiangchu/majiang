@@ -262,6 +262,7 @@ public class UserPlace {
                 if (shouPaiMap.containsKey(Pai.FENG_XI) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
                     result.add(new Pai[]{Pai.FENG_DONG, Pai.FENG_XI, Pai.FENG_BEI});
                 }
+                return result;
 
             } else if (pai.equals(Pai.FENG_NAN)) {
 
@@ -270,12 +271,13 @@ public class UserPlace {
                 }
 
                 if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
-                    result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_NAN, Pai.FENG_BEI});
+                    result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_DONG, Pai.FENG_BEI});
                 }
 
                 if (shouPaiMap.containsKey(Pai.FENG_XI) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
                     result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_XI, Pai.FENG_BEI});
                 }
+                return result;
             } else if (pai.equals(Pai.FENG_XI)) {
 
                 if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_NAN)) {
@@ -289,6 +291,7 @@ public class UserPlace {
                 if (shouPaiMap.containsKey(Pai.FENG_NAN) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
                     result.add(new Pai[]{Pai.FENG_XI, Pai.FENG_NAN, Pai.FENG_BEI});
                 }
+                return result;
 
             } else if (pai.equals(Pai.FENG_BEI)) {
 
@@ -303,21 +306,24 @@ public class UserPlace {
                 if (shouPaiMap.containsKey(Pai.FENG_XI) && shouPaiMap.containsKey(Pai.FENG_NAN)) {
                     result.add(new Pai[]{Pai.FENG_BEI, Pai.FENG_XI, Pai.FENG_NAN});
                 }
-
+                return result;
             } else if (pai.equals(Pai.SANYUAN_ZHONG)) {
                 if (shouPaiMap.containsKey(Pai.SANYUAN_FA) && shouPaiMap.containsKey(Pai.SANYUAN_BEI)) {
                     result.add(new Pai[]{Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI});
                 }
+                return result;
             } else if (pai.equals(Pai.SANYUAN_FA)) {
                 if (shouPaiMap.containsKey(Pai.SANYUAN_ZHONG) && shouPaiMap.containsKey(Pai.SANYUAN_BEI)) {
                     result.add(new Pai[]{Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI});
                 }
+                return result;
             } else if (pai.equals(Pai.SANYUAN_BEI)) {
                 if (shouPaiMap.containsKey(Pai.SANYUAN_ZHONG) && shouPaiMap.containsKey(Pai.SANYUAN_FA)) {
                     result.add(new Pai[]{Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI});
                 }
+                return result;
             }
-            return result;
+
         }
 
         Pai next0 = pai.nextPaiType();
@@ -404,8 +410,6 @@ public class UserPlace {
 
     public ArrayList<Pai> checkTingPai(boolean isHuihuiGang, ArrayList<Pai> all, Pai huiEr[]) {
         ArrayList<Pai> tingPais = new ArrayList<>();
-
-
         ArrayList<Pai> testPais = new ArrayList<>(shouPai.values());
         /**
          * 扩充成14个
@@ -464,6 +468,10 @@ public class UserPlace {
      * 检查是否能胡别人打出的牌
      */
     public boolean isHuPaiBy(Pai pai) {
+        String bingType = config.getString(Config.BIAN_TYPE);
+        if (Objects.equals(bingType, Config.BIAN_TYPE_YI_CHUN)) {
+            return isQiDui() || isShiSanYao(pai) || YiChunPingHu.check(shouPai.values(), pai);
+        }
         return isQiDui(pai) || AgariUtils.isHuPai(shouPai.values(), pai);
     }
 

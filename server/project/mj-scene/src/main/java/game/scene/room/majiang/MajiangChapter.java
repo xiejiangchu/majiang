@@ -397,7 +397,12 @@ public class MajiangChapter {
             if (current != userPlace) {
                 CheckResult checkResult = new CheckResult();
                 if (rules.isChi()) {
-                    checkResult.setChi(current.isChi(pai));
+                    int last_location = locationIndex % 4;
+                    if ((last_location == 0 && index == 1) || (last_location == 1 && index == 2) || (last_location == 2 && index == 3) || (last_location == 3 && index == 0)) {
+                        checkResult.setChi(current.isChi(pai));
+                    } else {
+                        checkResult.setChi(new ArrayList<>());
+                    }
                 } else {
                     checkResult.setChi(new ArrayList<>());
                 }

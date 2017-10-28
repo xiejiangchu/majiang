@@ -66,26 +66,33 @@ public class YiChunPingHu {
                 return o1.getIndex() - o2.getIndex();
             }
         });
-        for (int i = 0; i < pais.length; i++) {
-            System.out.print(pais[i].getName());
-        }
-        System.out.println();
         List<Pai> out = trim(pais);
         return AgariUtils.isHuiErHuPai(null, out, null);
     }
 
     public static boolean check(Collection<Pai> shouPai) {
-        Pai[] pais = (Pai[]) shouPai.stream().collect(Collectors.toList()).toArray();
+        List<Pai> list = shouPai.stream().collect(Collectors.toList());
+        Pai[] pais = list.toArray(new Pai[list.size()]);
         Arrays.sort(pais, new Comparator<Pai>() {
             @Override
             public int compare(Pai o1, Pai o2) {
                 return o1.getIndex() - o2.getIndex();
             }
         });
-        for (int i = 0; i < pais.length; i++) {
-            System.out.print(pais[i].getName());
-        }
-        System.out.println();
+        List<Pai> out = trim(pais);
+        return AgariUtils.isHuiErHuPai(null, out, null);
+    }
+
+    public static boolean check(Collection<Pai> shouPai, Pai other) {
+        List<Pai> list = shouPai.stream().collect(Collectors.toList());
+        list.add(other);
+        Pai[] pais = list.toArray(new Pai[list.size()]);
+        Arrays.sort(pais, new Comparator<Pai>() {
+            @Override
+            public int compare(Pai o1, Pai o2) {
+                return o1.getIndex() - o2.getIndex();
+            }
+        });
         List<Pai> out = trim(pais);
         return AgariUtils.isHuiErHuPai(null, out, null);
     }
@@ -103,10 +110,6 @@ public class YiChunPingHu {
                 return o1.getIndex() - o2.getIndex();
             }
         });
-        for (int i = 0; i < pais.length; i++) {
-            System.out.print(pais[i].getName());
-        }
-        System.out.println();
         List<Pai> out = trim(pais);
         return AgariUtils.isHuiErHuPai(null, out, null);
     }

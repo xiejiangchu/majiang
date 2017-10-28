@@ -1,6 +1,6 @@
 site:
     title: 麻将
-    serverUrl: ws://127.0.0.1:8010/g
+    serverUrl: ws://192.168.10.100:8010/g
 application:
     message: Hello, Andy
 spring:

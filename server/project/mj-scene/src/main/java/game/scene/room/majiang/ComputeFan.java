@@ -92,7 +92,11 @@ public class ComputeFan {
             baseFanType = BaseFanType.HUI_ER_GANG;
         } else if (userPlace.isQiDui()) {
             baseFanType = BaseFanType.QI_DUI;
-        } else if (fanResult.isDuiDuiHu(userPaiInfo)) {
+        } else if (fanResult.isQingXing(userPaiInfo)) {
+            baseFanType = BaseFanType.QI_XING;
+        }else if (fanResult.isShiSanYao(userPaiInfo)) {
+            baseFanType = BaseFanType.SHI_SAN_YAO;
+        }else if (fanResult.isDuiDuiHu(userPaiInfo)) {
             baseFanType = BaseFanType.DUI_DUI_HU;
         } else if (userPaiInfo.isZiMo()) {
             baseFanType = BaseFanType.ZI_MO;

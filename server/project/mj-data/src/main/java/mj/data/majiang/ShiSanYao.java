@@ -253,8 +253,6 @@ public class ShiSanYao {
                 {Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_XI, Pai.FENG_BEI, Pai.SANYUAN_ZHONG, Pai.SANYUAN_FA, Pai.SANYUAN_BEI},
         };
 
-        Map map = new HashMap<Long, String>();
-
         for (int w = 0; w < w_array.length; w++) {
             for (int t = 0; t < t_array.length; t++) {
                 for (int b = 0; b < b_array.length; b++) {
@@ -267,18 +265,9 @@ public class ShiSanYao {
                         if (w_item.length + b_item.length + t_item.length + d_item.length == 14) {
                             Pai[] result = concatAll(w_item, b_item, t_item, d_item);
                             List<Integer> list = Arrays.stream(result).map(item -> item.getIndex()).collect(Collectors.toList());
-//                            for (int i = 0; i < list.size(); i++) {
-//                                System.out.print(GameHelper.getName(list.get(i)) + ",");
-//                            }
+
                             long code = calcCode(list);
                             treeSet.add(code);
-//                            System.out.print("0x" + Long.toHexString(code).toUpperCase());
-//                            System.out.print(",");
-//                            if (map.containsKey(code)) {
-//                                System.out.println("存在");
-//                            } else {
-//                                map.put(code, "code_" + code);
-//                            }
                         }
 
                     }
@@ -287,20 +276,6 @@ public class ShiSanYao {
 
         }
 
-
-//        for (int j = 0; j < 10000; j++) {
-//            Integer[] random = randomCommon(Pai.TONG_1.getIndex(), Pai.SANYUAN_BEI.getIndex(), 14);
-//            List<Integer> list = Arrays.asList(random);
-//
-//            long code = calcCode(list);
-//
-//            if (treeSet.contains(code)) {
-//                for (int i = 0; i < list.size(); i++) {
-//                    System.out.print(Pai.fromIndex(list.get(i)).getName());
-//                }
-//                System.out.println("糊了");
-//            }
-//        }
     }
 
     private static <T> T[] concatAll(T[] first, T[]... rest) {
@@ -317,32 +292,6 @@ public class ShiSanYao {
         Arrays.sort(result);
         return result;
     }
-//
-//    public static Integer[] randomCommon(int min, int max, int n) {
-//        if (n > (max - min + 1) || max < min) {
-//            return null;
-//        }
-//        Integer[] result = new Integer[n];
-//        Arrays.fill(result, 0);
-//        int count = 0;
-//        while (count < n) {
-//            int num = (int) (Math.random() * (max - min)) + min;
-//            boolean flag = true;
-//            for (int j = 0; j < n; j++) {
-//                if (num == result[j]) {
-//                    flag = false;
-//                    break;
-//                }
-//            }
-//            if (flag) {
-//                result[count] = num;
-//                count++;
-//            }
-//        }
-//        Arrays.sort(result);
-//        return result;
-//    }
-
     private static long calcCode(List<Integer> pai) {
         StringBuilder builder = new StringBuilder();
         builder.append(pai.get(0) + 1);

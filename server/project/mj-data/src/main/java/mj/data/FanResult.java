@@ -1,7 +1,11 @@
 package mj.data;
 
+import mj.data.majiang.ShiSanYao;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 算翻结果
@@ -42,7 +46,6 @@ public class FanResult {
     }
 
 
-
     public String getFanString() {
         return fanString;
     }
@@ -68,7 +71,31 @@ public class FanResult {
         return !hasSunZi() && !userPaiInfo.hasChi();
     }
 
+    public boolean isQingXing(UserPaiInfo userPaiInfo) {
+        if (isShiSanYao(userPaiInfo)) {
+            ArrayList<Pai> shouPaiList = userPaiInfo.getShouPai();
+            Map<Integer, Pai> shouPaiMap = shouPaiList.stream().collect(
+                    Collectors.toMap(Pai::getIndex, v -> v)
+            );
+            return (shouPaiMap.containsKey(Pai.FENG_DONG.getIndex())
+                    && shouPaiMap.containsKey(Pai.FENG_XI.getIndex())
+                    && shouPaiMap.containsKey(Pai.FENG_NAN.getIndex())
+                    && shouPaiMap.containsKey(Pai.FENG_BEI.getIndex())
+                    && shouPaiMap.containsKey(Pai.SANYUAN_ZHONG.getIndex())
+                    && shouPaiMap.containsKey(Pai.SANYUAN_FA.getIndex())
+                    && shouPaiMap.containsKey(Pai.SANYUAN_BEI.getIndex()));
+        }
+        return false;
+    }
+
+    public boolean isShiSanYao(UserPaiInfo userPaiInfo) {
+        return ShiSanYao.check(userPaiInfo.getShouPai());
+    }
+
     private boolean hasSunZi() {
+        if (this.shunZi == null) {
+            return false;
+        }
         return this.shunZi.length > 0;
     }
 
