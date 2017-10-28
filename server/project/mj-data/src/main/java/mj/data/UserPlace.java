@@ -177,7 +177,7 @@ public class UserPlace {
      * 碰了的牌，自己在摸到一张，那么可以杠，叫小明杠
      */
     public void xiaoMingGang(Pai pai) {
-        if (!peng.remove(pai)) {
+        if (!xiaoMingGang.remove(pai)) {
             throw new RuntimeException("删除牌失败！" + this + ",PAI:" + pai);
         }
         removeShouPai(pai);
@@ -201,7 +201,7 @@ public class UserPlace {
      * 碰了的牌，自己在摸到一张，那么可以杠，叫小明杠
      */
     public int[] checkXiaoMingGang(Pai pai) {
-        return peng.stream().filter(shouPaiMap::containsKey).mapToInt(Pai::getIndex).toArray();
+        return xiaoMingGang.stream().filter(shouPaiMap::containsKey).mapToInt(Pai::getIndex).toArray();
     }
 
     public int getLocationIndex() {
