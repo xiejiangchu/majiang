@@ -379,7 +379,7 @@ public class UserPlace {
      * @return
      */
     public boolean isShiSanYao(Pai pai) {
-        if (shouPaiMap.size() == 14) {
+        if (shouPaiMap.size() == 13) {
             List<Pai> all = Stream.concat(shouPai.values().stream(), Stream.of(pai)).collect(Collectors.toList());
             return ShiSanYao.check(all);
         }
