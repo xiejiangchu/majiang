@@ -41,13 +41,11 @@ public class YiChunPingHu {
             {3, 3, 0},
             {3, 0, 0},
             {2, 2, 2},
-            {1, 1, 1},
-            {0, 0, 0}
+            {1, 1, 1}
     };
 
     public static void main(String args[]) {
-        Pai[] in = {Pai.FENG_DONG, Pai.FENG_DONG, Pai.FENG_DONG, Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_NAN,
-                Pai.FENG_NAN, Pai.FENG_XI, Pai.FENG_XI, Pai.FENG_XI, Pai.FENG_BEI, Pai.FENG_BEI, Pai.SANYUAN_ZHONG, Pai.SANYUAN_ZHONG};
+        Pai[] in = {Pai.FENG_DONG, Pai.FENG_DONG, Pai.FENG_NAN, Pai.FENG_XI, Pai.FENG_BEI};
 
         for (int i = 0; i < in.length; i++) {
             System.out.print(in[i].getName());
@@ -159,7 +157,12 @@ public class YiChunPingHu {
         int[] selected_FENG = new int[4];
 
         for (int i = 0; i < TRIM_FENG.length; i++) {
-            if (sortedList_FENG.get(0).getCount() >= TRIM_FENG[i][0]) {
+            if (sortedList_FENG.get(0).getCount() == 2
+                    && sortedList_FENG.get(1).getCount() == 1
+                    && sortedList_FENG.get(2).getCount() == 1
+                    && sortedList_FENG.get(3).getCount() == 1) {
+                selected_FENG = new int[]{0, 1, 1, 1};
+            } else if (sortedList_FENG.get(0).getCount() >= TRIM_FENG[i][0]) {
                 if (sortedList_FENG.get(1).getCount() >= TRIM_FENG[i][1]) {
                     if (sortedList_FENG.get(2).getCount() >= TRIM_FENG[i][2]) {
                         if (sortedList_FENG.get(3).getCount() >= TRIM_FENG[i][3]) {
