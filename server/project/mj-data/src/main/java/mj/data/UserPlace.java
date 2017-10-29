@@ -267,7 +267,7 @@ public class UserPlace {
             } else if (pai.equals(Pai.FENG_NAN)) {
 
                 if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_XI)) {
-                    result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_NAN, Pai.FENG_XI});
+                    result.add(new Pai[]{Pai.FENG_NAN, Pai.FENG_DONG, Pai.FENG_XI});
                 }
 
                 if (shouPaiMap.containsKey(Pai.FENG_DONG) && shouPaiMap.containsKey(Pai.FENG_BEI)) {
