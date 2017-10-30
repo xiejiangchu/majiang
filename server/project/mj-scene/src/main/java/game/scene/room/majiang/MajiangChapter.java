@@ -100,7 +100,7 @@ public class MajiangChapter {
         }
     }
 
-    public void start() {
+    public void start(int index) {
         this.rules.rest();
         gameChapterEnd = null;
         isStart = true;
@@ -114,7 +114,7 @@ public class MajiangChapter {
 
         huiEr = paiPool.getHuiEr();
         //发牌完毕！
-        changeCurrentIndex(0);
+        changeCurrentIndex(index);
     }
 
     public void startNext() {
@@ -670,5 +670,13 @@ public class MajiangChapter {
                 ", huiEr=" + huiEr +
                 ", rules=" + rules +
                 '}';
+    }
+
+    public GameChapterEnd getGameChapterEnd() {
+        return gameChapterEnd;
+    }
+
+    public void setGameChapterEnd(GameChapterEnd gameChapterEnd) {
+        this.gameChapterEnd = gameChapterEnd;
     }
 }

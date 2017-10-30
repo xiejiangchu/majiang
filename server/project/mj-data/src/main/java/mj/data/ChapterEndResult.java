@@ -56,7 +56,6 @@ public class ChapterEndResult {
 //    }
 
 
-
     public void excuteScore(int score) {
         for (int i = 0; i < userPaiInfos.length; i++) {
             userPaiInfos[i].setFan(score);

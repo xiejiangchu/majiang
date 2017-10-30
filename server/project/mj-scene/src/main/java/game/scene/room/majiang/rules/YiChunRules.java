@@ -17,7 +17,12 @@ public class YiChunRules extends Rules {
 
     private static Map<JiaFanType, FanInfo> initJiaFanMap() {
         Map<JiaFanType, FanInfo> map = new HashMap<>();
-        map.put(JiaFanType.WU_HUN_ER, new FanInfo("无鬼", 1));
+        map.put(JiaFanType.HAIDI_LAO_YUE, new FanInfo("海底捞月", 1));
+        map.put(JiaFanType.GANG_SHANG_HUA, new FanInfo("杠上开花", 1));
+        map.put(JiaFanType.QIN_YI_SE, new FanInfo("清一色", 8));
+        map.put(JiaFanType.HUN_YI_SE, new FanInfo("混一色", 1));
+        map.put(JiaFanType.MEN_QING, new FanInfo("门清", 1));
+        map.put(JiaFanType.ZHI_YI_SHE, new FanInfo("字一色", 8));
         return map;
     }
 
@@ -25,6 +30,9 @@ public class YiChunRules extends Rules {
         Map<BaseFanType, FanInfo> map = new HashMap<>(BaseFanType.baseFanMap);
         map.replace(BaseFanType.HUI_ER_GANG, new FanInfo("自摸", 1));
         map.replace(BaseFanType.ZI_MO, new FanInfo("自摸", 1));
+        map.replace(BaseFanType.JI_HU, new FanInfo("平胡", 1));
+        map.replace(BaseFanType.SHI_SAN_YAO, new FanInfo("十三幺", 2));
+        map.replace(BaseFanType.QI_XING, new FanInfo("七星", 2));
         map.replace(BaseFanType.JI_HU, new FanInfo("", 1));
         map.replace(BaseFanType.DUI_DUI_HU, new FanInfo("对对胡", 3));
         map.replace(BaseFanType.QI_DUI, new FanInfo("七对子", 4));

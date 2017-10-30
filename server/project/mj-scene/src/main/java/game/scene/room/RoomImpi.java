@@ -111,7 +111,7 @@ public class RoomImpi extends Room {
 //            if (roomInfo.isChapterStart()) {
 //                callback.accept(false);
 //            } else {
-                callback.accept(true);
+            callback.accept(true);
 //            }
         });
     }
@@ -160,7 +160,11 @@ public class RoomImpi extends Room {
                 if (!roomInfo.isChapterStart()) {
                     roomInfo.setStart(true);
                     MajiangChapter chapter = roomInfo.getChapter();
-                    chapter.start();
+                    if (roomInfo.getChapter().getGameChapterEnd() != null) {
+                        chapter.start(roomInfo.getChapter().getGameChapterEnd().getHuPaiIndex());
+                    } else {
+                        chapter.start(0);
+                    }
                     roomInfo.setChapterStart(true);
 
                     for (SceneUser u : roomInfo.getUsers()) {
@@ -217,22 +221,23 @@ public class RoomImpi extends Room {
 
         SceneUser[] users = roomInfo.getUsers();
         boolean isDirectDel = true;
-        for (SceneUser u :users) {
-            if(u!=null && u.getUserId()!= user.getUserId() && u.isOnline()){
+        for (SceneUser u : users) {
+            if (u != null && u.getUserId() != user.getUserId() && u.isOnline()) {
                 isDirectDel = false;
                 break;
             }
         }
-        if(isDirectDel){
+        if (isDirectDel) {
             RoomEndMsg m = new RoomEndMsg();
             m.setCrateUserId(getRoomInfo().getCreateUserId());
             m.setRoomId(getRoomInfo().getRoomId());
             bossClient.writeAndFlush(m);
-        }else{
+        } else {
             voteDelInfo.put(user.getUserId(), 0);
             sendMessage(new VoteDelSelect(user.getUserId(), user.getUserName()), user);
         }
     }
+
     @Override
     public void voteDelSelect(VoteDelSelectRet msg, SceneUser user) {
         checkThread();

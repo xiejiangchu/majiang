@@ -4,7 +4,10 @@ import mj.data.majiang.AgariUtils;
 import mj.net.message.game.GameFanResult;
 import org.apache.commons.lang.ArrayUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +66,7 @@ public class UserPaiInfo {
     @SuppressWarnings("unchecked")
     public UserPaiInfo(ArrayList<Pai> allPai, Pai[] huiErPai, UserPlace userPlace, boolean isHuPai, boolean isZhuang, boolean isZiMo) {
         shouPai = (ArrayList<Pai>) userPlace.getShouPai().clone();
+        Collections.sort(shouPai);
 
         anGang = userPlace.getAnGang().stream().map(Map.Entry::getValue)
                 .collect(Collectors.toCollection(ArrayList::new));
