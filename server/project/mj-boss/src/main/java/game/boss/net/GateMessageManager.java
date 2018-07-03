@@ -24,8 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * @author zuoge85@gmail.com on 16/9/27.
  */
-public class MessageManager {
-    private static final Logger log = LoggerFactory.getLogger(MessageManager.class);
+public class GateMessageManager {
+    private static final Logger log = LoggerFactory.getLogger(GateMessageManager.class);
 
     @Autowired
     private MessageFactory messageFactory;

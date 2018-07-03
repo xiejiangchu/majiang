@@ -16,7 +16,7 @@ public class GatewayListenHandler implements PxMsgHandler<Gateway> {
     private final MessageFactoryImpi messageFactory = MessageFactoryImpi.getInstance();
     // private final int gatewayUserMaxConnect;
 
-    private MessageManager messageManager;
+    private GateMessageManager gateMessageManager;
     @Autowired
     private GatewayManager gatewayManager;
 
@@ -54,10 +54,10 @@ public class GatewayListenHandler implements PxMsgHandler<Gateway> {
 
     @Override
     public void onMessage(PxMsg msg) throws Exception {
-        messageManager.handlerGatewayMessage(msg);
+        gateMessageManager.handlerGatewayMessage(msg);
     }
 
-    public void setMessageManager(MessageManager messageManager) {
-        this.messageManager = messageManager;
+    public void setGateMessageManager(GateMessageManager gateMessageManager) {
+        this.gateMessageManager = gateMessageManager;
     }
 }

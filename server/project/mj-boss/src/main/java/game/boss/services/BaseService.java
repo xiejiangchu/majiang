@@ -7,7 +7,7 @@ public interface BaseService {
     /**
      * 执行时间变成1毫秒间隔
      */
-    int FRAME_TIME_SPAN = 8;
+    int  FRAME_TIME_SPAN = 8;
     int RUN_QUEUE_MAX = 1024;
     int CHECK_ROOM_ID_LEN = 6;
 

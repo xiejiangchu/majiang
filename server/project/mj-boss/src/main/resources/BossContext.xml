@@ -66,8 +66,8 @@
         <property name="port" value="${net.gatewayListenServerPort}"/>
         <property name="messageHandler">
             <bean class="game.boss.net.GatewayListenHandler">
-                <property name="messageManager">
-                    <bean class="game.boss.net.MessageManager"/>
+                <property name="gateMessageManager">
+                    <bean class="game.boss.net.GateMessageManager"/>
                 </property>
             </bean>
         </property>
@@ -78,7 +78,7 @@
         <property name="port" value="${net.sceneListenServerPort}"/>
         <property name="messageHandler">
             <bean class="game.boss.net.SceneListenHandler">
-                <property name="messageManager">
+                <property name="sceneMessageManager">
                     <bean class="game.boss.net.SceneMessageManager"/>
                 </property>
             </bean>
@@ -92,7 +92,7 @@
         <property name="port" value="${net.adminListenServerPort}"/>
         <property name="messageHandler">
             <bean class="game.boss.admin.AdminListenHandler">
-                <property name="messageManager">
+                <property name="adminMessageManager">
                     <bean class="game.boss.admin.AdminMessageManager"/>
                 </property>
             </bean>

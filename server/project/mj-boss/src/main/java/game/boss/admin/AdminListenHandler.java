@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AdminListenHandler implements PxMsgHandler<Admin> {
     private static final Logger log = LoggerFactory.getLogger(AdminListenHandler.class);
 
-    private AdminMessageManager messageManager;
+    private AdminMessageManager adminMessageManager;
     @Autowired
     private AdminManager AdminManager;
 
@@ -51,10 +51,15 @@ public class AdminListenHandler implements PxMsgHandler<Admin> {
 
     @Override
     public void onMessage(PxMsg msg) throws Exception {
-        messageManager.handler(msg);
+        adminMessageManager.handler(msg);
     }
 
-    public void setMessageManager(AdminMessageManager messageManager) {
-        this.messageManager = messageManager;
+
+    public AdminMessageManager getAdminMessageManager() {
+        return adminMessageManager;
+    }
+
+    public void setAdminMessageManager(AdminMessageManager adminMessageManager) {
+        this.adminMessageManager = adminMessageManager;
     }
 }

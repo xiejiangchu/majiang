@@ -28,7 +28,7 @@ final class AdminManager implements ApplicationContextAware {
     private ConcurrentHashMap<ChannelId, Admin> adminMap = new ConcurrentHashMap<>();
     private ApplicationContext applicationContext;
 
-    Admin reg(Channel channel) throws ServerException {
+    public Admin reg(Channel channel) throws ServerException {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -46,7 +46,7 @@ final class AdminManager implements ApplicationContextAware {
         }
     }
 
-    void unreg(Admin admin) {
+    public void unreg(Admin admin) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {

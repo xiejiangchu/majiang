@@ -15,7 +15,7 @@ public class SceneHandler implements PxMsgHandler<Gateway> {
 
     private final MessageFactoryImpi messageFactory = MessageFactoryImpi.getInstance();
 
-    private GatewayMessageManager messageManager;
+    private GatewayMessageManager gatewayMessageManager;
     @Autowired
     private GatewayManager gatewayManager;
 
@@ -53,10 +53,14 @@ public class SceneHandler implements PxMsgHandler<Gateway> {
 
     @Override
     public void onMessage(PxMsg msg) throws Exception {
-        messageManager.handler(msg);
+        gatewayMessageManager.handler(msg);
     }
 
-    public void setMessageManager(GatewayMessageManager messageManager) {
-        this.messageManager = messageManager;
+    public GatewayMessageManager getGatewayMessageManager() {
+        return gatewayMessageManager;
+    }
+
+    public void setGatewayMessageManager(GatewayMessageManager gatewayMessageManager) {
+        this.gatewayMessageManager = gatewayMessageManager;
     }
 }

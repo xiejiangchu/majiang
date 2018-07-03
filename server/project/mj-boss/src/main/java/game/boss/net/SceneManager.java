@@ -30,7 +30,7 @@ final class SceneManager implements ApplicationContextAware {
     private ConcurrentArrayList<Scene> sceneList = new ConcurrentArrayList<>();
     private ApplicationContext applicationContext;
 
-    Scene reg(Channel channel, int sceneId, String sceneAddress, int scenePort) throws ServerException {
+    public Scene reg(Channel channel, int sceneId, String sceneAddress, int scenePort) throws ServerException {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -57,7 +57,7 @@ final class SceneManager implements ApplicationContextAware {
         }
     }
 
-    void unreg(Scene scene) {
+    public void unreg(Scene scene) {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {

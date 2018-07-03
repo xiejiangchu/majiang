@@ -23,11 +23,11 @@ public class SceneMessageManager {
     @Autowired
     private UserService userService;
 
-    void handler(PxMsg msg) {
+    public void handler(PxMsg msg) {
         short sessionId = -1;
         try {
-            switch (msg.getType()){
-                case RegSceneMsg.ID:{
+            switch (msg.getType()) {
+                case RegSceneMsg.ID: {
                     RegSceneMsg regSceneMsg = (RegSceneMsg) msg;
                     log.info("注册Scene", regSceneMsg);
                     Scene scene = sceneManager.reg(
@@ -39,32 +39,32 @@ public class SceneMessageManager {
                     }
                     break;
                 }
-                case CheckJoinRoomRetMsg.ID:{
+                case CheckJoinRoomRetMsg.ID: {
                     CheckJoinRoomRetMsg checkJoinRoomRetMsg = (CheckJoinRoomRetMsg) msg;
                     roomService.joinRoomSceneSuccess(checkJoinRoomRetMsg.getJoinUserId(), checkJoinRoomRetMsg.isSucccess());
                     break;
                 }
-                case CheckExitRoomMsg.ID:{
+                case CheckExitRoomMsg.ID: {
                     CheckExitRoomMsg checkExitRoomMsg = (CheckExitRoomMsg) msg;
                     roomService.exitRoomSceneSuccess(checkExitRoomMsg.getUserId(), checkExitRoomMsg.getSceneId(), checkExitRoomMsg.isResult());
                     break;
                 }
-                case CheckDelRoomMsg.ID:{
+                case CheckDelRoomMsg.ID: {
                     CheckDelRoomMsg checkDelRoomMsg = (CheckDelRoomMsg) msg;
                     roomService.delRoomSceneSuccess(checkDelRoomMsg);
                     break;
                 }
-                case ChapterEndMsg.ID:{
+                case ChapterEndMsg.ID: {
                     ChapterEndMsg chapterEndMsg = (ChapterEndMsg) msg;
                     roomService.chapterEnd(chapterEndMsg);
                     break;
                 }
-                case RoomEndMsg.ID:{
+                case RoomEndMsg.ID: {
                     RoomEndMsg endMsg = (RoomEndMsg) msg;
                     roomService.delRoom(endMsg.getCrateUserId(), null, true);
                     break;
                 }
-                case ChapterStartMsg.ID:{
+                case ChapterStartMsg.ID: {
                     ChapterStartMsg startMsg = (ChapterStartMsg) msg;
                     roomService.chapterStart(startMsg);
                     break;

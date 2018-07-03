@@ -69,7 +69,7 @@
         <property name="port" value="${port}"/>
         <property name="messageHandler">
             <bean class="game.scene.net.SceneHandler">
-                <property name="messageManager">
+                <property name="gatewayMessageManager">
                     <bean class="game.scene.net.GatewayMessageManager"/>
                 </property>
             </bean>

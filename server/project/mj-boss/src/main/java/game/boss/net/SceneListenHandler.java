@@ -15,7 +15,7 @@ public class SceneListenHandler implements PxMsgHandler<Scene> {
 
     private final MessageFactoryImpi messageFactory = MessageFactoryImpi.getInstance();
 
-    private SceneMessageManager messageManager;
+    private SceneMessageManager sceneMessageManager;
     @Autowired
     private SceneManager sceneManager;
 
@@ -53,10 +53,14 @@ public class SceneListenHandler implements PxMsgHandler<Scene> {
 
     @Override
     public void onMessage(PxMsg msg) throws Exception {
-        messageManager.handler(msg);
+        sceneMessageManager.handler(msg);
     }
 
-    public void setMessageManager(SceneMessageManager messageManager) {
-        this.messageManager = messageManager;
+    public SceneMessageManager getSceneMessageManager() {
+        return sceneMessageManager;
+    }
+
+    public void setSceneMessageManager(SceneMessageManager sceneMessageManager) {
+        this.sceneMessageManager = sceneMessageManager;
     }
 }
