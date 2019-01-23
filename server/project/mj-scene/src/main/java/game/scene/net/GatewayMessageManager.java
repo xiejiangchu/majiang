@@ -32,12 +32,12 @@ public class GatewayMessageManager {
     @Autowired
     private RoomService roomService;
 
-    void handler(PxMsg msg) {
+    public void handler(PxMsg msg) {
         short sessionId = -1;
         try {
             if (msg instanceof RegGatewayMsg) {
                 RegGatewayMsg regGatewayMsg = (RegGatewayMsg) msg;
-                log.info("注册网关", regGatewayMsg);
+                log.info("注册网关{}", regGatewayMsg);
                 Gateway gateway = gatewayManager.reg(msg.getSession().channel, regGatewayMsg.getGatewayId());
                 if (gateway != null) {
                     msg.getSession().set(gateway);
@@ -83,10 +83,7 @@ public class GatewayMessageManager {
     @SuppressWarnings("unchecked")
     private void handlerMessage(Message message, short sessionId, Gateway gateway) {
         log.info("收到消息:{}", message);
-        MessageHandler handler = messageHandlerFactory.getHandler(
-                message.getMessageType(), message.getMessageId()
-        );
-
+        MessageHandler handler = messageHandlerFactory.getHandler(message.getMessageType(), message.getMessageId());
         if (handler != null) {
             roomService.handler(handler, message, sessionId, (short) gateway.getId());
         } else {

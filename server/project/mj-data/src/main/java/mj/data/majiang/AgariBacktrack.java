@@ -4,15 +4,9 @@ package mj.data.majiang;
  * http://hp.vector.co.jp/authors/VA046927/mjscore/AgariBacktrack.java
  */
 
-import mj.data.FanResult;
-import mj.data.Pai;
-import org.apache.commons.collections.CollectionUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.IntStream;
 
 class AgariBacktrack {
     static final int MAN = 0;

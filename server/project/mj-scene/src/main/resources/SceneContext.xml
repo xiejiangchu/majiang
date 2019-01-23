@@ -67,7 +67,7 @@
     <bean id="sceneServer" class="game.scene.net.SceneServer"
           destroy-method="close">
         <property name="port" value="${port}"/>
-        <property name="messageHandler">
+        <property name="sceneHandler">
             <bean class="game.scene.net.SceneHandler">
                 <property name="gatewayMessageManager">
                     <bean class="game.scene.net.GatewayMessageManager"/>

@@ -9,6 +9,7 @@ public class SceneMain {
 
     public static final void main(String... args) {
         try {
+
             File dir = new File("lib");
             URLClassLoader cl = (URLClassLoader) ClassLoader.getSystemClassLoader();
             if (dir.exists()) {

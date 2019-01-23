@@ -5,15 +5,12 @@ import com.isnowfox.game.proxy.PxMsgHandler;
 import com.isnowfox.game.proxy.message.PxMsg;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import mj.net.message.MessageFactoryImpi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SceneHandler implements PxMsgHandler<Gateway> {
     private static final Logger log = LoggerFactory.getLogger(SceneHandler.class);
-
-    private final MessageFactoryImpi messageFactory = MessageFactoryImpi.getInstance();
 
     private GatewayMessageManager gatewayMessageManager;
     @Autowired
@@ -54,10 +51,6 @@ public class SceneHandler implements PxMsgHandler<Gateway> {
     @Override
     public void onMessage(PxMsg msg) throws Exception {
         gatewayMessageManager.handler(msg);
-    }
-
-    public GatewayMessageManager getGatewayMessageManager() {
-        return gatewayMessageManager;
     }
 
     public void setGatewayMessageManager(GatewayMessageManager gatewayMessageManager) {

@@ -52,8 +52,8 @@ public abstract class Room {
     @SuppressWarnings("unchecked")
     public void handler(MessageHandler handler, Message message, SceneUser sceneUser) {
         run(() -> {
-            SceneUser prevSceneUser = roomInfo.getUserInfo(sceneUser.getLocationIndex());
-            if (prevSceneUser != sceneUser && prevSceneUser.getUserId() != sceneUser.getUserId()) {
+            SceneUser localSceneUser = roomInfo.getUserInfo(sceneUser.getLocationIndex());
+            if (localSceneUser != sceneUser && localSceneUser.getUserId() != sceneUser.getUserId()) {
                 throw new RuntimeException(String.format("检查房间内玩家信息,发现冲突 %s", sceneUser));
             }
             handler.handler(message, sceneUser);

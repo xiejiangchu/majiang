@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * @author zuoge85@gmail.com on 16/10/18.
  */
-public class RoomImpi extends Room {
+public class RoomImpl extends Room {
     private long prevTime = 0;
     private long startTime = 0;
 
@@ -30,7 +30,7 @@ public class RoomImpi extends Room {
     private BossClient bossClient;
 
 
-    public RoomImpi(RoomAsyncService roomAsyncService, Config config) {
+    public RoomImpl(RoomAsyncService roomAsyncService, Config config) {
         super(roomAsyncService);
         this.config = config;
     }

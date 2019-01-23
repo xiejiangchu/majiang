@@ -40,22 +40,22 @@ public class SessionService {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
-            int id;
+            int sessionId;
             if (idPool.size() > freeWaitNums) {
-                id = idPool.pollFirst();
+                sessionId = idPool.pollFirst();
             } else {
                 if (max >= maxConnect) {
-                    throw new GatewayException("pool id too big:" + max + ", max:" + maxConnect);
+                    throw new GatewayException("pool sessionId too big:" + max + ", max:" + maxConnect);
                 }
-                id = max;
+                sessionId = max;
                 max++;
             }
-            User user = new User((short) id, ctx.channel());
+            User user = new User((short) sessionId, ctx.channel());
             Session<User> session = new Session<>(ctx.channel());
             session.set(user);
 
-            userArray[id] = user;
-            log.info("注册Session:{}", id);
+            userArray[sessionId] = user;
+            log.info("注册Session:{}", sessionId);
             return session;
         } finally {
             lock.unlock();

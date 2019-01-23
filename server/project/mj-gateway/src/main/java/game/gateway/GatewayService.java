@@ -44,7 +44,7 @@ public class GatewayService {
 
     private boolean isWebSocket = true;
 
-    private ConcurrentHashMap<Short, SceneInfo> map = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Short, SceneInfo> sceneMap = new ConcurrentHashMap<>();
 
     private void broadcastToAll(Packet msg) {
         int m = sessionService.getMax();
@@ -93,11 +93,11 @@ public class GatewayService {
         if (type == Login.TYPE) {
             bossClient.writeAndFlush(sm);
         } else {
-            SceneInfo sceneInfo = map.get(u.getId());
+            SceneInfo sceneInfo = sceneMap.get(u.getId());
             if (sceneInfo != null) {
                 sceneClientManager.forwardMessage(sm, sceneInfo);
             } else {
-                throw new RuntimeException("未分配场景");
+                throw new RuntimeException("未分配场景:" + u.getId());
             }
         }
     }
@@ -173,7 +173,7 @@ public class GatewayService {
                 sceneInfo.setSessionId(sm.getSessionId());
                 sceneInfo.setSceneId(sm.getSceneId());
 
-                map.put(sm.getSessionId(), sceneInfo);
+                sceneMap.put(sm.getSessionId(), sceneInfo);
                 sceneClientManager.checkConnect(sm.getSceneId(), sm.getSceneAddress(), sm.getScenePort(), () -> {
                     toBoss(sm);
                 });
@@ -182,14 +182,14 @@ public class GatewayService {
             case ExitRoomMsg.ID: {
                 //开始处理玩家进入游戏的情况
                 ExitRoomMsg sm = (ExitRoomMsg) msg;
-                map.remove(sm.getSessionId());
+                sceneMap.remove(sm.getSessionId());
                 toBoss(sm);
                 break;
             }
             case DelRoomMsg.ID: {
                 //开始处理玩家进入游戏的情况
                 DelRoomMsg sm = (DelRoomMsg) msg;
-                map.remove(sm.getSessionId());
+                sceneMap.remove(sm.getSessionId());
                 toBoss(sm);
                 break;
             }

@@ -26,7 +26,7 @@ public class SceneUser {
     private int gold;
     private int score;
 
-    private RoomImpi room;
+    private RoomImpl room;
     /**
      * 在同一个圈内,胡牌次数!
      */
@@ -130,11 +130,11 @@ public class SceneUser {
         return gatewayId;
     }
 
-    public RoomImpi getRoom() {
+    public RoomImpl getRoom() {
         return room;
     }
 
-    public void setRoom(RoomImpi room) {
+    public void setRoom(RoomImpl room) {
         this.room = room;
     }
 

@@ -36,7 +36,7 @@ final class GatewayManager implements ApplicationContextAware {
                 Gateway gateway = gatewayMap.get(gatewayId);
                 clear(gateway);
                 gateway.close();
-                log.info("重复的网管,立即关闭", channel);
+                log.info("重复的网关,立即关闭", channel);
             }
             log.info("网关注册成功:{}", channel);
             Gateway gateway = new Gateway(gatewayUserMaxConnect);

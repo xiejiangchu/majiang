@@ -15,11 +15,11 @@ public class SceneServer {
 
     private int port;
 
-    private SceneHandler messageHandler;
+    private SceneHandler sceneHandler;
     private PxServer pxServer;
 
     public void start() throws Exception {
-        pxServer = PxServer.create(new BossPxMsgFactory(), port, messageHandler, BOSS_THREAD_NUMS, WORKER_THREAD_NUMS);
+        pxServer = PxServer.create(new BossPxMsgFactory(), port, sceneHandler, BOSS_THREAD_NUMS, WORKER_THREAD_NUMS);
         pxServer.start();
     }
 
@@ -31,7 +31,7 @@ public class SceneServer {
         this.port = port;
     }
 
-    public void setMessageHandler(SceneHandler messageHandler) {
-        this.messageHandler = messageHandler;
+    public void setSceneHandler(SceneHandler sceneHandler) {
+        this.sceneHandler = sceneHandler;
     }
 }

@@ -38,7 +38,7 @@ public class RoomService extends FrameQueueContainer implements ApplicationConte
 
     private RoomAsyncService roomAsyncService;
     private ApplicationContext applicationContext;
-    private HashMap<Integer, RoomImpi> map = new HashMap<>();
+    private HashMap<Integer, RoomImpl> map = new HashMap<>();
     private HashMap<Integer, SceneUser> sceneUserMap = new HashMap<>();
     /**
      * 通过id 映射到map
@@ -68,7 +68,7 @@ public class RoomService extends FrameQueueContainer implements ApplicationConte
 
     public void checkOfflineRoom(CheckOfflineRoomMsg msg) {
         run(() -> {
-            RoomImpi room = map.get(msg.getRoomId());
+            RoomImpl room = map.get(msg.getRoomId());
             if (room == null) {
                 log.info("房间已经不存在了");
                 return;
@@ -80,10 +80,10 @@ public class RoomService extends FrameQueueContainer implements ApplicationConte
     public void checkJoinRoom(CheckJoinRoomMsg msg) {
         //创建房间
         run(() -> {
-            RoomImpi room = map.get(msg.getRoomId());
+            RoomImpl room = map.get(msg.getRoomId());
             if (room == null) {
                 Config config = new Config(msg.getOptions());
-                room = new RoomImpi(roomAsyncService, config);
+                room = new RoomImpl(roomAsyncService, config);
 
                 RoomInfo roomInfo = new RoomInfo(room, rulesName);
                 BeanUtils.copyProperties(msg, roomInfo);
@@ -153,7 +153,7 @@ public class RoomService extends FrameQueueContainer implements ApplicationConte
 
     public void checkExitRoom(CheckExitRoomMsg msg) {
         run(() -> {
-            RoomImpi room = map.get(msg.getRoomId());
+            RoomImpl room = map.get(msg.getRoomId());
             if (room == null) {
                 return;
             }
@@ -174,7 +174,7 @@ public class RoomService extends FrameQueueContainer implements ApplicationConte
 
     public void checkDelRoom(CheckDelRoomMsg msg) {
         run(() -> {
-            RoomImpi room = map.get(msg.getRoomId());
+            RoomImpl room = map.get(msg.getRoomId());
             if (room == null) {
                 return;
             }
@@ -223,7 +223,7 @@ public class RoomService extends FrameQueueContainer implements ApplicationConte
             SceneUser sceneUser = gatewayIdUnionSessionIdUserMap.get(gatewayIdUnionSessionId);
             if (sceneUser == null) {
                 throw new RuntimeException(String.format(
-                        "玩家未进入房间?,消息不能执行! Room:%s, Message:%s,sessionId:%s,gatewayId:%s",
+                        "玩家尚未进入房间?,消息不能执行! Room:%s, Message:%s,sessionId:%s,gatewayId:%s",
                         room, message, sessionId, gatewayId
                 ));
             }
