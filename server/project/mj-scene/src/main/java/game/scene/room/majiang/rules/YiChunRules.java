@@ -33,7 +33,6 @@ public class YiChunRules extends Rules {
         map.replace(BaseFanType.JI_HU, new FanInfo("平胡", 1));
         map.replace(BaseFanType.SHI_SAN_YAO, new FanInfo("十三幺", 2));
         map.replace(BaseFanType.QI_XING, new FanInfo("七星", 2));
-        map.replace(BaseFanType.JI_HU, new FanInfo("", 1));
         map.replace(BaseFanType.DUI_DUI_HU, new FanInfo("对对胡", 3));
         map.replace(BaseFanType.QI_DUI, new FanInfo("七对子", 4));
         map.replace(BaseFanType.TIAN_HU, new FanInfo("天胡", 8));

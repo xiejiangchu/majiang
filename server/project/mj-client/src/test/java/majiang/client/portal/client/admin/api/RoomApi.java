@@ -95,7 +95,7 @@ public class RoomApi {
 	 * @see int
 
 	 */
-	public Future<?> list(int page, int pageSize, Callback<PageModel<RoomModel>> callable) {
+	public Future<?> list(int page, int pageSize, Callback<Result,PageModel<RoomModel>> callable) {
 		Map<String, Object> _uriVariables = new HashMap<>();
 		_uriVariables.put("page", page);
 		_uriVariables.put("pageSize", pageSize);

@@ -1,12 +1,16 @@
 package majiang.client;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
-/**
- * @author zuoge85@gmail.com on 2017/1/7.
- */
+
+@EnableAutoConfiguration
+@ComponentScan(basePackages = {"majiang.client.controller"})
+@Configuration
 public class StartWarp {
     public static void start(String[] args) throws Exception {
-        SpringApplication.run(MainConfig.class, args);
+        SpringApplication.run(StartWarp.class, args);
     }
 }

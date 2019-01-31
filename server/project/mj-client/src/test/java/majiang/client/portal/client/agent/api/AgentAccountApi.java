@@ -1,17 +1,9 @@
 package majiang.client.portal.client.agent.api;
 
-import majiang.client.portal.AdminAccount;
-import majiang.client.portal.AgentAccount;
-import majiang.client.portal.admin.model.LoginTokenModel;
+import majiang.client.controller.admin.model.LoginTokenModel;
 import majiang.client.portal.client.agent.form.AgentLoginForm;
-import majiang.client.services.AdminAccountService;
-import majiang.client.services.AgentUserAccountService;
 import org.forkjoin.apikit.core.Result;
-import org.forkjoin.apikit.spring.I18nValidationException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.*;
@@ -96,7 +88,7 @@ public class AgentAccountApi {
 	 * @see HttpServletRequest
 
 	 */
-	public Future<?> login(AgentLoginForm form, Callback<LoginTokenModel> callable) {
+	public Future<?> login(AgentLoginForm form, Callback<Result,LoginTokenModel> callable) {
 		Map<String, Object> _uriVariables = new HashMap<>();
 		String _url = ApiUtils.expandUriComponent("account/login", _uriVariables);
 
@@ -157,7 +149,7 @@ public class AgentAccountApi {
 	 * @see String
 
 	 */
-	public Future<?> test(Callback<String> callable) {
+	public Future<?> test(Callback<Result,String> callable) {
 		Map<String, Object> _uriVariables = new HashMap<>();
 		String _url = ApiUtils.expandUriComponent("admin/account/test", _uriVariables);
 

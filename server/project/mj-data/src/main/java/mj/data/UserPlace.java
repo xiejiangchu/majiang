@@ -25,7 +25,6 @@ public class UserPlace {
      */
     private final ArrayListMultimap<PaiType, Pai> shouPai = ArrayListMultimap.create();
     private final ArrayListMultimap<Pai, Pai> shouPaiMap = ArrayListMultimap.create();
-
     private final ArrayList<Pai> shouPaiList = new ArrayList<>();
 
     /**
@@ -34,7 +33,6 @@ public class UserPlace {
      * 手数 -> 牌
      */
     private final ArrayList<Map.Entry<Integer, Pai>> anGang = new ArrayList<>();
-
     /**
      * 小明杠(加杠)
      * 自己以前碰了人家一张牌形成三张然后摸到相同的那一张牌后形成的杠称加杠。加杠也可以叫做小明杠。

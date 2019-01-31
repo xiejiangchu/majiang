@@ -11,6 +11,6 @@ server:
     port: 9090
 
 client:
-    apiAddress: http://127.0.0.1:8080/
+    apiAddress: http://127.0.0.1:8080/admin/
     apiVersion: v1
     version: v1

@@ -6,7 +6,7 @@ import game.boss.dao.dao.UserAgentTokenDao;
 import game.boss.dao.dao.UserDao;
 import game.boss.dao.entity.UserAgentTokenDO;
 import game.boss.dao.entity.UserDO;
-import majiang.client.portal.AgentAccount;
+import majiang.client.controller.AgentAccount;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;

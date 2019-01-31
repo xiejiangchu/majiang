@@ -4,8 +4,8 @@ import com.isnowfox.core.PageResult;
 import game.boss.dao.dao.RoomDao;
 import game.boss.dao.entity.RoomDO;
 import majiang.client.boss.BossClient;
-import majiang.client.portal.admin.model.PageModel;
-import majiang.client.portal.admin.model.RoomModel;
+import majiang.client.controller.admin.model.PageModel;
+import majiang.client.controller.admin.model.RoomModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

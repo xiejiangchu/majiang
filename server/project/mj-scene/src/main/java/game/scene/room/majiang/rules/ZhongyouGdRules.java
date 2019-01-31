@@ -17,7 +17,7 @@ class ZhongyouGdRules extends Rules {
     private static final ArrayList<Pai> ALL_PAI_LIST_TUI_DAOHU = createGuiDaoHuAllList();
     private static final ArrayList<Pai> ALL_PAI_LIST_GUI = createGuiAllList();
 
-    public static final Map<JiaFanType, FanInfo> jiaFanMap = initJiaFanMap();
+    public static final Map<JiaFanType, FanInfo>  jiaFanMap = initJiaFanMap();
     public static final Map<BaseFanType, FanInfo> baseFanMap = initBaseFanMap();
 
     private Pai[] huiErs;

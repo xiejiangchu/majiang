@@ -14,8 +14,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <start-class>majiang.client.MainConfig</start-class>
-        <forkjoin.version>2.0.0-SNAPSHOT</forkjoin.version>
-        <spring.boot.version>1.4.3.RELEASE</spring.boot.version>
+        <forkjoin.version>2.1.3</forkjoin.version>
+        <spring.boot.version>1.5.19.RELEASE</spring.boot.version>
     </properties>
     <dependencyManagement>
         <dependencies>

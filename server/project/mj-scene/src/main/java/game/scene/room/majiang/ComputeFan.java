@@ -124,7 +124,7 @@ public class ComputeFan {
                 sb.append(jiaFanInfo.getName());
             } else if (nums > 2) {
                 sb.append(' ');
-                sb.append(jiaFanInfo.getName()).append("x").append(nums);
+                sb.append(jiaFanInfo.getName()).append("X").append(nums);
             }
         }
         fanResult.setFan(fan);

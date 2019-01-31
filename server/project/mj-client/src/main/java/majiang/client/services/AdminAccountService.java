@@ -4,7 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import game.boss.dao.dao.AdminDao;
 import game.boss.dao.entity.AdminDO;
-import majiang.client.portal.AdminAccount;
+import majiang.client.controller.AdminAccount;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;

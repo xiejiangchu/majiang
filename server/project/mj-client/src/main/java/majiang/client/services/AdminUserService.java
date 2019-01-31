@@ -5,8 +5,8 @@ import game.admin.PayMsg;
 import game.boss.dao.dao.UserDao;
 import game.boss.dao.entity.UserDO;
 import majiang.client.boss.BossClient;
-import majiang.client.portal.admin.model.PageModel;
-import majiang.client.portal.admin.model.UserModel;
+import majiang.client.controller.admin.model.PageModel;
+import majiang.client.controller.admin.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AdminUserService {
-    private static final String salt = "nxTuij";
-
     @Autowired
     private UserDao userDao;
     @Autowired

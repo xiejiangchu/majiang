@@ -81,7 +81,7 @@ public class SettingApi {
 	 * @see SettingModel
 
 	 */
-	public Future<?> get(Callback<SettingModel> callable) {
+	public Future<?> get(Callback<Result,SettingModel> callable) {
 		Map<String, Object> _uriVariables = new HashMap<>();
 		String _url = ApiUtils.expandUriComponent("setting", _uriVariables);
 
@@ -151,7 +151,7 @@ public class SettingApi {
 	 * @see SettingForm
 
 	 */
-	public Future<?> change(SettingForm form, Callback<SettingModel> callable) {
+	public Future<?> change(SettingForm form, Callback<Result,SettingModel> callable) {
 		Map<String, Object> _uriVariables = new HashMap<>();
 		String _url = ApiUtils.expandUriComponent("setting", _uriVariables);
 

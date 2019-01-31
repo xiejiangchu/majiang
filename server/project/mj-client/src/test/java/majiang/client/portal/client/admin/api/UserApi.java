@@ -99,7 +99,7 @@ public class UserApi {
 	 * @see int
 
 	 */
-	public Future<?> list(int page, int pageSize, Callback<PageModel<UserModel>> callable) {
+	public Future<?> list(int page, int pageSize, Callback<Result,PageModel<UserModel>> callable) {
 		Map<String, Object> _uriVariables = new HashMap<>();
 		_uriVariables.put("page", page);
 		_uriVariables.put("pageSize", pageSize);
@@ -175,7 +175,7 @@ public class UserApi {
 	 * @see int
 
 	 */
-	public Future<?> changelevel(int userId, int level, Callback<Void> callable) {
+	public Future<?> changelevel(int userId, int level, Callback<Result,Void> callable) {
 		Map<String, Object> _uriVariables = new HashMap<>();
 		_uriVariables.put("userId", userId);
 		_uriVariables.put("level", level);
@@ -247,7 +247,7 @@ public class UserApi {
 	 * @see PayForm
 
 	 */
-	public Future<?> pay(PayForm form, Callback<UserModel> callable) {
+	public Future<?> pay(PayForm form, Callback<Result,UserModel> callable) {
 		Map<String, Object> _uriVariables = new HashMap<>();
 		String _url = ApiUtils.expandUriComponent("user/pay", _uriVariables);
 
