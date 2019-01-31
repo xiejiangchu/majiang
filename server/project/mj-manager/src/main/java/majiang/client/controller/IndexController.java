@@ -25,10 +25,7 @@ public class IndexController {
     private String version;
 
     @GetMapping({"*.html","**.html", "/index.html", "/"})
-    private ModelAndView index(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws Exception {
+    private ModelAndView index(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Map<String, Object> model = new HashMap<>();
         model.put("apiAddress", apiAddress);
         model.put("apiVersion", apiVersion);
