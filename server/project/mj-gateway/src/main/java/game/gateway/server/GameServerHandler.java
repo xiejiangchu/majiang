@@ -69,6 +69,6 @@ public class GameServerHandler implements NetPacketHandler<User> {
     @Override
     public void onPacket(Packet msg) throws Exception {
         log.info("收到消息内容:{},{}", msg.getBuf().toString(), ByteBufUtil.hexDump(msg.getBuf()));
-        gatewayService.handlerClient(msg);
+        gatewayService.handleClient(msg);
     }
 }

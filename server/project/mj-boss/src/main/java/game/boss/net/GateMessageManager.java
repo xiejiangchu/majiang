@@ -50,7 +50,7 @@ public class GateMessageManager {
             if (msg instanceof RegGatewayMsg) {
                 RegGatewayMsg regGatewayMsg = (RegGatewayMsg) msg;
                 log.info("注册网关", regGatewayMsg);
-                Gateway gateway = gatewayManager.reg(msg.getSession().channel, regGatewayMsg.getGatewayId());
+                Gateway gateway = gatewayManager.reg(regGatewayMsg.getGatewayId(), msg.getSession().channel);
                 if (gateway != null) {
                     msg.getSession().set(gateway);
                 }
@@ -69,7 +69,7 @@ public class GateMessageManager {
 
                 SinglePxMsg fm = (SinglePxMsg) msg;
                 sessionId = fm.getSessionId();
-                Session<UserImpi> userSession = gateway.getSession(sessionId);
+                Session<User> userSession = gateway.getSession(sessionId);
                 if (userSession == null) {
                     log.error("错误消息:{}没有注册的用户！", sessionId);
                     throw new ServerRuntimeException("没有注册的用户" + sessionId);
@@ -87,49 +87,49 @@ public class GateMessageManager {
 
                 final Gateway gateway = checkGatway(msg);
                 sessionId = lm.getSessionId();
-                Session<UserImpi> userSession = gateway.getSession(sessionId);
+                Session<User> userSession = gateway.getSession(sessionId);
                 if (userSession == null) {
                     log.error("错误消息:{}没有注册的用户！", sessionId);
                     throw new ServerRuntimeException("没有注册的用户" + sessionId);
                 }
-                UserImpi userImpi = userSession.get();
-                if (userImpi == null) {
+                User user = userSession.get();
+                if (user == null) {
                     log.error("错误消息:{}不存在用户！", sessionId);
                     return;
                 }
-                roomService.joinRoomGatewaySuccess(userImpi);
+                roomService.joinRoomGatewaySuccess(user);
             } else if (msg instanceof ExitRoomMsg) {
                 ExitRoomMsg lm = (ExitRoomMsg) msg;
 
                 final Gateway gateway = checkGatway(msg);
                 sessionId = lm.getSessionId();
-                Session<UserImpi> userSession = gateway.getSession(sessionId);
+                Session<User> userSession = gateway.getSession(sessionId);
                 if (userSession == null) {
                     log.error("错误消息:{}没有注册的用户！", sessionId);
                     throw new ServerRuntimeException("没有注册的用户" + sessionId);
                 }
-                UserImpi userImpi = userSession.get();
-                if (userImpi == null) {
+                User user = userSession.get();
+                if (user == null) {
                     log.error("错误消息:{}不存在用户！", sessionId);
                     return;
                 }
-                roomService.exitRoomGatewaySuccess(userImpi);
+                roomService.exitRoomGatewaySuccess(user);
             } else if (msg instanceof DelRoomMsg) {
                 DelRoomMsg lm = (DelRoomMsg) msg;
 
                 final Gateway gateway = checkGatway(msg);
                 sessionId = lm.getSessionId();
-                Session<UserImpi> userSession = gateway.getSession(sessionId);
+                Session<User> userSession = gateway.getSession(sessionId);
                 if (userSession == null) {
                     log.error("错误消息:{}没有注册的用户！", sessionId);
                     return;
                 }
-                UserImpi userImpi = userSession.get();
-                if (userImpi == null) {
+                User user = userSession.get();
+                if (user == null) {
                     log.error("错误消息:{}不存在用户！", sessionId);
                     return;
                 }
-                roomService.delRoomGatewaySuccess(userImpi);
+                roomService.delRoomGatewaySuccess(user);
             }
         } catch (Throwable th) {
             log.error("严重消息错误 " + msg, th);

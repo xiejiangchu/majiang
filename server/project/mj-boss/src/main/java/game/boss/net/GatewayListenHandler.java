@@ -13,9 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GatewayListenHandler implements PxMsgHandler<Gateway> {
     private static final Logger log = LoggerFactory.getLogger(GatewayListenHandler.class);
 
-    private final MessageFactoryImpi messageFactory = MessageFactoryImpi.getInstance();
-    // private final int gatewayUserMaxConnect;
-
     private GateMessageManager gateMessageManager;
     @Autowired
     private GatewayManager gatewayManager;

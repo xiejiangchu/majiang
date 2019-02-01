@@ -31,27 +31,25 @@ public class SceneClientHandler implements PxMsgHandler<Object> {
      * TODO: 这儿有个风险,就是连接上了场景服务器,但是还没有注册成功!!,虽然发生问题的可能性较小,还是应该重构!
      */
     @Override
-    public void onConnect(Session<Object> session) throws Exception {
+    public void onConnect(Session<Object> session) {
         log.info("连接场景服务器成功！");
         gatewayService.onSceneConnect(client);
         connectCallback.run();
     }
 
     @Override
-    public void onDisconnect(Session<Object> session) throws Exception {
+    public void onDisconnect(Session<Object> session) {
         log.info("场景连接断开!！");
         gatewayService.onSceneDisconnect(client);
     }
 
     @Override
-    public void onException(Session<Object> session, Throwable cause)
-            throws Exception {
+    public void onException(Session<Object> session, Throwable cause) {
         log.info("错误!{}", session, cause);
     }
 
     @Override
-    public Session<Object> createSession(ChannelHandlerContext ctx)
-            throws Exception {
+    public Session<Object> createSession(ChannelHandlerContext ctx) {
         return new Session<>(ctx.channel());
     }
 
@@ -62,7 +60,7 @@ public class SceneClientHandler implements PxMsgHandler<Object> {
 
     @Override
     public void onMessage(PxMsg msg) throws Exception {
-        gatewayService.handlerScene(msg);
+        gatewayService.handleMessage(msg);
     }
 
     public void setClient(SceneClient client) {

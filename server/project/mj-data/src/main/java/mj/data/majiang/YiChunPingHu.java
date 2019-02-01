@@ -69,8 +69,7 @@ public class YiChunPingHu {
     }
 
     public static boolean check(Collection<Pai> shouPai) {
-        List<Pai> list = shouPai.stream().collect(Collectors.toList());
-        Pai[] pais = list.toArray(new Pai[list.size()]);
+        Pai[] pais = (Pai[]) shouPai.toArray();
         Arrays.sort(pais, new Comparator<Pai>() {
             @Override
             public int compare(Pai o1, Pai o2) {
@@ -82,9 +81,8 @@ public class YiChunPingHu {
     }
 
     public static boolean check(Collection<Pai> shouPai, Pai other) {
-        List<Pai> list = shouPai.stream().collect(Collectors.toList());
-        list.add(other);
-        Pai[] pais = list.toArray(new Pai[list.size()]);
+        shouPai.add(other);
+        Pai[] pais = (Pai[]) shouPai.toArray();
         Arrays.sort(pais, new Comparator<Pai>() {
             @Override
             public int compare(Pai o1, Pai o2) {
@@ -121,37 +119,37 @@ public class YiChunPingHu {
         if (in == null || in.size() == 0) {
             return null;
         }
-        int a1 = 0;
-        int a2 = 0;
-        int a3 = 0;
-        int a4 = 0;
-        int a5 = 0;
-        int a6 = 0;
-        int a7 = 0;
+        int FENG_DONG_COUNT = 0;
+        int FENG_NAN_COUNT = 0;
+        int FENG_XI_COUNT = 0;
+        int FENG_BEI_COUNT = 0;
+        int SANYUAN_ZHONG_COUNT = 0;
+        int SANYUAN_FA_COUNT = 0;
+        int SANYUAN_BEI_COUNT = 0;
         for (int i = 0; i < in.size(); i++) {
             Pai item = in.get(i);
             if (item.getIndex() == Pai.FENG_DONG.getIndex()) {
-                a1++;
+                FENG_DONG_COUNT++;
             } else if (item.getIndex() == Pai.FENG_NAN.getIndex()) {
-                a2++;
+                FENG_NAN_COUNT++;
             } else if (item.getIndex() == Pai.FENG_XI.getIndex()) {
-                a3++;
+                FENG_XI_COUNT++;
             } else if (item.getIndex() == Pai.FENG_BEI.getIndex()) {
-                a4++;
+                FENG_BEI_COUNT++;
             } else if (item.getIndex() == Pai.SANYUAN_ZHONG.getIndex()) {
-                a5++;
+                SANYUAN_ZHONG_COUNT++;
             } else if (item.getIndex() == Pai.SANYUAN_FA.getIndex()) {
-                a6++;
+                SANYUAN_FA_COUNT++;
             } else if (item.getIndex() == Pai.SANYUAN_BEI.getIndex()) {
-                a7++;
+                SANYUAN_BEI_COUNT++;
             }
         }
 
         List<SortedPai> sortedList_FENG = new ArrayList<>();
-        sortedList_FENG.add(new SortedPai(Pai.FENG_DONG, a1));
-        sortedList_FENG.add(new SortedPai(Pai.FENG_NAN, a2));
-        sortedList_FENG.add(new SortedPai(Pai.FENG_XI, a3));
-        sortedList_FENG.add(new SortedPai(Pai.FENG_BEI, a4));
+        sortedList_FENG.add(new SortedPai(Pai.FENG_DONG, FENG_DONG_COUNT));
+        sortedList_FENG.add(new SortedPai(Pai.FENG_NAN, FENG_NAN_COUNT));
+        sortedList_FENG.add(new SortedPai(Pai.FENG_XI, FENG_XI_COUNT));
+        sortedList_FENG.add(new SortedPai(Pai.FENG_BEI, FENG_BEI_COUNT));
 
         Collections.sort(sortedList_FENG);
         int[] selected_FENG = new int[4];
@@ -179,9 +177,9 @@ public class YiChunPingHu {
 
 
         List<SortedPai> sortedList_SANGYUAN = new ArrayList<>();
-        sortedList_SANGYUAN.add(new SortedPai(Pai.SANYUAN_ZHONG, a5));
-        sortedList_SANGYUAN.add(new SortedPai(Pai.SANYUAN_FA, a6));
-        sortedList_SANGYUAN.add(new SortedPai(Pai.SANYUAN_BEI, a7));
+        sortedList_SANGYUAN.add(new SortedPai(Pai.SANYUAN_ZHONG, SANYUAN_ZHONG_COUNT));
+        sortedList_SANGYUAN.add(new SortedPai(Pai.SANYUAN_FA, SANYUAN_FA_COUNT));
+        sortedList_SANGYUAN.add(new SortedPai(Pai.SANYUAN_BEI, SANYUAN_BEI_COUNT));
 
         Collections.sort(sortedList_SANGYUAN);
 

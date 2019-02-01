@@ -28,7 +28,7 @@ final class GatewayManager implements ApplicationContextAware {
     private int gatewayUserMaxConnect;
     private ApplicationContext applicationContext;
 
-    public Gateway reg(Channel channel, int gatewayId) throws ServerException {
+    public Gateway reg(int gatewayId, Channel channel) throws ServerException {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {

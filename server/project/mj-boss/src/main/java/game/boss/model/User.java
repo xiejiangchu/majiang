@@ -4,6 +4,7 @@ import com.isnowfox.core.net.message.Message;
 import com.isnowfox.game.proxy.message.PxMsg;
 import game.boss.dao.entity.UserDO;
 import game.boss.dao.entity.UserLoginLogDO;
+import game.boss.net.Gateway;
 import game.type.NoticeType;
 import mj.net.message.login.Notice;
 
@@ -12,7 +13,7 @@ import java.util.function.Consumer;
 /**
  * @author zuoge85@gmail.com on 16/9/26.
  */
-public abstract class User {
+public class User {
     private short sessionId;
     private int gatewayId;
     private UserDO userDO;
@@ -21,9 +22,27 @@ public abstract class User {
     private boolean joinHomeGatewaySuccess;
     private boolean joinHomeSceneSuccess;
     private Consumer<Boolean> joinRoomCallback;
+    private Gateway gateway;
+
+    public void setGateway(Gateway gateway) {
+        this.gateway = gateway;
+    }
+
+    public Gateway getGateway() {
+        return gateway;
+    }
+
+    public void send(Message msg) {
+        gateway.send(getSessionId(), msg);
+    }
+
+    public void sendToGateway(PxMsg msg) {
+        gateway.sendToGateway(msg);
+    }
 
 
-    public User() {
+    public void close() {
+        gateway.unReg(getSessionId());
     }
 
     public short getSessionId() {
@@ -62,13 +81,6 @@ public abstract class User {
     public int getUserId() {
         return userDO == null ? -1 : userDO.getId();
     }
-
-    public abstract void send(Message msg);
-
-    public abstract void sendToGateway(PxMsg msg);
-
-    public abstract void close();
-
 
     public void setIp(String ip) {
         this.ip = ip;

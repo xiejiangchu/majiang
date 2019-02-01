@@ -79,7 +79,7 @@ public class GatewayService {
     /**
      * 转发消息到 boss 服务器或者场景服务器
      */
-    private void forwardFromUser(Packet msg) throws IOException, ProtocolException {
+    private void dispactch(Packet msg) throws IOException, ProtocolException {
         User u = msg.<User>getSession().get();
         msg.getBuf().retain();
         SinglePxMsg sm = new SinglePxMsg(u.getId(), msg.getBuf());
@@ -124,14 +124,14 @@ public class GatewayService {
     /**
      * 处理客户端过来的消息
      */
-    public void handlerClient(Packet msg) throws IOException, ProtocolException {
-        forwardFromUser(msg);
+    public void handleClient(Packet msg) throws IOException, ProtocolException {
+        dispactch(msg);
     }
 
     /**
      * 处理boss 过来的消息
      */
-    public void handlerBoss(PxMsg msg) throws Exception {
+    public void handleMessage(PxMsg msg) throws Exception {
         switch (msg.getType()) {
             case SinglePxMsg.ID: {
                 SinglePxMsg sm = (SinglePxMsg) msg;
@@ -212,11 +212,6 @@ public class GatewayService {
     public void onSceneDisconnect(SceneClient client) {
 
     }
-
-    public void handlerScene(PxMsg msg) throws Exception {
-        handlerBoss(msg);
-    }
-
 
     public void onCreateSession(ChannelHandlerContext ctx, Session<User> session) {
         RegSessionMsg msg = new RegSessionMsg();

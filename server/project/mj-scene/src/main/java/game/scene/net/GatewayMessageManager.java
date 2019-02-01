@@ -38,7 +38,7 @@ public class GatewayMessageManager {
             if (msg instanceof RegGatewayMsg) {
                 RegGatewayMsg regGatewayMsg = (RegGatewayMsg) msg;
                 log.info("注册网关{}", regGatewayMsg);
-                Gateway gateway = gatewayManager.reg(msg.getSession().channel, regGatewayMsg.getGatewayId());
+                Gateway gateway = gatewayManager.reg(regGatewayMsg.getGatewayId(), msg.getSession().channel);
                 if (gateway != null) {
                     msg.getSession().set(gateway);
                 }
