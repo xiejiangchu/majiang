@@ -88,8 +88,6 @@ public class GatewayService {
         ByteBufInputStream bin = new ByteBufInputStream(msg.getBuf(), msg.getLength());
         Input in = MarkCompressInput.create(bin);
         int type = in.readInt();
-//        int id = in.readInt();
-
         if (type == Login.TYPE) {
             bossClient.writeAndFlush(sm);
         } else {

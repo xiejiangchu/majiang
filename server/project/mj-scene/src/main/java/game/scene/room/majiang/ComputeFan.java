@@ -94,9 +94,9 @@ public class ComputeFan {
             baseFanType = BaseFanType.QI_DUI;
         } else if (fanResult.isQingXing(userPaiInfo)) {
             baseFanType = BaseFanType.QI_XING;
-        }else if (fanResult.isShiSanYao(userPaiInfo)) {
+        } else if (fanResult.isShiSanYao(userPaiInfo)) {
             baseFanType = BaseFanType.SHI_SAN_YAO;
-        }else if (fanResult.isDuiDuiHu(userPaiInfo)) {
+        } else if (fanResult.isDuiDuiHu(userPaiInfo)) {
             baseFanType = BaseFanType.DUI_DUI_HU;
         } else if (userPaiInfo.isZiMo()) {
             baseFanType = BaseFanType.ZI_MO;
@@ -111,20 +111,22 @@ public class ComputeFan {
 
         int fan = baseFanInfo.getScore();
         sb.append(baseFanInfo.getName());
-        for (Map.Entry<JiaFanType, FanInfo> entry : chapter.getRules().getJiaFanMap().entrySet()) {
-            JiaFanType jiaFan = entry.getKey();
-            FanInfo jiaFanInfo = entry.getValue();
-            int nums = jiaFan.compute(fanResult, chapteResult, userPlace, userPaiInfo);
-            for (int i = 0; i < nums; i++) {
-                fanResult.getJiaFans().add(jiaFan);
-                fan += jiaFanInfo.getScore();
-            }
-            if (nums == 1) {
-                sb.append(' ');
-                sb.append(jiaFanInfo.getName());
-            } else if (nums > 2) {
-                sb.append(' ');
-                sb.append(jiaFanInfo.getName()).append("X").append(nums);
+        if (baseFanType != BaseFanType.SHI_SAN_YAO) {
+            for (Map.Entry<JiaFanType, FanInfo> entry : chapter.getRules().getJiaFanMap().entrySet()) {
+                JiaFanType jiaFan = entry.getKey();
+                FanInfo jiaFanInfo = entry.getValue();
+                int nums = jiaFan.compute(fanResult, chapteResult, userPlace, userPaiInfo);
+                for (int i = 0; i < nums; i++) {
+                    fanResult.getJiaFans().add(jiaFan);
+                    fan += jiaFanInfo.getScore();
+                }
+                if (nums == 1) {
+                    sb.append(' ');
+                    sb.append(jiaFanInfo.getName());
+                } else if (nums > 2) {
+                    sb.append(' ');
+                    sb.append(jiaFanInfo.getName()).append("X").append(nums);
+                }
             }
         }
         fanResult.setFan(fan);
@@ -144,11 +146,9 @@ public class ComputeFan {
         Rules rules = chapter.getRules();
         PaiPool paiPool = chapter.getPaiPool();
         if (rules.isZaMa()) {
-
             endResult.setZaMaType(rules.getZaMa());
             int zaMa = rules.getZaMa();
             if (zaMa == -1) {
-
                 Pai freePai = paiPool.getFreePai();
                 int zamaScore = zaMaYIMa(freePai);
                 endResult.setZaMaPai(new int[]{freePai.getIndex()});

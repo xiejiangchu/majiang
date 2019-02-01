@@ -150,7 +150,5 @@ public enum JiaFanType {
         return name;
     }
 
-    public int compute(FanResult fanResult, ChapterEndResult chapterResult, UserPlace userPlace, UserPaiInfo userPaiInfo) {
-        return 0;
-    }
+    public  abstract int compute(FanResult fanResult, ChapterEndResult chapterResult, UserPlace userPlace, UserPaiInfo userPaiInfo);
 }

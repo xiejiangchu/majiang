@@ -69,7 +69,8 @@ public class YiChunPingHu {
     }
 
     public static boolean check(Collection<Pai> shouPai) {
-        Pai[] pais = (Pai[]) shouPai.toArray();
+        List<Pai> list = shouPai.stream().collect(Collectors.toList());
+        Pai[] pais = list.toArray(new Pai[list.size()]);
         Arrays.sort(pais, new Comparator<Pai>() {
             @Override
             public int compare(Pai o1, Pai o2) {
@@ -81,8 +82,9 @@ public class YiChunPingHu {
     }
 
     public static boolean check(Collection<Pai> shouPai, Pai other) {
-        shouPai.add(other);
-        Pai[] pais = (Pai[]) shouPai.toArray();
+        List<Pai> list = shouPai.stream().collect(Collectors.toList());
+        list.add(other);
+        Pai[] pais = list.toArray(new Pai[list.size()]);
         Arrays.sort(pais, new Comparator<Pai>() {
             @Override
             public int compare(Pai o1, Pai o2) {
