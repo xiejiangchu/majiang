@@ -63,7 +63,7 @@
 </script>
 抵制不良游戏，拒绝盗版游戏。注意自我保护，谨防上当受骗。
 适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。
-<script src='myLaya.min.js' loader='laya'></script>
+<script src='myLaya.max.js' loader='laya'></script>
 <script>
     <#--Laya.URL.customFormat = function (url, basePath) {-->
         <#--if (url == null) {-->

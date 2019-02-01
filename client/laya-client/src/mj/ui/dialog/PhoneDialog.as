@@ -11,7 +11,7 @@ package mj.ui.dialog
     import mj.net.Net;
     import mj.net.message.login.SendAuthCode;
 
-    import ui.test.PhoneDialogUI;
+    import ui.layout.PhoneDialogUI;
 
     public final class PhoneDialog extends PhoneDialogUI implements DialogContent
     {

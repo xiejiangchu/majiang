@@ -12,7 +12,7 @@ package mj.ui.dialog
     import mj.ui.*;
     import mj.utils.LayaUtils;
 
-    import ui.test.OptDialogUI;
+    import ui.layout.OptDialogUI;
 
     /**
      * @author zuoge85@gmail.com on 16/10/10.

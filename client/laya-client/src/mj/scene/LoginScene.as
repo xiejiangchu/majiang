@@ -13,7 +13,7 @@ package mj.scene
     import mj.ui.dialog.PhoneDialog;
     import mj.ui.dialog.Wait;
 
-    import ui.test.LoginUI;
+    import ui.layout.LoginUI;
 
     /**
      * @author zuoge85@gmail.com on 16/10/12.

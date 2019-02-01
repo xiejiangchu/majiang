@@ -5,7 +5,7 @@ package mj.scene
 
     import mj.scene.GameScene;
 
-    import ui.test.TestLoginUI;
+    import ui.layout.TestLoginUI;
 
     /**
      * @author zuoge85@gmail.com on 16/10/14.

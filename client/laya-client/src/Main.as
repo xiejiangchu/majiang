@@ -1,13 +1,22 @@
 package
 {
-    public class Main
-    {
-        public function Main()
-        {
-        }
+	import laya.display.Stage;
+	import laya.net.Loader;
+	import laya.utils.Browser;
+	import laya.utils.Handler;
+	import laya.utils.Log;
+	import laya.utils.Stat;
+	import laya.webgl.WebGL;
 
-        private function onLoaded():void
-        {
-        }
-    }
+	import GameMain;
+
+
+	public class Main
+	{
+
+		public function Main()
+		{
+			new GameMain();
+		}
+	}
 }

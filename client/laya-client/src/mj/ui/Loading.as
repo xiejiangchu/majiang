@@ -7,7 +7,7 @@ package mj.ui
 
     import mj.manager.UiManager;
 
-    import ui.test.LoadingUI;
+    import ui.layout.LoadingUI;
 
     /**
      * 加载界面,单例!

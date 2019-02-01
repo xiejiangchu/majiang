@@ -9,7 +9,7 @@ package mj.ui.dialog
     import laya.ui.Image;
     import laya.utils.Handler;
 
-    import ui.test.JoinRoomUI;
+    import ui.layout.JoinRoomUI;
 
     public final class JoinRoomDialog extends JoinRoomUI implements DialogContent
     {

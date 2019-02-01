@@ -8,7 +8,7 @@ package mj.ui.dialog
     import mj.manager.UiManager;
     import mj.ui.*;
 
-    import ui.test.WaitUI;
+    import ui.layout.WaitUI;
 
     /**
      * @author zuoge85@gmail.com on 16/10/10.

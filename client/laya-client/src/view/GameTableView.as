@@ -14,7 +14,7 @@ package view
     import mj.ui.UiHelps;
     import mj.utils.LayaUtils;
 
-    import ui.test.GameTableUI;
+    import ui.layout.GameTableUI;
 
     /**
      * @author zuoge85@gmail.com on 2016/11/4.

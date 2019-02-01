@@ -12,6 +12,7 @@ package
     import laya.utils.Handler;
     import laya.utils.Stat;
     import laya.webgl.WebGL;
+    import laya.net.Loader;
 
     import mj.GlobalResource;
     import mj.manager.AudioManager;
@@ -80,11 +81,10 @@ package
             UiManager.instance.init();
             GlobalResource.instance.init();
             //加载引擎需要的资源
-            Laya.loader.load([
-                "ui/loading/bg.jpg",
-                "ui/loading/progress.png",
-                "ui/loading/progress$bar.png"
-            ], Handler.create(this, startGame));
+            Laya.loader.load([{
+                url: "res/atlas/ui/loading.json",
+                type: Loader.ATLAS
+            }], Handler.create(this, startGame));
             Console.log("init end");
         }
 

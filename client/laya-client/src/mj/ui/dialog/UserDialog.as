@@ -10,7 +10,7 @@ package mj.ui.dialog
     import mj.net.message.game.GameUserInfo;
     import mj.net.message.login.RoomHistoryListRet;
 
-    import ui.test.UserDialogUI;
+    import ui.layout.UserDialogUI;
 
     /**
      * @author zuoge85@gmail.com on 2016/11/9.

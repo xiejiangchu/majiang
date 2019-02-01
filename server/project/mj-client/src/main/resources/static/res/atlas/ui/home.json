@@ -1,6 +1,6 @@
 {
     "frames": {
-        "bg1.png": {
+        "bg.jpg": {
             "frame": {
                 "x": 0,
                 "y": 0,
@@ -21,13 +21,34 @@
             "rotated": false,
             "trimed": true
         },
+        "bg1.png": {
+            "frame": {
+                "x": 0,
+                "y": 0,
+                "w": 1920,
+                "h": 1080,
+                "idx": 1
+            },
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 1920,
+                "h": 1080
+            },
+            "sourceSize": {
+                "w": 1920,
+                "h": 1080
+            },
+            "rotated": false,
+            "trimed": true
+        },
         "mm.png": {
             "frame": {
                 "x": 0,
                 "y": 0,
                 "w": 497,
                 "h": 1024,
-                "idx": 1
+                "idx": 2
             },
             "spriteSourceSize": {
                 "x": 0,
@@ -48,7 +69,7 @@
                 "y": 0,
                 "w": 370,
                 "h": 1245,
-                "idx": 1
+                "idx": 2
             },
             "spriteSourceSize": {
                 "x": 0,
@@ -69,7 +90,7 @@
                 "y": 0,
                 "w": 370,
                 "h": 1245,
-                "idx": 1
+                "idx": 2
             },
             "spriteSourceSize": {
                 "x": 0,
@@ -90,7 +111,7 @@
                 "y": 1247,
                 "w": 1020,
                 "h": 66,
-                "idx": 1
+                "idx": 2
             },
             "spriteSourceSize": {
                 "x": 0,
@@ -111,7 +132,7 @@
                 "y": 1247,
                 "w": 208,
                 "h": 38,
-                "idx": 1
+                "idx": 2
             },
             "spriteSourceSize": {
                 "x": 0,
@@ -132,7 +153,7 @@
                 "y": 0,
                 "w": 45,
                 "h": 135,
-                "idx": 1
+                "idx": 2
             },
             "spriteSourceSize": {
                 "x": 0,
@@ -153,7 +174,7 @@
                 "y": 1026,
                 "w": 101,
                 "h": 60,
-                "idx": 1
+                "idx": 2
             },
             "spriteSourceSize": {
                 "x": 0,
@@ -174,7 +195,7 @@
                 "y": 137,
                 "w": 40,
                 "h": 39,
-                "idx": 1
+                "idx": 2
             },
             "spriteSourceSize": {
                 "x": 0,
@@ -195,7 +216,7 @@
         "version": "0.1.0 alpha",
         "format": "json",
         "scale": 1,
-        "image": "home.png,home1~.png",
+        "image": "home.png,home1~.png,home2~.png",
         "prefix": "ui\/home\/"
     }
 }

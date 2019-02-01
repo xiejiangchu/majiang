@@ -8,7 +8,7 @@ package mj.ui.dialog
 
     import mj.net.message.login.OptionEntry;
 
-    import ui.test.CreateOptUI;
+    import ui.layout.CreateOptUI;
 
     public final class CreateOptDialog extends CreateOptUI implements DialogContent
     {

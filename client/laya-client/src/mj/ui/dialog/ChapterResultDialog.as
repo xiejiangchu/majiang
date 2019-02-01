@@ -16,7 +16,7 @@ package mj.ui.dialog
     import mj.net.message.game.UserPlaceMsg;
     import mj.utils.LayaUtils;
 
-    import ui.test.ChapterResultUI;
+    import ui.layout.ChapterResultUI;
 
     /**
      * @author zuoge85@gmail.com on 2016/11/9.

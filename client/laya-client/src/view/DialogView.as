@@ -10,7 +10,7 @@ package view
     import mj.ui.dialog.DialogContent;
     import mj.ui.dialog.DialogSize;
 
-    import ui.test.DialogUI;
+    import ui.layout.DialogUI;
 
     public class DialogView extends DialogUI
     {

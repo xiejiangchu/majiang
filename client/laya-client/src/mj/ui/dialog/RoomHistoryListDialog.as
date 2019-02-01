@@ -8,7 +8,7 @@ package mj.ui.dialog
     import mj.net.message.login.RoomHistory;
     import mj.net.message.login.RoomHistoryListRet;
 
-    import ui.test.RoomHistoryListUI;
+    import ui.layout.RoomHistoryListUI;
 
     /**
      * @author zuoge85@gmail.com on 2016/11/9.

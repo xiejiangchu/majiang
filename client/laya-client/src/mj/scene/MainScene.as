@@ -22,7 +22,7 @@ package mj.scene
     import mj.ui.dialog.Wait;
     import mj.utils.LayaUtils;
 
-    import ui.test.MainUI;
+    import ui.layout.MainUI;
 
     /**
      * @author zuoge85@gmail.com on 16/10/12.

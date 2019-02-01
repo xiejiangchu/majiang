@@ -8,7 +8,7 @@ package mj.ui.dialog
     import mj.manager.AudioManager;
     import mj.net.message.login.RoomHistoryListRet;
 
-    import ui.test.SettingDialogUI;
+    import ui.layout.SettingDialogUI;
 
     /**
      * @author zuoge85@gmail.com on 2016/11/9.
