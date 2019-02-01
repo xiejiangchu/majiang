@@ -4,28 +4,30 @@ package laya.d3.math {
 	/**
 	 * <code>Vector3</code> 类用于创建三维向量。
 	 */
-	public class Vector3  implements IClone{
-		/** @private */
-		private static var TEMPVec4:Vector4 = new Vector4();
+	public class Vector3 implements IClone {
+		/**@private	*/
+		public static const _tempVector4:Vector4 = new Vector4();
 		
 		/**零向量，禁止修改*/
-		public static const ZERO:Vector3 = new Vector3(0.0, 0.0, 0.0);
+		public static const ZERO:Vector3 =/*[STATIC SAFE]*/ new Vector3(0.0, 0.0, 0.0);
 		/**一向量，禁止修改*/
-		public static const ONE:Vector3 = new Vector3(1.0, 1.0, 1.0);
+		public static const ONE:Vector3 =/*[STATIC SAFE]*/ new Vector3(1.0, 1.0, 1.0);
 		/**X轴单位向量，禁止修改*/
-		public static const NegativeUnitX:Vector3 = new Vector3(-1, 0, 0);
+		public static const NegativeUnitX:Vector3 =/*[STATIC SAFE]*/ new Vector3(-1, 0, 0);
 		/**X轴单位向量，禁止修改*/
-		public static const UnitX:Vector3 = new Vector3(1, 0, 0);
+		public static const UnitX:Vector3 =/*[STATIC SAFE]*/ new Vector3(1, 0, 0);
 		/**Y轴单位向量，禁止修改*/
-		public static const UnitY:Vector3 = new Vector3(0, 1, 0);
+		public static const UnitY:Vector3 =/*[STATIC SAFE]*/ new Vector3(0, 1, 0);
 		/**Z轴单位向量，禁止修改*/
-		public static const UnitZ:Vector3 = new Vector3(0, 0, 1);
+		public static const UnitZ:Vector3 =/*[STATIC SAFE]*/ new Vector3(0, 0, 1);
 		/**右手坐标系统前向量，禁止修改*/
-		public static const ForwardRH:Vector3 = new Vector3(0, 0, -1);
+		public static const ForwardRH:Vector3 =/*[STATIC SAFE]*/ new Vector3(0, 0, -1);
 		/**左手坐标系统前向量,禁止修改*/
-		public static const ForwardLH:Vector3 = new Vector3(0, 0, 1);
+		public static const ForwardLH:Vector3 =/*[STATIC SAFE]*/ new Vector3(0, 0, 1);
 		/**上向量,禁止修改*/
-		public static const Up:Vector3 = new Vector3(0, 1, 0);
+		public static const Up:Vector3 =/*[STATIC SAFE]*/ new Vector3(0, 1, 0);
+		/**无效矩阵,禁止修改*/
+		public static const NAN:Vector3 =/*[STATIC SAFE]*/ new Vector3(NaN, NaN, NaN);
 		
 		/**
 		 * 两个三维向量距离的平方。
@@ -200,7 +202,7 @@ package laya.d3.math {
 		 * @param	result 输出三维向量。
 		 */
 		public static function transformV3ToV3(vector:Vector3, transform:Matrix4x4, result:Vector3):void {
-			var intermediate:Vector4 = new Vector4();
+			var intermediate:Vector4 = _tempVector4;
 			transformV3ToV4(vector, transform, intermediate);
 			var intermediateElem:Float32Array = intermediate.elements;
 			var resultElem:Float32Array = result.elements;
@@ -255,7 +257,7 @@ package laya.d3.math {
 		 * @param	result 输出三维向量。
 		 */
 		public static function transformCoordinate(coordinate:Vector3, transform:Matrix4x4, result:Vector3):void {
-			var vectorElem:Float32Array = TEMPVec4.elements;
+			var vectorElem:Float32Array = _tempVector4.elements;
 			
 			var coordinateElem:Float32Array = coordinate.elements;
 			var coordinateX:Number = coordinateElem[0];
@@ -274,13 +276,6 @@ package laya.d3.math {
 			resultElem[1] = vectorElem[1] * vectorElem[3];
 			resultElem[2] = vectorElem[2] * vectorElem[3];
 		}
-		
-		/**
-		 * 求两个三维向量的和。
-		 * @param	a left三维向量。
-		 * @param	b right三维向量。
-		 * @param	out 输出向量。
-		 */
 		
 		/**
 		 * 求一个指定范围的向量
@@ -381,12 +376,16 @@ package laya.d3.math {
 			return r;
 		}
 		
+		/**
+		 * 判断两个三维向量是否相等。
+		 * @param	a 三维向量。
+		 * @param	b 三维向量。
+		 * @return  是否相等。
+		 */
 		public static function equals(a:Vector3, b:Vector3):Boolean {
 			var ae:Float32Array = a.elements;
 			var be:Float32Array = b.elements;
-			return  MathUtils3D.nearEqual(Math.abs(ae[0]), Math.abs(be[0])) 
-				 && MathUtils3D.nearEqual(Math.abs(ae[1]), Math.abs(be[1])) 
-				 && MathUtils3D.nearEqual(Math.abs(ae[2]), Math.abs(be[2]));
+			return MathUtils3D.nearEqual(Math.abs(ae[0]), Math.abs(be[0])) && MathUtils3D.nearEqual(Math.abs(ae[1]), Math.abs(be[1])) && MathUtils3D.nearEqual(Math.abs(ae[2]), Math.abs(be[2]));
 		}
 		
 		/**三维向量元素数组*/
@@ -394,7 +393,7 @@ package laya.d3.math {
 		
 		/**
 		 * 获取X轴坐标。
-		 * @return	x  X轴坐标。
+		 * @return	X轴坐标。
 		 */
 		public function get x():Number {
 			return this.elements[0];
@@ -402,7 +401,7 @@ package laya.d3.math {
 		
 		/**
 		 * 设置X轴坐标。
-		 * @param	x  X轴坐标。
+		 * @param	value  X轴坐标。
 		 */
 		public function set x(value:Number):void {
 			this.elements[0] = value;
@@ -410,7 +409,7 @@ package laya.d3.math {
 		
 		/**
 		 * 获取Y轴坐标。
-		 * @return	y  Y轴坐标。
+		 * @return	Y轴坐标。
 		 */
 		public function get y():Number {
 			return this.elements[1];
@@ -418,7 +417,7 @@ package laya.d3.math {
 		
 		/**
 		 * 设置Y轴坐标。
-		 * @param	y  Y轴坐标。
+		 * @param	value  Y轴坐标。
 		 */
 		public function set y(value:Number):void {
 			this.elements[1] = value;
@@ -426,7 +425,7 @@ package laya.d3.math {
 		
 		/**
 		 * 获取Z轴坐标。
-		 * @return	z  Z轴坐标。
+		 * @return	Z轴坐标。
 		 */
 		public function get z():Number {
 			return this.elements[2];
@@ -434,7 +433,7 @@ package laya.d3.math {
 		
 		/**
 		 * 设置Z轴坐标。
-		 * @param	z  Z轴坐标。
+		 * @param	value  Z轴坐标。
 		 */
 		public function set z(value:Number):void {
 			this.elements[2] = value;
@@ -454,6 +453,17 @@ package laya.d3.math {
 		}
 		
 		/**
+		 * 从Array数组拷贝值。
+		 * @param  array 数组。
+		 * @param  offset 数组偏移。
+		 */
+		public function fromArray(array:Array, offset:int = 0):void {
+			elements[0] = array[offset + 0];
+			elements[1] = array[offset + 1];
+			elements[2] = array[offset + 2];
+		}
+		
+		/**
 		 * 克隆。
 		 * @param	destObject 克隆源。
 		 */
@@ -464,7 +474,7 @@ package laya.d3.math {
 			destE[0] = s[0];
 			destE[1] = s[1];
 			destE[2] = s[2];
-			
+		
 		}
 		
 		/**

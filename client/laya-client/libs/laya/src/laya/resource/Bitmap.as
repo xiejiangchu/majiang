@@ -14,8 +14,6 @@ package laya.resource {
 		protected var _w:Number;
 		/**@private 高度*/
 		protected var _h:Number;
-		/**@private */
-		public var useNum:int = 0;
 		
 		/***
 		 * 宽度。
@@ -44,14 +42,6 @@ package laya.resource {
 		public function Bitmap() {
 			_w = 0;
 			_h = 0;
-		}
-		
-		/**
-		 * 彻底清理资源。
-		 */
-		override public function dispose():void {
-			_resourceManager.removeResource(this);
-			super.dispose();
 		}
 	}
 }

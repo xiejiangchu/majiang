@@ -12,12 +12,9 @@ package laya.d3.resource.models {
 	import laya.d3.resource.TextureCube;
 	import laya.d3.shader.Shader3D;
 	import laya.d3.shader.ShaderCompile3D;
-	import laya.d3.shader.ShaderDefines3D;
-	import laya.d3.shader.ValusArray;
 	import laya.utils.Stat;
 	import laya.webgl.WebGL;
 	import laya.webgl.WebGLContext;
-	import laya.webgl.utils.Buffer2D;
 	
 	/**
 	 * <code>Sky</code> 类用于创建天空盒。
@@ -54,9 +51,10 @@ package laya.d3.resource.models {
 		 * @param value 天空立方体纹理。
 		 */
 		public function set textureCube(value:TextureCube):void {
-			_textureCube = value;
-			if (_conchSky) {//NATIVE
-				_conchSky.setTextureCube(_textureCube._conchTexture, 0, Sky.DIFFUSETEXTURE);
+			if (_textureCube !== value) {
+				(_textureCube) && (_textureCube._removeReference());//TODO:销毁问题
+				_textureCube = value;
+				(value) && (value._addReference());
 			}
 		}
 		
@@ -64,11 +62,11 @@ package laya.d3.resource.models {
 		 * 创建一个 <code>SkyBox</code> 实例。
 		 */
 		public function SkyBox() {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
 			super();
-			name = "Skybox-" + _nameNumber;
 			_nameNumber++;
 			loadShaderParams();
-			recreateResource();
+			createResource();
 			alphaBlending = 1;
 			colorIntensity = 1;
 		
@@ -78,20 +76,19 @@ package laya.d3.resource.models {
 		 * @private
 		 */
 		protected function _getShader(state:RenderState):Shader3D {
-			var shaderDefs:ShaderDefines3D = state.shaderDefines;
-			var preDef:int = shaderDefs._value;
-			var nameID:Number = shaderDefs._value + _sharderNameID * Shader3D.SHADERNAME2ID;
-			_shader = Shader3D.withCompile(_sharderNameID, state.shaderDefines, nameID);
-			shaderDefs._value = preDef;
+			var shaderDefineValue:int = state.scene._shaderDefineValue;
+			_shader = _shaderCompile.withCompile(shaderDefineValue, 0, 0);
 			return _shader;
 		}
 		
 		/**
 		 * @private
 		 */
-		override protected function recreateResource():void {//TODO:通过索引改为顶点复用
+		protected function createResource():void {
+			//TODO:通过索引改为顶点复用
+			//改成静态
+			
 			//(this._released) || (dispose());//如果已存在，则释放资源
-			startCreate();
 			_numberVertices = 36;
 			_numberIndices = 36;
 			var indices:Uint16Array = new Uint16Array(_numberIndices);
@@ -172,15 +169,6 @@ package laya.d3.resource.models {
 			_indexBuffer = new IndexBuffer3D(IndexBuffer3D.INDEXTYPE_USHORT, _numberIndices, WebGLContext.STATIC_DRAW, true);
 			_vertexBuffer.setData(vertices);
 			_indexBuffer.setData(indices);
-			memorySize = (_vertexBuffer.byteLength + _indexBuffer.byteLength) * 2;//修改占用内存,upload()到GPU后CPU中和GPU中各占一份内存
-			completeCreate();
-			
-			if (_conchSky) {//NATIVE
-				_conchSky.setVBIB(_vertexDeclaration._conchVertexDeclaration, vertices, indices);
-				_sharderNameID = Shader3D.nameKey.get("SkyBox");
-				var shaderCompile:ShaderCompile3D = Shader3D._preCompileShader[Shader3D.SHADERNAME2ID * _sharderNameID];
-				_conchSky.setShader(shaderCompile._conchShader);
-			}
 		}
 		
 		/**
@@ -198,15 +186,12 @@ package laya.d3.resource.models {
 		 * @private
 		 */
 		protected function loadShaderParams():void {
-			_sharderNameID = Shader3D.nameKey.get("SkyBox");
-			_shaderCompile = Shader3D._preCompileShader[Shader3D.SHADERNAME2ID * _sharderNameID];
+			_sharderNameID = Shader3D.nameKey.getID("SkyBox");
+			_shaderCompile = ShaderCompile3D._preCompileShader[_sharderNameID];
 		}
 		
 		override public function _render(state:RenderState):void {
 			if (_textureCube && _textureCube.loaded) {
-				//设备丢失时,貌似WebGL不会丢失.............................................................
-				//  todo  setData  here!
-				//...................................................................................
 				_vertexBuffer._bind();
 				_indexBuffer._bind();
 				_shader = _getShader(state);
@@ -214,13 +199,13 @@ package laya.d3.resource.models {
 				
 				state.camera.transform.worldMatrix.cloneTo(_tempMatrix4x40);//视图矩阵逆矩阵的转置矩阵，移除平移和缩放。//TODO:可优化
 				_tempMatrix4x40.transpose();
-				Matrix4x4.multiply(state.projectionMatrix, _tempMatrix4x40, _tempMatrix4x41);
+				Matrix4x4.multiply(state._projectionMatrix, _tempMatrix4x40, _tempMatrix4x41);
 				state.camera._shaderValues.setValue(BaseCamera.VPMATRIX_NO_TRANSLATE, _tempMatrix4x41.elements);
 				_shader.uploadCameraUniforms(state.camera._shaderValues.data);
 				
 				_shaderValue.setValue(INTENSITY, _colorIntensity);
 				_shaderValue.setValue(ALPHABLENDING, _alphaBlending);
-				_shaderValue.setValue(DIFFUSETEXTURE, textureCube.source);
+				_shaderValue.setValue(DIFFUSETEXTURE, textureCube);
 				
 				_shader.uploadAttributes(_vertexDeclaration.shaderValues.data, null);
 				_shader.uploadMaterialUniforms(_shaderValue.data);
@@ -229,6 +214,14 @@ package laya.d3.resource.models {
 				Stat.trianglesFaces += 12;
 				Stat.drawCall++;
 			}
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function destroy():void {
+			super.destroy();
+			(_textureCube) && (_textureCube._removeReference(), _textureCube = null);
 		}
 	
 	}

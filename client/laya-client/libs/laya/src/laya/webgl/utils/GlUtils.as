@@ -20,7 +20,7 @@ package laya.webgl.utils {
 		 *	 |__\|
 		 *	 3   2
 		 */
-		public static function fillIBQuadrangle(buffer:IndexBuffer2D, count:int/*Quadrangle count*/):Boolean {
+		public static function fillIBQuadrangle(buffer:IndexBuffer2D, count:int):Boolean {
 			if (count > 65535 / 4) {
 				throw Error("IBQuadrangle count:" + count + " must<:" + Math.floor(65535 / 4));
 				return false;
@@ -45,7 +45,7 @@ package laya.webgl.utils {
 			return true;
 		}
 		
-		public static function expandIBQuadrangle(buffer:IndexBuffer2D, count:int/*Quadrangle count*/):void {
+		public static function expandIBQuadrangle(buffer:IndexBuffer2D, count:int):void {
 			buffer.bufferLength >= (count * 6 * Buffer2D.SHORT) || fillIBQuadrangle(buffer, count);
 		}
 		
@@ -61,7 +61,6 @@ package laya.webgl.utils {
 		}
 		
 		public static function fillQuadrangleImgVb(vb:VertexBuffer2D, x:Number, y:Number, point4:Array, uv:Array, m:Matrix, _x:Number, _y:Number):Boolean {
-			'use strict';
 			
 			var vpos:int = (vb._byteLength >> 2)/*FLOAT32*/ + WebGLContext2D._RECTVBSIZE;
 			vb.byteLength = (vpos << 2);
@@ -110,7 +109,7 @@ package laya.webgl.utils {
 		}
 		
 		public static function fillTranglesVB(vb:VertexBuffer2D, x:Number, y:Number, points:Array, m:Matrix, _x:Number, _y:Number):Boolean {
-			'use strict';
+
 			//x |= 0; y |= 0;_x |= 0; _y |= 0;
 			
 			var vpos:int = (vb._byteLength >> 2)/*FLOAT32*/ + points.length;///    Context._RECTVBSIZE;
@@ -147,38 +146,33 @@ package laya.webgl.utils {
 			return true;
 		}
 
-		public static function copyPreImgVb(vb:VertexBuffer2D, dx:Number, dy:Number):void {
+		public static function copyPreImgVb(vb:VertexBuffer2D, dx:Number, dy:Number):void
+		{
 			
 			var vpos:int = (vb._byteLength >> 2)/*FLOAT32*/;// + WebGLContext2D._RECTVBSIZE;
 			vb.byteLength = ((vpos + WebGLContext2D._RECTVBSIZE) << 2);
 			var vbdata:* = vb.getFloat32Array();
-			/*
-			for (var i:int = 0; i < 16; i++)
+			for (var i:int = 0, ci:int = vpos - 16; i < 4; i++)
 			{
-				vbdata[vpos + i] = vbdata[vpos + i-16];
-			}
-			
-			vbdata[vpos] 	 += dx;
-			vbdata[vpos + 1] += dy;
-			vbdata[vpos + 4] += dx;
-			vbdata[vpos + 5] += dy;
-			vbdata[vpos + 8] += dx;
-			vbdata[vpos + 9] += dy;
-			vbdata[vpos + 12]+= dx;
-			vbdata[vpos + 13]+= dy;
-			*/
-			for (var i:int=0,ci:int=vpos -16; i < 4; i++) {
-				vbdata[vpos] = vbdata[ci] + dx;++vpos;++ci;
-				vbdata[vpos] = vbdata[ci] + dy;++vpos;++ci;				
-				vbdata[vpos] = vbdata[ci];++vpos;++ci;
-				vbdata[vpos] = vbdata[ci];++vpos;++ci;
+				vbdata[vpos] = vbdata[ci] + dx;
+				++vpos;
+				++ci;
+				vbdata[vpos] = vbdata[ci] + dy;
+				++vpos;
+				++ci;
+				vbdata[vpos] = vbdata[ci];
+				++vpos;
+				++ci;
+				vbdata[vpos] = vbdata[ci];
+				++vpos;
+				++ci;
 			}
 			vb._upload = true;
 		}
 		
 		public static function fillRectImgVb(vb:VertexBuffer2D, clip:Rectangle, x:Number, y:Number, width:Number, height:Number, uv:Array, m:Matrix, _x:Number, _y:Number, dx:Number, dy:Number, round:Boolean = false):Boolean {
 			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
-			'use strict';
+			
 			
 			var mType:int = 1;
 			var toBx:Number, toBy:Number, toEx:Number, toEy:Number;
@@ -187,7 +181,7 @@ package laya.webgl.utils {
 			var finalX:Number, finalY:Number, offsetX:Number, offsetY:Number;
 			
 			var a:Number = m.a, b:Number = m.b, c:Number = m.c, d:Number = m.d;
-			var useClip:Boolean = clip.width < WebGLContext2D._MAXSIZE;
+			var useClip:Boolean = clip && clip.width < WebGLContext2D._MAXSIZE;
 			if (a !== 1 || b !== 0 || c !== 0 || d !== 1) {
 				m.bTransform = true;
 				if (b === 0 && c === 0) {
@@ -213,8 +207,14 @@ package laya.webgl.utils {
 			{
 				cBx = clip.x, cBy = clip.y, cEx = clip.width + cBx, cEy = clip.height + cBy;
 			}
-			if (mType !== 1 && ( Math.min(toBx,toEx) >= cEx ||  Math.min(toBy ,toEy)>= cEy ||  Math.max(toEx,toBx) <= cBx || Math.max(toEy,toBy) <= cBy))
-				return false;
+			
+			if (mType !== 1)
+			{
+				if (Math.min(toBx, toEx) >= cEx) return false;
+				if (Math.min(toBy, toEy) >= cEy) return false;
+				if (Math.max(toEx, toBx) <= cBx) return false;
+				if (Math.max(toEy, toBy) <= cBy) return false;
+			}
 			
 			var vpos:int = (vb._byteLength >> 2)/*FLOAT32*/;// + WebGLContext2D._RECTVBSIZE;
 			vb.byteLength = ((vpos + WebGLContext2D._RECTVBSIZE) << 2);
@@ -345,7 +345,7 @@ package laya.webgl.utils {
 		
 		public static function fillLineVb(vb:VertexBuffer2D, clip:Rectangle, fx:Number, fy:Number, tx:Number, ty:Number, width:Number, mat:Matrix):Boolean {
 			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
-			'use strict';
+			
 			
 			var linew:Number = width * .5;
 			

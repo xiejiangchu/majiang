@@ -30,6 +30,7 @@ package laya.renders {
 			if (canvas) {
 				canvas.destroy();
 				canvas = null;
+				ctx = null;
 			}
 			if (ctx) {
 				ctx.destroy();
@@ -186,6 +187,30 @@ package laya.renders {
 			//绘制
 			this._fillAndStroke(args[3], args[4], args[5], true);
 		}
+		
+		/**
+		 * 绘制三角形
+		 * @param	x
+		 * @param	y
+		 * @param	tex
+		 * @param	args [x, y, texture,vertices,indices,uvs,matrix]
+		 */
+		public function drawTriangles(x:Number, y:Number, args:Array):void {
+			if (Render.isWebGL) {
+				this.ctx.drawTriangles(args[0],x+args[1],y+args[2],args[3],args[4],args[5],args[6],args[7],args[8],args[9]);
+			}else {
+				var indices:Uint16Array = args[5];
+				var i:int, len:int = indices.length;
+				var ctx:Context = this.ctx;
+				
+				for (i = 0; i < len; i += 3) {
+					var index0:int = indices[i] * 2;
+					var index1:int = indices[i + 1] * 2;
+					var index2:int = indices[i + 2] * 2;
+					ctx.drawTriangle(args[0], args[3], args[4], index0, index1, index2, args[6], true);
+				}
+			}
+		}		
 		
 		public function fillCircle(x:Number, y:Number, radius:Number, color:String):void {
 			Stat.drawCall++;
@@ -364,10 +389,13 @@ package laya.renders {
 			this.ctx.globalAlpha = args[0];
 		}
 		
-		public function fillWords(words:Vector.<HTMLChar>, x:Number, y:Number, font:String, color:String):void {
-			this.ctx.fillWords(words, x, y, font, color);
+		public function fillWords(words:Vector.<HTMLChar>, x:Number, y:Number, font:String, color:String,underLine:int=0):void {
+			this.ctx.fillWords(words, x, y, font, color,underLine);
 		}
-		
+		/*** @private */
+		public function fillBorderWords(words:Vector.<HTMLChar>, x:Number, y:Number, font:String, fillColor:String, borderColor:String, lineWidth:int):void {	
+			this.ctx.fillBorderWords(words, x, y, font, fillColor,borderColor,lineWidth);
+		}
 		public function fillText(text:String, x:Number, y:Number, font:String, color:String, textAlign:String):void {
 			this.ctx.fillText(text, x + this.x, y + this.y, font, color, textAlign);
 		}
@@ -430,20 +458,20 @@ package laya.renders {
 			Render.isWebGL && ctx.setPathId(-1);
 			ctx.beginPath();
 			x += args[0], y += args[1];
-			
+			Render.isWebGL && ctx.movePath(x, y);
 			var paths:Array = args[2];
 			for (var i:int = 0, n:int = paths.length; i < n; i++) {
 				
 				var path:Array = paths[i];
 				switch (path[0]) {
 				case "moveTo": 
-					ctx.moveTo(x + path[1], y + path[2]);
+					Render.isWebGL ? ctx.moveTo(path[1], path[2]) : ctx.moveTo(x + path[1], y + path[2]);
 					break;
 				case "lineTo": 
-					ctx.lineTo(x + path[1], y + path[2]);
+					Render.isWebGL ? ctx.lineTo(path[1], path[2]) : ctx.lineTo(x + path[1], y + path[2]);
 					break;
 				case "arcTo": 
-					ctx.arcTo(x + path[1], y + path[2], x + path[3], y + path[4], path[5]);
+					Render.isWebGL ? ctx.arcTo(path[1], path[2], path[3], path[4], path[5]) : ctx.arcTo(x + path[1], y + path[2], x + path[3], y + path[4], path[5]);
 					break;
 				case "closePath": 
 					ctx.closePath();
@@ -511,5 +539,11 @@ package laya.renders {
 		public var _drawParticle:Function = function(x:Number, y:Number, args:Array):void {
 			this.ctx.drawParticle(x + this.x, y + this.y, args[0]);
 		}
+		
+		
+		public var _setFilters:Function = function(x:Number, y:Number, args:Array):void {
+			this.ctx.setFilters(args);
+		}
+		//(f:ColorFilter):void
 	}
 }

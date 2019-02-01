@@ -1,5 +1,6 @@
 package laya.webgl.resource {
 	import laya.maths.Arith;
+	import laya.renders.Render;
 	import laya.resource.Bitmap;
 	import laya.webgl.WebGL;
 	import laya.webgl.WebGLContext;
@@ -33,6 +34,10 @@ package laya.webgl.resource {
 			_surfaceFormat = surfaceFormat;
 			_surfaceType = surfaceType;
 			_depthStencilFormat = depthStencilFormat;
+			//OpenGL es extesion support DEPTH_STENCIL
+			if (Render.isConchWebGL && _depthStencilFormat === WebGLContext.DEPTH_STENCIL) {
+				_depthStencilFormat = WebGLContext.DEPTH_COMPONENT16; 
+			}
 			_mipMap = mipMap;
 			_repeat = repeat;
 			_minFifter = minFifter;
@@ -40,7 +45,6 @@ package laya.webgl.resource {
 		}
 		
 		override protected function recreateResource():void {
-			startCreate();
 			var gl:WebGLContext = WebGL.mainContext;
 			_frameBuffer || (_frameBuffer = gl.createFramebuffer());
 			_source || (_source = gl.createTexture());
@@ -104,12 +108,15 @@ package laya.webgl.resource {
 			gl.bindFramebuffer(WebGLContext.FRAMEBUFFER, null);
 			(preTarget && preTexture) && (WebGLContext.bindTexture(gl, preTarget, preTexture));
 			gl.bindRenderbuffer(WebGLContext.RENDERBUFFER, null);
-			memorySize = _w * _h * 4;
+			if (isPot && this._mipMap)
+				memorySize = _w * _h * 4 * (1 + 1 / 3);//使用mipmap则在原来的基础上增加1/3
+			else
+				memorySize = _w * _h * 4;
 			completeCreate();
 		
 		}
 		
-		override protected function detoryResource():void {
+		override protected function disposeResource():void {
 			if (_frameBuffer) {
 				WebGL.mainContext.deleteTexture(_source);
 				WebGL.mainContext.deleteFramebuffer(_frameBuffer);

@@ -1,8 +1,14 @@
 package laya.d3.core {
+	import laya.d3.core.render.RenderState;
+	import laya.d3.core.scene.Scene;
+	import laya.d3.math.BoundFrustum;
 	import laya.d3.math.Matrix4x4;
 	import laya.d3.math.Vector3;
 	import laya.d3.math.Viewport;
+	import laya.d3.resource.RenderTexture;
 	import laya.d3.utils.Size;
+	import laya.events.Event;
+	import laya.webgl.WebGLContext;
 	
 	/**
 	 * <code>Camera</code> 类用于创建VR摄像机。
@@ -39,6 +45,14 @@ package laya.d3.core {
 		private var _rightProjectionViewMatrix:Matrix4x4;
 		/** @private 瞳距。*/
 		private var _pupilDistande:int;
+		/** @private */
+		private var _leftBoundFrustumUpdate:Boolean;
+		/** @private */
+		private var _rightBoundFrustumUpdate:Boolean;
+		/** @private */
+		private var _leftBoundFrustum:BoundFrustum;
+		/** @private */
+		private var _rightBoundFrustum:BoundFrustum;
 		
 		/**
 		 * 获取左横纵比。
@@ -253,6 +267,26 @@ package laya.d3.core {
 		}
 		
 		/**
+		 * 获取摄像机左视锥。
+		 */
+		public function get leftBoundFrustum():BoundFrustum {//TODO:视锥裁剪是否可以合并
+			if (_leftBoundFrustumUpdate)
+				_leftBoundFrustum.matrix = leftProjectionViewMatrix;
+			
+			return _leftBoundFrustum;
+		}
+		
+		/**
+		 * 获取摄像机右视锥。
+		 */
+		public function get rightBoundFrustum():BoundFrustum {//TODO:视锥裁剪是否可以合并
+			if (_rightBoundFrustumUpdate)
+				_rightBoundFrustum.matrix = rightProjectionViewMatrix;
+			
+			return _rightBoundFrustum;
+		}
+		
+		/**
 		 * 创建一个 <code>VRCamera</code> 实例。
 		 * @param	leftViewport 左视口。
 		 * @param	rightViewport 右视口。
@@ -263,7 +297,7 @@ package laya.d3.core {
 		 * @param	nearPlane 近裁面。
 		 * @param	farPlane 远裁面。
 		 */
-		public function VRCamera(pupilDistande:Number = 0.1, leftAspectRatio:Number = 0, rightAspectRatio:Number = 0, nearPlane:Number = 0.1, farPlane:Number = 1000) {
+		public function VRCamera(pupilDistande:Number = 0.1, leftAspectRatio:Number = 0, rightAspectRatio:Number = 0, nearPlane:Number = 0.3, farPlane:Number = 1000) {
 			_tempMatrix = new Matrix4x4();
 			_leftViewMatrix = new Matrix4x4();
 			_leftProjectionMatrix = new Matrix4x4();
@@ -280,7 +314,19 @@ package laya.d3.core {
 			_rightAspectRatio = rightAspectRatio;
 			
 			_pupilDistande = pupilDistande;
+			_leftBoundFrustumUpdate = true;
+			_leftBoundFrustum = new BoundFrustum(Matrix4x4.DEFAULT);
+			_rightBoundFrustumUpdate = true;
+			_rightBoundFrustum = new BoundFrustum(Matrix4x4.DEFAULT);
 			super(nearPlane, farPlane);
+			transform.on(Event.WORLDMATRIX_NEEDCHANGE, this, _onWorldMatrixChanged);
+		}
+		
+		/**
+		 * @private
+		 */
+		private function _onWorldMatrixChanged():void {
+			_leftBoundFrustumUpdate = _rightBoundFrustumUpdate = true;
 		}
 		
 		/**
@@ -299,15 +345,15 @@ package laya.d3.core {
 		 */
 		private function _calculateLeftProjectionMatrix():void {
 			if (!_useUserProjectionMatrix) {
-				if (orthographicProjection) {
+				if (_orthographic) {
 					var leftHalfWidth:Number = orthographicVerticalSize * leftAspectRatio * 0.5;
 					var leftHalfHeight:Number = orthographicVerticalSize * 0.5;
-					Matrix4x4.createOrthogonal(-leftHalfWidth, leftHalfWidth, -leftHalfHeight, leftHalfHeight, nearPlane, farPlane, _leftProjectionMatrix);
+					Matrix4x4.createOrthoOffCenterRH(-leftHalfWidth, leftHalfWidth, -leftHalfHeight, leftHalfHeight, nearPlane, farPlane, _leftProjectionMatrix);
 				} else {
 					Matrix4x4.createPerspective(3.1416 * fieldOfView / 180.0, leftAspectRatio, nearPlane, farPlane, _rightProjectionMatrix);
 				}
 			}
-			_projectionMatrixModifyID += 0.01 / id;
+			_leftBoundFrustumUpdate = true;
 		}
 		
 		/**
@@ -316,38 +362,88 @@ package laya.d3.core {
 		 */
 		private function _calculateRightProjectionMatrix():void {
 			if (!_useUserProjectionMatrix) {
-				if (orthographicProjection) {
+				if (_orthographic) {
 					var rightHalfWidth:Number = orthographicVerticalSize * rightAspectRatio * 0.5;
 					var rightHalfHeight:Number = orthographicVerticalSize * 0.5;
 					
-					Matrix4x4.createOrthogonal(-rightHalfWidth, rightHalfWidth, rightHalfHeight, rightHalfHeight, nearPlane, farPlane, _rightProjectionMatrix);
+					Matrix4x4.createOrthoOffCenterRH(-rightHalfWidth, rightHalfWidth, rightHalfHeight, rightHalfHeight, nearPlane, farPlane, _rightProjectionMatrix);
 				} else {
 					Matrix4x4.createPerspective(3.1416 * fieldOfView / 180.0, rightAspectRatio, nearPlane, farPlane, _rightProjectionMatrix);
 				}
 			}
-			_projectionMatrixModifyID += 0.01 / id;
+			_rightBoundFrustumUpdate = true;
 		}
 		
 		/**
-		 * @private
-		 * 计算投影矩阵。
+		 * @inheritDoc
 		 */
 		override protected function _calculateProjectionMatrix():void {
 			if (!_useUserProjectionMatrix) {
-				if (orthographicProjection) {
+				if (_orthographic) {
 					var leftHalfWidth:Number = orthographicVerticalSize * leftAspectRatio * 0.5;
 					var leftHalfHeight:Number = orthographicVerticalSize * 0.5;
 					var rightHalfWidth:Number = orthographicVerticalSize * rightAspectRatio * 0.5;
 					var rightHalfHeight:Number = orthographicVerticalSize * 0.5;
 					
-					Matrix4x4.createOrthogonal(-leftHalfWidth, leftHalfWidth, -leftHalfHeight, leftHalfHeight, nearPlane, farPlane, _leftProjectionMatrix);
-					Matrix4x4.createOrthogonal(-rightHalfWidth, rightHalfWidth, rightHalfHeight, rightHalfHeight, nearPlane, farPlane, _rightProjectionMatrix);
+					Matrix4x4.createOrthoOffCenterRH(-leftHalfWidth, leftHalfWidth, -leftHalfHeight, leftHalfHeight, nearPlane, farPlane, _leftProjectionMatrix);
+					Matrix4x4.createOrthoOffCenterRH(-rightHalfWidth, rightHalfWidth, rightHalfHeight, rightHalfHeight, nearPlane, farPlane, _rightProjectionMatrix);
 				} else {
 					Matrix4x4.createPerspective(3.1416 * fieldOfView / 180.0, leftAspectRatio, nearPlane, farPlane, _leftProjectionMatrix);
 					Matrix4x4.createPerspective(3.1416 * fieldOfView / 180.0, rightAspectRatio, nearPlane, farPlane, _rightProjectionMatrix);
 				}
 			}
-			_projectionMatrixModifyID += 0.01 / id;
+			_leftBoundFrustumUpdate = _rightBoundFrustumUpdate = true;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override public function _renderCamera(gl:WebGLContext, state:RenderState, scene:Scene):void {
+			state.camera = this;
+			_prepareCameraToRender();
+			
+			scene._preRenderUpdateComponents(state);//渲染之前
+			var leftViewMat:Matrix4x4, leftProjectMatrix:Matrix4x4;
+			leftViewMat = state._viewMatrix = leftViewMatrix;
+			var renderTar:RenderTexture = _renderTarget;
+			if (renderTar) {
+				renderTar.start();
+				Matrix4x4.multiply(_invertYScaleMatrix, _leftProjectionMatrix, _invertYProjectionMatrix);
+				Matrix4x4.multiply(_invertYScaleMatrix, leftProjectionViewMatrix, _invertYProjectionViewMatrix);
+				leftProjectMatrix = state._projectionMatrix = _invertYProjectionMatrix;
+				state._projectionViewMatrix = _invertYProjectionViewMatrix;
+			} else {
+				leftProjectMatrix = state._projectionMatrix = _leftProjectionMatrix;
+				state._projectionViewMatrix = leftProjectionViewMatrix;
+			}
+			
+			_prepareCameraViewProject(leftViewMat, leftProjectMatrix);
+			state._viewport = leftViewport;
+			scene._preRenderScene(gl, state,leftBoundFrustum);
+			scene._clear(gl, state);
+			scene._renderScene(gl, state);
+			
+			var rightViewMat:Matrix4x4, rightProjectMatrix:Matrix4x4;
+			rightViewMat = state._viewMatrix = rightViewMatrix;
+			if (renderTar) {
+				renderTar.start();
+				Matrix4x4.multiply(_invertYScaleMatrix, _rightProjectionMatrix, _invertYProjectionMatrix);
+				Matrix4x4.multiply(_invertYScaleMatrix, rightProjectionViewMatrix, _invertYProjectionViewMatrix);
+				state._projectionMatrix = _invertYProjectionMatrix;
+				rightProjectMatrix = state._projectionViewMatrix = _invertYProjectionViewMatrix;
+			} else {
+				rightProjectMatrix = state._projectionMatrix = _rightProjectionMatrix;
+				state._projectionViewMatrix = rightProjectionViewMatrix;
+			}
+			
+			_prepareCameraViewProject(rightViewMat, rightProjectMatrix);
+			state._viewport = rightViewport;
+			scene._preRenderScene(gl, state,rightBoundFrustum);
+			scene._clear(gl, state);
+			scene._renderScene(gl, state);
+			scene._postRenderUpdateComponents(state);//渲染之后
+			
+			(renderTar) && (renderTar.end());
 		}
 	
 	}

@@ -1,27 +1,15 @@
 package laya.d3.resource.models {
-	import laya.d3.core.Sprite3D;
 	import laya.d3.core.material.BaseMaterial;
 	import laya.d3.core.render.IRenderable;
-	import laya.d3.core.render.RenderElement;
-	import laya.d3.core.render.RenderQueue;
-	import laya.d3.core.render.RenderState;
+	import laya.d3.graphics.IndexBuffer3D;
 	import laya.d3.graphics.VertexBuffer3D;
 	import laya.d3.graphics.VertexElement;
 	import laya.d3.graphics.VertexElementFormat;
 	import laya.d3.graphics.VertexElementUsage;
 	import laya.d3.loaders.MeshReader;
-	import laya.d3.math.BoundBox;
-	import laya.d3.math.BoundSphere;
 	import laya.d3.math.Matrix4x4;
 	import laya.d3.math.Vector3;
-	import laya.d3.utils.Utils3D;
 	import laya.events.Event;
-	import laya.events.EventDispatcher;
-	import laya.net.Loader;
-	import laya.net.URL;
-	import laya.resource.Resource;
-	import laya.utils.Handler;
-	import laya.webgl.utils.VertexBuffer2D;
 	
 	/**
 	 * <code>Mesh</code> 类用于创建文件网格数据模板。
@@ -40,55 +28,24 @@ package laya.d3.resource.models {
 		/** @private */
 		private var _subMeshes:Vector.<SubMesh>;
 		/** @private */
-		public var _bindPoses:Vector.<Matrix4x4>;
+		public var _vertexBuffers:Vector.<VertexBuffer3D>;
+		/** @private */
+		public var _indexBuffer:IndexBuffer3D;
+		/** @private */
+		public var _boneNames:Vector.<String>;
 		/** @private */
 		public var _inverseBindPoses:Vector.<Matrix4x4>;
-		/**
-		 * 获取网格顶点
-		 * @return 网格顶点。
-		 */
-		override public function get positions():Vector.<Vector3> {
-			var vertices:Vector.<Vector3> = new Vector.<Vector3>();
-			var submesheCount:int = _subMeshes.length;
-			for (var i:int = 0; i < submesheCount; i++) {
-				var subMesh:SubMesh = _subMeshes[i];
-				var vertexBuffer:VertexBuffer3D = subMesh._getVertexBuffer();
-				
-				var positionElement:VertexElement;
-				var vertexElements:Array = vertexBuffer.vertexDeclaration.getVertexElements();
-				var j:int;
-				for (j = 0; j < vertexElements.length; j++) {
-					var vertexElement:VertexElement = vertexElements[j];
-					if (vertexElement.elementFormat === VertexElementFormat.Vector3 && vertexElement.elementUsage === VertexElementUsage.POSITION0) {
-						positionElement = vertexElement;
-						break;
-					}
-				}
-				
-				var verticesData:Float32Array = vertexBuffer.getData();
-				for (j = 0; j < verticesData.length; j += vertexBuffer.vertexDeclaration.vertexStride / 4) {
-					var ofset:int = j + positionElement.offset / 4;
-					var position:Vector3 = new Vector3(verticesData[ofset + 0], verticesData[ofset + 1], verticesData[ofset + 2]);
-					vertices.push(position);
-				}
-			}
-			return vertices;
-		}
+		/** @private */
+		public var _skinnedDatas:Float32Array;
+		
+		
 		
 		/**
 		 * 获取材质队列的浅拷贝。
 		 * @return  材质队列的浅拷贝。
 		 */
-		public function get materials():Vector.<BaseMaterial> {
+		public function get materials():Vector.<BaseMaterial> {//兼容代码
 			return _materials.slice();
-		}
-		
-		/**
-		 * 获取网格的默认绑定动作矩阵。
-		 * @return  网格的默认绑定动作矩阵。
-		 */
-		public function get bindPoses():Vector.<Matrix4x4> {
-			return _bindPoses;
 		}
 		
 		/**
@@ -107,43 +64,74 @@ package laya.d3.resource.models {
 			super();
 			_subMeshes = new Vector.<SubMesh>();
 			_materials = new Vector.<BaseMaterial>();
-			
-			if (_loaded)
-				_generateBoundingObject();
-			else
-				once(Event.LOADED, this, _generateBoundingObject);
+			_vertexBuffers = new Vector.<VertexBuffer3D>();
 		}
 		
-		private function _generateBoundingObject():void {
-			var pos:Vector.<Vector3> = positions;
-			_boundingBox = new BoundBox(new Vector3(), new Vector3());
-			BoundBox.createfromPoints(pos, _boundingBox);
-			_boundingSphere = new BoundSphere(new Vector3(), 0);
-			BoundSphere.createfromPoints(pos, _boundingSphere);
+		/**
+		 * 获取网格顶点，并产生数据
+		 * @return 网格顶点。
+		 */
+		override public function _getPositions():Vector.<Vector3> {
+			var vertices:Vector.<Vector3> = new Vector.<Vector3>();
+			var i:int, j:int, vertexBuffer:VertexBuffer3D, positionElement:VertexElement, vertexElements:Array, vertexElement:VertexElement, ofset:int, verticesData:Float32Array;
+			if (_vertexBuffers.length !== 0) {
+				var vertexBufferCount:int = _vertexBuffers.length;
+				for (i = 0; i < vertexBufferCount; i++) {
+					vertexBuffer = _vertexBuffers[i];
+					
+					vertexElements = vertexBuffer.vertexDeclaration.getVertexElements();
+					for (j = 0; j < vertexElements.length; j++) {
+						vertexElement = vertexElements[j];
+						if (vertexElement.elementFormat === VertexElementFormat.Vector3 && vertexElement.elementUsage === VertexElementUsage.POSITION0) {
+							positionElement = vertexElement;
+							break;
+						}
+					}
+					
+					verticesData = vertexBuffer.getData();
+					for (j = 0; j < verticesData.length; j += vertexBuffer.vertexDeclaration.vertexStride / 4) {
+						ofset = j + positionElement.offset / 4;
+						vertices.push(new Vector3(verticesData[ofset + 0], verticesData[ofset + 1], verticesData[ofset + 2]));
+					}
+				}
+			} else {//兼容旧格式
+				var submesheCount:int = _subMeshes.length;
+				for (i = 0; i < submesheCount; i++) {
+					var subMesh:SubMesh = _subMeshes[i];
+					vertexBuffer = subMesh._getVertexBuffer();
+					
+					vertexElements = vertexBuffer.vertexDeclaration.getVertexElements();
+					for (j = 0; j < vertexElements.length; j++) {
+						vertexElement = vertexElements[j];
+						if (vertexElement.elementFormat === VertexElementFormat.Vector3 && vertexElement.elementUsage === VertexElementUsage.POSITION0) {
+							positionElement = vertexElement;
+							break;
+						}
+					}
+					
+					verticesData = vertexBuffer.getData();
+					for (j = 0; j < verticesData.length; j += vertexBuffer.vertexDeclaration.vertexStride / 4) {
+						ofset = j + positionElement.offset / 4;
+						vertices.push(new Vector3(verticesData[ofset + 0], verticesData[ofset + 1], verticesData[ofset + 2]));
+					}
+				}
+			}
+			return vertices;
 		}
 		
 		/**
 		 * 添加子网格（开发者禁止修改）。
 		 * @param subMesh 子网格。
 		 */
-		public function _add(subMesh:SubMesh):void {
+		public function _setSubMeshes(subMeshes:Vector.<SubMesh>):void {
 			//TODO：SubMesh为私有问题。
-			subMesh._indexInMesh = _subMeshes.length;
-			_subMeshes.push(subMesh);
-			_subMeshCount++;
-		}
-		
-		/**
-		 * 移除子网格（开发者禁止修改）。
-		 * @param subMesh 子网格。
-		 * @return  是否成功。
-		 */
-		public function _remove(subMesh:SubMesh):Boolean {
-			var index:int = _subMeshes.indexOf(subMesh);
-			if (index < 0) return false;
-			_subMeshes.splice(index, 1);
-			_subMeshCount--;
-			return true;
+			_subMeshes = subMeshes
+			_subMeshCount = subMeshes.length;
+			
+			for (var i:int = 0; i < _subMeshCount; i++)
+				subMeshes[i]._indexInMesh = i;
+			_positions = _getPositions();
+			_generateBoundingObject();
 		}
 		
 		/**
@@ -152,9 +140,9 @@ package laya.d3.resource.models {
 		override public function onAsynLoaded(url:String, data:*, params:Array):void {
 			var bufferData:Object = data[0];
 			var textureMap:Object = data[1];
-			MeshReader.read(bufferData as ArrayBuffer, this, _materials, textureMap);
-			_loaded = true;
-			event(Event.LOADED, this);
+			MeshReader.read(bufferData as ArrayBuffer, this, _materials, _subMeshes, textureMap);
+			completeCreate();//TODO:应该和解析函数绑定
+			_endLoaded();
 		}
 		
 		/**
@@ -174,27 +162,32 @@ package laya.d3.resource.models {
 			return _subMeshes.length;
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		override public function getRenderElementsCount():int {
 			return _subMeshes.length;
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		override public function getRenderElement(index:int):IRenderable {
 			return _subMeshes[index];
 		}
 		
 		/**
-		 * <p>彻底清理资源。</p>
-		 * <p><b>注意：</b>会强制解锁清理。</p>
+		 * @inheritDoc
 		 */
-		override public function dispose():void {
-			_resourceManager.removeResource(this);
-			super.dispose();
-			
+		override protected function disposeResource():void {
 			for (var i:int = 0; i < _subMeshes.length; i++)
 				_subMeshes[i].dispose();
-			
+			_materials = null;
 			_subMeshes = null;
-			_subMeshCount = 0;
+			_vertexBuffers = null;
+			_indexBuffer = null;
+			_boneNames = null;
+			_inverseBindPoses = null;
 		}
 	}
 }

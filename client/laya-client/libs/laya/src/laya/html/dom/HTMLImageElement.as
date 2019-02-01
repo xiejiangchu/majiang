@@ -32,12 +32,12 @@ package laya.html.dom
 			url = formatURL(url);
 			if (_url == url) return;
 			_url = url;
-			_tex = Loader.getRes(url)
-			if (!_tex) {
-				_tex = new Texture();
-				_tex.load(url);
-				Loader.cacheRes(url, _tex);
-			}
+			//_tex = Loader.getRes(url)
+			//if (!_tex) {
+				//_tex = new Texture();
+				//_tex.load(url);
+				//Loader.cacheRes(url, _tex);
+			//}
 			
 			var tex:Texture = _tex=Loader.getRes(url);
 			if (!tex) {
@@ -73,6 +73,8 @@ package laya.html.dom
 					graphics.drawTexture(_tex, 0, 0, _renderArgs[3], _renderArgs[4]);
 					//context.ctx.drawTexture2(0, 0, style.translateX, style.translateY, transform, style.alpha, style.blendMode, _renderArgs);
 				}
+				repaint();
+				parentRepaint();
 			}
 			
 			tex.loaded?onloaded():tex.on(Event.LOADED, null, onloaded);			
@@ -96,6 +98,20 @@ package laya.html.dom
 			_renderArgs[3] = width || _tex.width;
 			_renderArgs[4] = height || _tex.height;
 			context.ctx.drawTexture2(x, y, style.translateX, style.translateY, transform, style.alpha, style.blendMode, _renderArgs);
+		}
+		/**
+		 * @private
+		 */
+		override public function layaoutCallNative():void
+		{
+			var n:int = 0;
+			if (_childs &&(n= _childs.length) > 0)
+			{
+				for (var i:int = 0; i < n; i++ )
+				{
+					_childs[i].layaoutCallNative && _childs[i].layaoutCallNative();
+				}
+			}	
 		}
 	}
 

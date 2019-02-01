@@ -13,23 +13,125 @@ package laya.resource {
 		/*** @private */
 		private static var _default:Context =/*[STATIC SAFE]*/ new Context();
 		/*** @private */
+		private static var replaceKeys:Array = ["font", "fillStyle", "textBaseline"];
+		/*** @private */
+		private static var newKeys:Array = [];
+		
+		/*** @private */
 		public var _canvas:HTMLCanvas;
 		public var _repaint:Boolean = false;
 		
 		/*** @private */
 		public static function __init__(to:*=null):void {			
 			/*[IF-FLASH]*/ return;
+			
 			var from:* = Context.prototype;
+			//forxiaochengxu
 			to = to || __JS__("CanvasRenderingContext2D.prototype");
+			
+			if (to.inited) return;
+			to.inited=true;
 			
 			to.__fillText = to.fillText;
 			to.__fillRect = to.fillRect;
 			to.__strokeText = to.strokeText;
-			var funs:Array = ['drawTextures','fillWords','setIsMainContext','fillRect', 'strokeText','fillTexture', 'fillText', 'transformByMatrix', 'setTransformByMatrix', 'clipRect', 'drawTexture', 'drawTexture2', 'drawTextureWithTransform', 'flush', 'clear', 'destroy', 'drawCanvas', 'fillBorderText','drawCurves'];
+			var funs:Array = ['drawTextures',"drawTriangle",'fillWords','fillBorderWords','setIsMainContext','fillRect', 'strokeText','fillTexture', 'fillText', 'transformByMatrix', 'setTransformByMatrix', 'clipRect', 'drawTexture', 'drawTexture2', 'drawTextureWithTransform', 'flush', 'clear', 'destroy', 'drawCanvas', 'fillBorderText','drawCurves'];
 			funs.forEach(function(i:String):void {
-				to[i] = from[i] || to[i];
+				to[i] = from[i];
 			});
+			//return;
+			//
+			//var canvasO:*= __JS__("HTMLCanvasElement.prototype");
+			//if (!replaceCanvasGetSet(canvasO, "width")) return;
+			//if (!replaceCanvasGetSet(canvasO, "height")) return;
+			//
+			//var i:int, len:int;
+			//len = replaceKeys.length;
+			//for (i = 0; i < len; i++)
+			//{
+				//if(!replaceGetSet(to,replaceKeys[i])) return;
+			//}
+				//
+			//to.__reset = from.replaceReset;
+			//to.__restore = to.restore;
+			//to.restore = from.replaceResotre;
 		}
+		
+		private static function replaceCanvasGetSet(tar:Object, key:String):Boolean
+		{
+			var oldO:Object = __JS__("Object.getOwnPropertyDescriptor(tar, key);")
+			if (!oldO||!oldO.configurable) return false;
+			var newO:Object= { };
+			var tkey:String;
+			for (tkey in oldO)
+			{
+				if (tkey != "set")
+				{
+					newO[tkey] = oldO[tkey];
+				}
+			}
+			var preFun:Function = oldO["set"];
+			newO["set"] = function(v:*):void
+			{
+				var _self:*= __JS__("this");
+				preFun.call(_self, v);
+				var _ct:*= _self.getContext("2d");
+				if (_ct && "__reset" in _ct)
+				{
+					_ct.__reset();
+				}
+			}
+			__JS__("Object.defineProperty(tar, key, newO);")
+			return true;
+		}
+		
+		private function replaceReset():void
+		{
+			var i:int, len:int;
+			len = replaceKeys.length;
+			var key:String;
+			for (i = 0; i < len; i++)
+			{
+				key = replaceKeys[i];
+				this[newKeys[i]]=this[key];
+			}
+		}
+		
+		private function replaceResotre():void
+		{
+			__JS__("this.__restore();")
+			__JS__("this.__reset();")
+		}
+		
+		private static function replaceGetSet(tar:Object, key:String):Boolean
+		{
+			var oldO:Object = __JS__("Object.getOwnPropertyDescriptor(tar, key);")
+			if (!oldO||!oldO.configurable) return false;
+			var newO:Object= { };
+			var tkey:String;
+			for (tkey in oldO)
+			{
+				if (tkey != "set")
+				{
+					newO[tkey] = oldO[tkey];
+				}
+			}
+			var preFun:Function = oldO["set"];
+			var dataKey:String = "___" + key + "__";
+			newKeys.push(dataKey);
+			newO["set"] = function(v:*):void
+			{
+				var _self:*= __JS__("this");
+				if (v != _self[dataKey])
+				{
+					_self[dataKey] = v;
+					preFun.call(_self, v);
+				}
+			}
+			__JS__("Object.defineProperty(tar, key, newO);")
+			return true;
+		}
+
 		
 		public function setIsMainContext():void
 		{
@@ -166,8 +268,8 @@ package laya.resource {
 		public function drawTextures(tex:Texture, pos:Array, tx:Number, ty:Number):void
 		{
 			Stat.drawCall += pos.length / 2;
-			var w:Number = tex.bitmap.width;
-			var h:Number = tex.bitmap.height;		
+			var w:Number = tex.width;
+			var h:Number = tex.height;
 			for (var i:int = 0, sz:int = pos.length; i < sz; i += 2)
 			{
 				drawTexture(tex, pos[i], pos[i + 1], w, h, tx, ty);
@@ -272,7 +374,6 @@ package laya.resource {
 		
 		/*** @private */
 		public function drawTexture2(x:Number, y:Number, pivotX:Number, pivotY:Number, m:Matrix, alpha:Number, blendMode:String, args2:Array):void {
-			'use strict';
 			var tex:Texture = args2[0];
 			if (!(tex.loaded && tex.bitmap && tex.source))//source内调用tex.active();
 			{
@@ -326,13 +427,94 @@ package laya.resource {
 			this.translate(-oX, -oY);			
 		}
 		
+		public function drawTriangle(texture:Texture, vertices:Float32Array, uvs:Float32Array, index0:int, index1:int, index2:int, matrix:Matrix, canvasPadding:Boolean):void {
+			var source:Bitmap = texture.bitmap;
+			var textureSource:* = source.source;
+			var textureWidth:Number = texture.width;
+			var textureHeight:Number = texture.height;
+			var sourceWidth:Number = source.width;
+			var sourceHeight:Number = source.height;
+			
+			//uv数据
+			var u0:Number = uvs[index0] * sourceWidth;
+			var u1:Number = uvs[index1] * sourceWidth;
+			var u2:Number = uvs[index2] * sourceWidth;
+			var v0:Number = uvs[index0 + 1] * sourceHeight;
+			var v1:Number = uvs[index1 + 1] * sourceHeight;
+			var v2:Number = uvs[index2 + 1] * sourceHeight;
+			
+			//绘制顶点数据
+			var x0:Number = vertices[index0];
+			var x1:Number = vertices[index1];
+			var x2:Number = vertices[index2];
+			var y0:Number = vertices[index0 + 1];
+			var y1:Number = vertices[index1 + 1];
+			var y2:Number = vertices[index2 + 1];
+			
+			//扩展区域，解决黑边问题
+			if (canvasPadding) {
+				var paddingX:Number = 1;
+				var paddingY:Number = 1;
+				var centerX:Number = (x0 + x1 + x2) / 3;
+				var centerY:Number = (y0 + y1 + y2) / 3;
+				
+				var normX:Number = x0 - centerX;
+				var normY:Number = y0 - centerY;
+				var dist:Number = Math.sqrt((normX * normX) + (normY * normY));
+				
+				x0 = centerX + ((normX / dist) * (dist + paddingX));
+				y0 = centerY + ((normY / dist) * (dist + paddingY));
+				
+				normX = x1 - centerX;
+				normY = y1 - centerY;
+				
+				dist = Math.sqrt((normX * normX) + (normY * normY));
+				x1 = centerX + ((normX / dist) * (dist + paddingX));
+				y1 = centerY + ((normY / dist) * (dist + paddingY));
+				
+				normX = x2 - centerX;
+				normY = y2 - centerY;
+				
+				dist = Math.sqrt((normX * normX) + (normY * normY));
+				x2 = centerX + ((normX / dist) * (dist + paddingX));
+				y2 = centerY + ((normY / dist) * (dist + paddingY));
+			}
+			
+			this.save();
+			if (matrix)
+				this.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
+			
+			//创建三角形裁剪区域
+			this.beginPath();
+			this.moveTo(x0, y0);
+			this.lineTo(x1, y1);
+			this.lineTo(x2, y2);
+			this.closePath();
+			this.clip();
+			
+			// 计算矩阵，将图片变形到合适的位置
+			var delta:Number = (u0 * v1) + (v0 * u2) + (u1 * v2) - (v1 * u2) - (v0 * u1) - (u0 * v2);
+			var dDelta:Number = 1 / delta;
+			var deltaA:Number = (x0 * v1) + (v0 * x2) + (x1 * v2) - (v1 * x2) - (v0 * x1) - (x0 * v2);
+			var deltaB:Number = (u0 * x1) + (x0 * u2) + (u1 * x2) - (x1 * u2) - (x0 * u1) - (u0 * x2);
+			var deltaC:Number = (u0 * v1 * x2) + (v0 * x1 * u2) + (x0 * u1 * v2) - (x0 * v1 * u2) - (v0 * u1 * x2) - (u0 * x1 * v2);
+			var deltaD:Number = (y0 * v1) + (v0 * y2) + (y1 * v2) - (v1 * y2) - (v0 * y1) - (y0 * v2);
+			var deltaE:Number = (u0 * y1) + (y0 * u2) + (u1 * y2) - (y1 * u2) - (y0 * u1) - (u0 * y2);
+			var deltaF:Number = (u0 * v1 * y2) + (v0 * y1 * u2) + (y0 * u1 * v2) - (y0 * v1 * u2) - (v0 * u1 * y2) - (u0 * y1 * v2);
+			
+			this.transform(deltaA * dDelta, deltaD * dDelta, deltaB * dDelta, deltaE * dDelta, deltaC * dDelta, deltaF * dDelta);
+			this.drawImage(textureSource, texture.uv[0] * sourceWidth, texture.uv[1] * sourceHeight, textureWidth, textureHeight, texture.uv[0] * sourceWidth, texture.uv[1] * sourceHeight, textureWidth, textureHeight);
+			this.restore();
+		}
+		
+		
 		/*** @private */
 		public function flush():int {
 			return 0;
 		}
 		
 		/*** @private */
-		public function fillWords(words:Vector.<HTMLChar>, x:Number, y:Number, font:String, color:String):void {
+		public function fillWords(words:Vector.<HTMLChar>, x:Number, y:Number, font:String, color:String,underLine:int):void {
 			font && (this.font = font);
 			color && (this.fillStyle = color);
 			var _this:* = this;
@@ -341,9 +523,37 @@ package laya.resource {
 			for (var i:int = 0, n:int = words.length; i < n; i++) {
 				var a:* = words[i];
 				__JS__("this.__fillText(a.char, a.x + x, a.y + y)");
-			}
+				if (underLine === 1) {
+					var tHeight:Number = a.height;
+					var dX:Number = a.style.letterSpacing*0.5;
+					if (!dX) dX = 0;
+					//tSprite.graphics.drawLine(0-dX, tHeight, tHTMLChar.width+dX, tHeight, tHTMLChar._getCSSStyle().color);
+					this.beginPath();
+					this.strokeStyle = color;
+					this.lineWidth = 1;
+					this.moveTo(x+a.x-dX+0.5, y+a.y + tHeight+0.5);
+					this.lineTo(x+a.x+a.width+dX+0.5, y+a.y+tHeight+0.5);
+					this.stroke();
+				}
+			}			
 		}
 		
+		/*** @private */
+		public function fillBorderWords(words:Vector.<HTMLChar>, x:Number, y:Number, font:String, color:String, borderColor:String, lineWidth:int):void {	
+			font && (this.font = font);
+			color && (this.fillStyle = color);
+			this.textBaseline = "top";
+			__JS__("this.lineWidth = lineWidth");
+			__JS__("this.textAlign = 'left'");
+			__JS__("this.strokeStyle = borderColor");
+			for (var i:int = 0, n:int = words.length; i < n; i++) {
+				var a:* = words[i];			
+				__JS__("this.__strokeText(a.char, a.x + x, a.y + y)");
+				__JS__("this.__fillText(a.char, a.x + x, a.y + y)");
+			}
+			
+		
+		}
 		/*** @private */
 		public function destroy():void {
 			__JS__("this.canvas.width = this.canvas.height = 0");

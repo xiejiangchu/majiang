@@ -39,6 +39,8 @@ package laya.media.webaudio {
 		 */
 		private var _startTime:Number = 0;
 		
+		private var _pauseTime:Number=0;
+		
 		/**
 		 * 播放设备
 		 */
@@ -46,7 +48,7 @@ package laya.media.webaudio {
 		
 		private var _onPlayEnd:Function;
 		private static var _tryCleanFailed:Boolean = false;
-		
+		public static const SetTargetDelay:Number = 0.001;
 		public function WebAudioSoundChannel() {
 			super();
 			_onPlayEnd = Utils.bind(__onPlayEnd, this);
@@ -60,6 +62,8 @@ package laya.media.webaudio {
 		 * 播放声音
 		 */
 		override public function play():void {
+			SoundManager.addChannel(this);
+			this.isStopped = false;
 			_clearBufferSource();
 			if (!audioBuffer) return;
 			var context:* = this.context;
@@ -72,12 +76,20 @@ package laya.media.webaudio {
 				gain.disconnect();
 			gain.connect(context.destination);
 			bufferSource.onended = _onPlayEnd;
-			
+			if (this.startTime >= this.duration) this.startTime = 0;
 			this._startTime = Browser.now();
+			if (this.gain.gain.setTargetAtTime)
+			{
+				this.gain.gain.setTargetAtTime(this._volume,this.context.currentTime,SetTargetDelay);
+			}else
 			this.gain.gain.value = this._volume;
 			if (loops == 0) {
 				bufferSource.loop = true;
 			}
+			if (bufferSource.playbackRate.setTargetAtTime)
+			{
+				bufferSource.playbackRate.setTargetAtTime(SoundManager.playbackRate,this.context.currentTime,SetTargetDelay)
+			}else
 			bufferSource.playbackRate.value = SoundManager.playbackRate;
 			bufferSource.start(0, this.startTime);
 			this._currentTime = 0;
@@ -99,6 +111,7 @@ package laya.media.webaudio {
 			if (this.loops > 0) {
 				this.loops--;
 			}
+			this.startTime = 0;
 			play();
 		}
 		
@@ -135,10 +148,23 @@ package laya.media.webaudio {
 				this.bufferSource = null;			
 			}
 		}
+		
 		private function _tryClearBuffer(sourceNode:*):void
 		{
+			if (!Browser.onMac)
+			{
+				try
+				{
+					sourceNode.buffer = null;
+				}catch (e:*)
+				{
+					_tryCleanFailed = true;
+				}
+				return;
+			}
 			try { sourceNode.buffer = WebAudioSound._miniBuffer; } catch (e:*) { _tryCleanFailed = true; }
 		}
+		
 		/**
 		 * 停止播放
 		 */
@@ -150,6 +176,29 @@ package laya.media.webaudio {
 			this.isStopped = true;
 			SoundManager.removeChannel(this);
 			completeHandler = null;
+			if(SoundManager.autoReleaseSound)
+			Laya.timer.once(5000, null, SoundManager.disposeSoundIfNotUsed, [url], false);
+		}
+		
+		override public function pause():void 
+		{
+			if (!isStopped)
+			{
+				_pauseTime = position;
+			}
+			_clearBufferSource();
+			if (gain)
+				gain.disconnect();
+			this.isStopped = true;
+			SoundManager.removeChannel(this);
+			if(SoundManager.autoReleaseSound)
+			Laya.timer.once(5000, null, SoundManager.disposeSoundIfNotUsed, [url], false);
+		}
+		
+		override public function resume():void 
+		{
+			this.startTime = _pauseTime;
+			play();
 		}
 		
 		/**
@@ -161,6 +210,10 @@ package laya.media.webaudio {
 			}
 			
 			this._volume = v;
+			if (this.gain.gain.setTargetAtTime)
+			{
+				this.gain.gain.setTargetAtTime(v,this.context.currentTime,SetTargetDelay);
+			}else
 			this.gain.gain.value = v;
 		}
 		

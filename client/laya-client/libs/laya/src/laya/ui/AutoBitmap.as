@@ -3,50 +3,25 @@ package laya.ui {
 	import laya.renders.Render;
 	import laya.resource.Texture;
 	import laya.utils.Utils;
+	import laya.utils.WeakObject;
 	
 	/**
 	 * <code>AutoBitmap</code> 类是用于表示位图图像或绘制图形的显示对象。
 	 * <p>封装了位置，宽高及九宫格的处理，供UI组件使用。</p>
 	 */
-	public final class AutoBitmap extends Graphics {
-		
-		/**
-		 * @private
-		 * 渲染命令缓存
-		 */
-		private static var cmdCaches:Object = {};
-		
-		/**@private */
-		private static var cacheCount:int = 0;
-		/**
-		 * @private
-		 * texture缓存
-		 */
-		private static var textureCache:Object = {};
-		/**是否自动缓存命名 @private */
+	public class AutoBitmap extends Graphics {
+		/**@private 是否自动缓存命令*/
 		public var autoCacheCmd:Boolean = true;
-		/**
-		 * @private
-		 * 宽度
-		 */
+		/**@private 宽度*/
 		private var _width:Number = 0;
-		/**
-		 * @private
-		 * 高度
-		 */
+		/**@private 高度*/
 		private var _height:Number = 0;
-		/**
-		 * @private
-		 * 源数据
-		 */
+		/**@private 源数据*/
 		private var _source:Texture;
-		/**
-		 * @private
-		 * 网格数据
-		 */
+		/**@private 网格数据*/
 		private var _sizeGrid:Array;
 		/**@private */
-		private var _isChanged:Boolean;
+		protected var _isChanged:Boolean;
 		/**@private */
 		public var _offset:Array;
 		
@@ -156,8 +131,7 @@ package laya.ui {
 		 * @private
 		 * 修改纹理资源。
 		 */
-		private function changeSource():void {
-			if (cacheCount++ > 50) clearCache();
+		protected function changeSource():void {
 			_isChanged = false;
 			var source:Texture = this._source;
 			if (!source || !source.bitmap) return;
@@ -170,13 +144,14 @@ package laya.ui {
 			
 			//如果没有设置9宫格，或大小未改变，则直接用原图绘制
 			if (!sizeGrid || (sw === width && sh === height)) {
-				cleanByTexture(source, _offset ? _offset[0] : 0, _offset ? _offset[1] : 0, width, height);
+				clear();
+				drawTexture(source, _offset ? _offset[0] : 0, _offset ? _offset[1] : 0, width, height);
 			} else {
 				//从缓存中读取渲染命令
 				source.$_GID || (source.$_GID = Utils.getGID());
 				var key:String = source.$_GID + "." + width + "." + height + "." + sizeGrid.join(".");
-				if (cmdCaches[key]) {
-					this.cmds = cmdCaches[key];
+				if (Utils.isOKCmdList(WeakObject.I.get(key))) {
+					this.cmds = WeakObject.I.get(key);
 					return;
 				}
 				
@@ -186,8 +161,20 @@ package laya.ui {
 				var bottom:Number = sizeGrid[2];
 				var left:Number = sizeGrid[3];
 				var repeat:Boolean = sizeGrid[4];
+				var needClip:Boolean = false;
+				if (width == sw) {
+					left = right = 0;
+				}
+				if (height == sh) {
+					top = bottom = 0;
+				}
+				//处理进度条不好看的问题
 				if (left + right > width) {
-					right = 0;
+					var clipWidth:Number = width;
+					needClip = true;
+					width = left + right;
+					save();
+					clipRect(0, 0, clipWidth, height);
 				}
 				
 				//绘制四个角
@@ -204,14 +191,17 @@ package laya.ui {
 				//绘制中间
 				drawBitmap(repeat, getTexture(source, left, top, sw - left - right, sh - top - bottom), left, top, width - left - right, height - top - bottom);
 				
+				if (needClip) restore();
+				
 				//缓存命令
-				if (autoCacheCmd && !Render.isConchApp) cmdCaches[key] = this.cmds;
+				if (autoCacheCmd && !Render.isConchApp) WeakObject.I.set(key, this.cmds);
 			}
 			_repaint();
 		}
 		
 		private function drawBitmap(repeat:Boolean, tex:Texture, x:Number, y:Number, width:Number = 0, height:Number = 0):void {
-			if (repeat) fillTexture(tex, x, y, width, height);
+			if (width < 0.1 || height < 0.1) return;
+			if (repeat && (tex.width != width || tex.height != height)) fillTexture(tex, x, y, width, height);
 			else drawTexture(tex, x, y, width, height);
 		}
 		
@@ -220,31 +210,17 @@ package laya.ui {
 			if (height <= 0) height = 1;
 			tex.$_GID || (tex.$_GID = Utils.getGID())
 			var key:String = tex.$_GID + "." + x + "." + y + "." + width + "." + height;
-			var texture:Texture = textureCache[key];
-			if (!texture) {
-				texture = textureCache[key] = Texture.createFromTexture(tex, x, y, width, height);
+			var texture:Texture = WeakObject.I.get(key);
+			if (!texture || !texture.source) {
+				texture = Texture.createFromTexture(tex, x, y, width, height);
+				WeakObject.I.set(key, texture);
 			}
 			return texture;
 		}
 		
-		/**
-		 *  清理命令缓存。
-		 */
-		public static function clearCache():void {
-			cacheCount = 0;
-			cmdCaches = {};
-			textureCache = {};
-		}
-		
-		/**@private 缓存资源*/
-		public static function setCache(key:String, value:*):void {
-			cacheCount++;
-			textureCache[key] = value;
-		}
-		
-		/**@private 获取资源*/
-		public static function getCache(key:String):* {
-			return textureCache[key];
+		override public function clear(recoverCmds:Boolean = true):void {
+			//重写clear，防止缓存被清理
+			super.clear(false);
 		}
 	}
 }

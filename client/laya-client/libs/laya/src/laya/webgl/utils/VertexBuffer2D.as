@@ -3,6 +3,7 @@ package laya.webgl.utils {
 	import laya.renders.Render;
 	import laya.webgl.WebGL;
 	import laya.webgl.WebGLContext;
+	
 	public class VertexBuffer2D extends Buffer2D {
 		public static var create:Function = function(vertexStride:int, bufferUsage:int = WebGLContext.DYNAMIC_DRAW):VertexBuffer2D {
 			return new VertexBuffer2D(vertexStride, bufferUsage);
@@ -49,12 +50,27 @@ package laya.webgl.utils {
 			_floatArray32 && (_floatArray32 = new Float32Array(_buffer));
 		}
 		
-		override protected function detoryResource():void {
-			super.detoryResource();
+		override protected function disposeResource():void {
+			super.disposeResource();
+			return;	//下面的处理可能会导致一些闪屏（黑一下）所以先去掉了。如果某个项目因为这个又闪屏了（通常是使用了粒子，导致多开了attribute），就要好好考虑怎么处理了
 			//if (_glBuffer) {
-			for (var i:int = 0; i < 10; i++)
-				WebGL.mainContext.disableVertexAttribArray(i);//临时修复警告和闪屏
+			var enableAtributes:Array = Buffer._enableAtributes;
+			if (!Render.isConchWebGL)
+			{
+				for (var i:int = 0; i < 10; i++) {
+					WebGL.mainContext.disableVertexAttribArray(i);//临时修复警告和闪屏
+					enableAtributes[i] = null;
+				}
+			}
+		
 			//}
+		}
+		
+		public function destory():void {
+			_byteLength = 0;
+			_upload = true;
+			_buffer = null;
+			_floatArray32 = null;
 		}
 	
 	}

@@ -1,6 +1,8 @@
 package laya.resource {
 	import laya.events.Event;
 	import laya.events.EventDispatcher;
+	import laya.net.Loader;
+	import laya.utils.RunDriver;
 	import laya.utils.Stat;
 	
 	/**
@@ -22,119 +24,113 @@ package laya.resource {
 	[Event(name = "recovered", type = "laya.events.Event")]
 	
 	/**
+	 * @private
 	 * <code>Resource</code> 资源存取类。
 	 */
-	public class Resource extends EventDispatcher implements ICreateResource,IDispose{
-		/**唯一标识ID计数器*/
+	public class Resource extends EventDispatcher implements ICreateResource, IDispose {
+		/**@private */
 		private static var _uniqueIDCounter:int = 0;
-		/**此类型已载入资源*/
-		private static var _loadedResources:Vector.<Resource> = new Vector.<Resource>();
-		/**是否对已载入资源排序（开启会有性能损耗）*/
-		private static var _isLoadedResourcesSorted:Boolean;
+		/**@private */
+		private static var _idResourcesMap:Object = {};
+		/**@private */
+		private static var _urlResourcesMap:Object = {};
+		/**@private */
+		private static var _groupResourcesMap:Object = {};
 		
 		/**
-		 * 通过索引返回本类型已载入资源。
-		 * @param index 索引。
+		 * 通过资源ID返回已载入资源。
+		 * @param id 资源ID
 		 * @return 资源 <code>Resource</code> 对象。
 		 */
-		public static function getLoadedResourceByIndex(index:int):Resource {
-			return _loadedResources[index];
+		public static function getResourceByID(id:int):Resource {
+			return _idResourcesMap[id];
 		}
 		
 		/**
-		 * 本类型已载入资源个数。
+		 * 通过url返回已载入资源。
+		 * @param url 资源URL
+		 * @param index 索引
+		 * @return 资源 <code>Resource</code> 对象。
 		 */
-		public static function getLoadedResourcesCount():int {
-			return _loadedResources.length;
+		public static function getResourceByURL(url:String, index:int = 0):Resource {
+			return _urlResourcesMap[url][index];
 		}
 		
 		/**
-		 * 本类型排序后的已载入资源。
+		 * 通过url返回已载入资源。
+		 * @param url 资源URL
+		 * @return 资源 <code>Resource</code> 对象。
+		 * @param index 索引
 		 */
-		public static function get sortedLoadedResourcesByName():Vector.<Resource> {
-			if (!_isLoadedResourcesSorted) {
-				_isLoadedResourcesSorted = true;
-				_loadedResources.sort(compareResourcesByName);
-			}
-			return _loadedResources;
+		public static function getResourceCountByURL(url:String):int {
+			return _urlResourcesMap[url].length;
 		}
 		
 		/**
-		 * <p>资源排序函数。</p>
-		 * <p><b>注意：</b> 如果名字相同，可能会重命名某个元素并排序。</p>
-		 * @param left 左侧资源对象。
-		 * @param right 右侧资源对象。
-		 * @return 比较结果。
+		 * 销毁当前没有被使用的资源,该函数会忽略lock=true的资源。
+		 * @param group 指定分组。
 		 */
-		private static function compareResourcesByName(left:Resource, right:Resource):int {
-			if (left === right)//同一资源相同
-				return 0;
-			
-			var x:String = left.name;
-			var y:String = right.name;
-			if (x === null) {
-				if (y === null)//x,y都为null,资源相同
-					return 0;
-				else//x为null,y不为null,y大
-					return -1;
-			} else {
-				if (y == null)//x不为null，y为null,x更大
-					return 1;
-				else {
-					var retval:int = x.localeCompare(y);//x和y均不为null,比较字符串（两个字符串长度不一样，长的字符串更大）,待测试结果
-					
-					if (retval != 0)
-						return retval;
-					else {
-						right.setUniqueName(y);//如果两个字符串相等则重新赋值唯一名字并再次比较
-						y = right.name;
-						return x.localeCompare(y);//待测试结果
+		public static function destroyUnusedResources(group:String = null):void {
+			var res:Resource;
+			if (group) {
+				var resouList:Vector.<Resource> = _groupResourcesMap[group];
+				if (resouList) {
+					var tempResouList:Vector.<Resource> = resouList.slice();
+					for (var i:int, n:int = tempResouList.length; i < n; i++) {
+						res = tempResouList[i];
+						if (!res.lock && res._referenceCount === 0)
+							res.destroy();
 					}
+				}
+			} else {
+				for (var k:String in _idResourcesMap) {
+					res = _idResourcesMap[k];
+					if (!res.lock && res._referenceCount === 0)
+						res.destroy();
 				}
 			}
 		}
 		
-		/**唯一标识ID(通常用于优化或识别)。*/
+		/**@private */
+		private var __loaded:Boolean;
+		/**@private */
 		private var _id:int;
-		/**上次使用帧数。*/
-		private var _lastUseFrameCount:int;
-		/**占用内存尺寸。*/
+		/**@private */
 		private var _memorySize:int;
-		/**名字。*/
-		private var _name:String;
-		/**是否已加载,限于首次加载。*/
-		protected var _loaded:Boolean = false;
-		/**是否已释放。*/
+		/**@private */
 		private var _released:Boolean;
-		/**是否已处理。*/
-		private var _disposed:Boolean;
-		/** @private 所属资源管理器，通常禁止修改，如果为null则不受资源管理器，可能受大图合集资源管理。*/
+		/**@private */
+		private var _destroyed:Boolean;
+		/**@private */
+		private var _referenceCount:int;
+		/**@private */
+		private var _group:String;
+		
+		/**@private */
+		protected var _url:String;
+		
+		/**@private */
 		public var _resourceManager:ResourceManager;
-		/**是否加锁，true为不能使用自动释放机制。*/
+		/**@private */
+		public var _lastUseFrameCount:int;
+		
+		/**是否加锁，如果true为不能使用自动释放机制。*/
 		public var lock:Boolean;
+		/**名称。 */
+		public var name:String;
 		
 		/**
-		 * 获取唯一标识ID(通常用于优化或识别)。
+		 * @private
+		 */
+		public function set _loaded(value:Boolean):void {
+			__loaded = value;
+		}
+		
+		/**
+		 * 获取唯一标识ID,通常用于识别。
 		 */
 		public function get id():int {
 			return _id;
-		}
-		
-		/**
-		 * 获取名字。
-		 */
-		public function get name():String {
-			return _name;
-		}
-		
-		/**
-		 * 设置名字
-		 */
-		public function set name(value:String):void {
-			if ((value || value !== "") && name !== value) {
-				_name = value;
-				_isLoadedResourcesSorted = false;
-			}
 		}
 		
 		/**
@@ -145,17 +141,19 @@ package laya.resource {
 		}
 		
 		/**
-		 * 距离上次使用帧率。
-		 */
-		public function get lastUseFrameCount():int {
-			return _lastUseFrameCount;
-		}
-		
-		/**
 		 * 占用内存尺寸。
 		 */
 		public function get memorySize():int {
 			return _memorySize;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function set memorySize(value:int):void {
+			var offsetValue:int = value - _memorySize;
+			_memorySize = value;
+			resourceManager && resourceManager.addSize(offsetValue);
 		}
 		
 		/**
@@ -164,30 +162,60 @@ package laya.resource {
 		public function get released():Boolean {
 			return _released;
 		}
+		
 		/**
 		 * 是否已处理。
 		 */
-		public function get disposed():Boolean {
-			return _disposed;
+		public function get destroyed():Boolean {
+			return _destroyed;
 		}
 		
+		/**
+		 * 获取是否已加载完成。
+		 */
 		public function get loaded():Boolean {
-			return _loaded;
+			return __loaded;
 		}
 		
-		public function set memorySize(value:int):void {
-			var offsetValue:int = value - _memorySize;
-			_memorySize = value;
-			resourceManager && resourceManager.addSize(offsetValue);
+		/**
+		 * 获取资源的URL地址。
+		 * @return URL地址。
+		 */
+		public function get url():String {
+			return _url;
+		}
+		
+		/**
+		 * 获取资源组名。
+		 */
+		public function get group():String {
+			return _getGroup();
+		}
+		
+		/**
+		 * 设置资源组名。
+		 */
+		public function set group(value:String):void {
+			_setGroup(value);
+		}
+		
+		/**
+		 * 获取资源的引用计数。
+		 */
+		public function get referenceCount():int {
+			return _referenceCount;
 		}
 		
 		/**
 		 * 创建一个 <code>Resource</code> 实例。
 		 */
 		public function Resource() {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
 			_id = ++_uniqueIDCounter;
-			_loadedResources.push(this);
-			_isLoadedResourcesSorted = false;
+			__loaded = true;
+			_destroyed = false;
+			_referenceCount = 0;
+			_idResourcesMap[id] = this;
 			_released = true;
 			lock = false;
 			_memorySize = 0;
@@ -195,15 +223,93 @@ package laya.resource {
 			(ResourceManager.currentResourceManager) && (ResourceManager.currentResourceManager.addResource(this));//资源管理器为空不加入资源管理队列，如受大图合集资源管理
 		}
 		
-		/** 重新创建资源,override it，同时修改memorySize属性、处理startCreate()和compoleteCreate() 方法。*/
+		/**
+		 * @private
+		 */
+		public function _setUrl(url:String):void {
+			if (_url !== url) {
+				var resList:Vector.<Resource>;
+				if (_url) {
+					resList = _urlResourcesMap[_url];
+					resList.splice(resList.indexOf(this), 1);
+					(resList.length === 0) && (delete _urlResourcesMap[_url]);
+				}
+				if (url) {
+					resList = _urlResourcesMap[url];
+					(resList) || (_urlResourcesMap[url] = resList = new Vector.<Resource>());
+					resList.push(this);
+				}
+				_url = url;
+			}
+		}
+		
+		/**
+		 * @private
+		 */
+		public function _getGroup():String {
+			return _group;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function _setGroup(value:String):void {
+			if (_group !== value) {
+				var groupList:Vector.<Resource>;
+				if (_group) {
+					groupList = _groupResourcesMap[_group];
+					groupList.splice(groupList.indexOf(this), 1);
+					(groupList.length === 0) && (delete _groupResourcesMap[_group]);
+				}
+				if (value) {
+					groupList = _groupResourcesMap[value];
+					(groupList) || (_groupResourcesMap[value] = groupList = new Vector.<Resource>());
+					groupList.push(this);
+				}
+				_group = value;
+			}
+		}
+		
+		/**
+		 * @private
+		 */
+		public function _addReference():void {
+			_referenceCount++;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function _removeReference():void {
+			_referenceCount--;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function _clearReference():void {
+			_referenceCount = 0;
+		}
+		
+		/**
+		 * @private
+		 */
+		public function _endLoaded():void {
+			__loaded = true;
+			event(Event.LOADED, this);
+		}
+		
+		/**
+		 * @private
+		 */
 		protected function recreateResource():void {
-			startCreate();
 			completeCreate();//处理创建完成后相关操作
 		}
 		
-		/** 销毁资源，override it,同时修改memorySize属性。*/
-		protected function detoryResource():void {
-		
+		/**
+		 * @private
+		 */
+		protected function disposeResource():void {
 		}
 		
 		/**
@@ -212,9 +318,8 @@ package laya.resource {
 		 */
 		public function activeResource(force:Boolean = false):void {
 			_lastUseFrameCount = Stat.loopCount;
-			if (_released || force) {
+			if (!_destroyed && __loaded && (_released || force))
 				recreateResource();
-			}
 		}
 		
 		/**
@@ -226,36 +331,13 @@ package laya.resource {
 			if (!force && lock)
 				return false;
 			if (!_released || force) {
-				detoryResource();
+				disposeResource();
 				_released = true;
 				_lastUseFrameCount = -1;
 				this.event(Event.RELEASED, this);//触发释放事件
 				return true;
 			} else {
 				return false;
-			}
-		}
-		
-		/**
-		 * 设置唯一名字,如果名字重复则自动加上“-copy”。
-		 * @param newName 名字。
-		 */
-		public function setUniqueName(newName:String):void {
-			var isUnique:Boolean = true;
-			for (var i:int = 0; i < _loadedResources.length; i++) {
-				if (_loadedResources[i]._name !== newName || _loadedResources[i] === this)
-					continue;
-				isUnique = false;
-				return;
-			}
-			if (isUnique) {
-				if (name != newName) {
-					name = newName;
-					_isLoadedResourcesSorted = false;
-				}
-			} else//设置唯一名称，并重新判断
-			{
-				setUniqueName(newName.concat("-copy"));
 			}
 		}
 		
@@ -270,30 +352,45 @@ package laya.resource {
 		 * <p>彻底处理资源，处理后不能恢复。</p>
 		 * <p><b>注意：</b>会强制解锁清理。</p>
 		 */
-		public function dispose():void//待优化
-		{
+		public function destroy():void {
+			if (_destroyed)
+				return;
 			if (_resourceManager !== null)
-				throw new Error("附属于resourceManager的资源不能独立释放！");
-				
-			_disposed = true;
+				_resourceManager.removeResource(this);
+			
+			_destroyed = true;
 			lock = false;//解锁资源，强制清理
 			releaseResource();
-			var index:int = _loadedResources.indexOf(this);
-			if (index !== -1) {
-				_loadedResources.splice(index, 1);
-				_isLoadedResourcesSorted = false;
+			delete _idResourcesMap[id];
+			var resList:Vector.<Resource>;
+			if (_url) {
+				resList = _urlResourcesMap[_url];
+				if (resList) {
+					resList.splice(resList.indexOf(this), 1);
+					(resList.length === 0) && (delete _urlResourcesMap[url]);
+				}
+				
+				Loader.clearRes(_url);
+				(__loaded)||(RunDriver.cancelLoadByUrl(_url));
 			}
-		}
-		
-		/** 开始资源激活。*/
-		protected function startCreate():void {
-			this.event(Event.RECOVERING, this);
+			if (_group) {
+				resList = _groupResourcesMap[_group];
+				resList.splice(resList.indexOf(this), 1);
+				(resList.length === 0) && (delete _groupResourcesMap[url]);
+			}
 		}
 		
 		/** 完成资源激活。*/
 		protected function completeCreate():void {
 			_released = false;
 			this.event(Event.RECOVERED, this);
+		}
+		
+		/**
+		 * @private
+		 */
+		public function dispose():void {//兼容方法
+			destroy();
 		}
 	}
 }

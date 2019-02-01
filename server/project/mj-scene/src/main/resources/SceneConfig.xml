@@ -10,7 +10,7 @@
     <entry key="gatewayUserMaxConnect">8000</entry>
     <entry key="jdbc.url">jdbc:mysql://127.0.0.1:3306/boss?autoReconnect=true&amp;characterEncoding=utf-8&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai</entry>
     <entry key="jdbc.username">xie</entry>
-    <entry key="jdbc.password">123456</entry>
+    <entry key="jdbc.password">Pass@1q2w3e4r</entry>
     <entry key="jdbc.maxNums">20</entry>
     <entry key="jdbc.minNums">5</entry>
     <entry key="gmStatus">true</entry>

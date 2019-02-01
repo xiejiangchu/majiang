@@ -234,8 +234,8 @@ package laya.d3.math {
 			var _tempV32eZ:Number = _tempV32e[2];
 			
 			_tempV32eX = (rayDeY * _tempV31eZ) - (rayDeZ * _tempV31eY);
-            _tempV32eY = (rayDeZ * _tempV31eX) - (rayDeX * _tempV31eZ);
-            _tempV32eZ = (rayDeX * _tempV31eY) - (rayDeY * _tempV31eX);
+			_tempV32eY = (rayDeZ * _tempV31eX) - (rayDeX * _tempV31eZ);
+			_tempV32eZ = (rayDeX * _tempV31eY) - (rayDeY * _tempV31eX);
 			
 			var determinant:Number = (_tempV30eX * _tempV32eX) + (_tempV30eY * _tempV32eY) + (_tempV30eZ * _tempV32eZ);
 			
@@ -321,8 +321,8 @@ package laya.d3.math {
 		
 		/**
 		 * 空间中射线和点是否相交
-		 * @param	sphere1 包围球1
-		 * @param	sphere2 包围球2
+		 * @param	ray   射线
+		 * @param	point 点
 		 */
 		public static function intersectsRayAndPoint(ray:Ray, point:Vector3):Boolean {
 			
@@ -373,17 +373,15 @@ package laya.d3.math {
 			
 			Vector3.cross(ray1d, ray2d, _tempV30);
 			var tempV3e:Float32Array = _tempV30.elements;
-			var denominator:Number = Vector3.scalarLength(_tempV30);
+			var denominator:Number = Vector3.scalarLengthSquared(_tempV30);
 			
 			if (MathUtils3D.isZero(denominator)) {
 				
 				if (MathUtils3D.nearEqual(ray2oeX, ray1oeX) && MathUtils3D.nearEqual(ray2oeY, ray1oeY) && MathUtils3D.nearEqual(ray2oeZ, ray1oeZ)) {
-					out = Vector3.ZERO;
+					Vector3.ZERO.cloneTo(out);
 					return true;
 				}
 			}
-			
-			denominator = denominator * denominator;
 			
 			var m11:Number = ray2oeX - ray1oeX;
 			var m12:Number = ray2oeY - ray1oeY;
@@ -407,7 +405,7 @@ package laya.d3.math {
 			var t:Number = dett / denominator;
 			
 			Vector3.scale(ray1d, s, _tempV30);
-			Vector3.scale(ray2d, s, _tempV31);
+			Vector3.scale(ray2d, t, _tempV31);
 			
 			Vector3.add(ray1o, _tempV30, _tempV32);
 			Vector3.add(ray2o, _tempV31, _tempV33);
@@ -416,11 +414,11 @@ package laya.d3.math {
 			var point2e:Float32Array = _tempV33.elements;
 			
 			if (!MathUtils3D.nearEqual(point2e[0], point1e[0]) || !MathUtils3D.nearEqual(point2e[1], point1e[1]) || !MathUtils3D.nearEqual(point2e[2], point1e[2])) {
-				out = Vector3.ZERO;
+				Vector3.ZERO.cloneTo(out);
 				return false;
 			}
 			
-			out = _tempV32;
+			_tempV32.cloneTo(out);
 			return true;
 		}
 		
@@ -501,7 +499,7 @@ package laya.d3.math {
 		 * @param	box	包围盒
 		 * @param	out 相交距离,如果为0,不相交
 		 */
-		public static function intersectsRayAndBoxRD(ray:Ray, box:BoundBox, out:Number):Boolean {
+		public static function intersectsRayAndBoxRD(ray:Ray, box:BoundBox):Number {
 			
 			var rayoe:Float32Array = ray.origin.elements;
 			var rayoeX:Number = rayoe[0];
@@ -523,7 +521,7 @@ package laya.d3.math {
 			var boxMaxeY:Number = boxMaxe[1];
 			var boxMaxeZ:Number = boxMaxe[2];
 			
-			out = 0;
+			var out:Number = 0;
 			
 			var tmax:Number = MathUtils3D.MaxValue;
 			
@@ -531,8 +529,8 @@ package laya.d3.math {
 				
 				if (rayoeX < boxMineX || rayoeX > boxMaxeX) {
 					
-					out = 0;
-					return false;
+					//out = 0;
+					return -1;
 				}
 			} else {
 				
@@ -552,8 +550,8 @@ package laya.d3.math {
 				
 				if (out > tmax) {
 					
-					out = 0;
-					return false;
+					//out = 0;
+					return -1;
 				}
 			}
 			
@@ -561,8 +559,8 @@ package laya.d3.math {
 				
 				if (rayoeY < boxMineY || rayoeY > boxMaxeY) {
 					
-					out = 0;
-					return false;
+					//out = 0;
+					return -1;
 				}
 			} else {
 				
@@ -582,8 +580,8 @@ package laya.d3.math {
 				
 				if (out > tmax) {
 					
-					out = 0;
-					return false;
+					//out = 0;
+					return -1;
 				}
 			}
 			
@@ -591,8 +589,8 @@ package laya.d3.math {
 				
 				if (rayoeZ < boxMineZ || rayoeZ > boxMaxeZ) {
 					
-					out = 0;
-					return false;
+					//out = 0;
+					return -1;
 				}
 			} else {
 				
@@ -612,12 +610,12 @@ package laya.d3.math {
 				
 				if (out > tmax) {
 					
-					out = 0;
-					return false;
+					//out = 0;
+					return -1;
 				}
 			}
 			
-			return true;
+			return out;
 		}
 		
 		/**
@@ -626,29 +624,29 @@ package laya.d3.math {
 		 * @param	box	包围盒
 		 * @param	out 相交点
 		 */
-		public static function intersectsRayAndBoxRP(ray:Ray, box:BoundBox, out:Vector3):Boolean {
+		public static function intersectsRayAndBoxRP(ray:Ray, box:BoundBox, out:Vector3):Number {
 			
-			var distance:Number;
-			if (!intersectsRayAndBoxRD(ray, box, distance)) {
+			var distance:Number = intersectsRayAndBoxRD(ray, box);
+			if (distance === -1) {
 				
-				out = Vector3.ZERO;
-				return false;
+				Vector3.ZERO.cloneTo(out);
+				return distance;
 			}
-			
 			Vector3.scale(ray.direction, distance, _tempV30);
 			Vector3.add(ray.origin, _tempV30, _tempV31);
 			
-			out = _tempV31;
-			return true;
+			_tempV31.cloneTo(out);
+			
+			return distance;
 		}
 		
 		/**
 		 * 空间中射线和包围球是否相交
 		 * @param	ray    射线
 		 * @param	sphere 包围球
-		 * @param	out    相交距离,如果为0,不相交
+		 * @return	相交距离,-1表示不相交
 		 */
-		public static function intersectsRayAndSphereRD(ray:Ray, sphere:BoundSphere, out:Number):Boolean {
+		public static function intersectsRayAndSphereRD(ray:Ray, sphere:BoundSphere):Number {
 			
 			var sphereR:Number = sphere.radius;
 			Vector3.subtract(ray.origin, sphere.center, _tempV30);
@@ -657,23 +655,22 @@ package laya.d3.math {
 			var c:Number = Vector3.dot(_tempV30, _tempV30) - (sphereR * sphereR);
 			
 			if (c > 0 && b > 0) {
-				out = 0;
-				return false;
+				return -1;
 			}
 			
 			var discriminant:Number = b * b - c;
 			
 			if (discriminant < 0) {
-				out = 0;
-				return false;
+				return -1;
 			}
 			
-			out = -b - Math.sqrt(discriminant);
+			var distance:Number = -b - Math.sqrt(discriminant);
 			
-			if (out < 0)
-				out = 0;
+			if (distance < 0)
+				distance = 0;
 			
-			return true;
+			return distance;
+			
 		}
 		
 		/**
@@ -681,22 +678,20 @@ package laya.d3.math {
 		 * @param	ray    射线
 		 * @param	sphere 包围球
 		 * @param	out    相交点
+		 * @return  相交距离,-1表示不相交
 		 */
-		public static function intersectsRayAndSphereRP(ray:Ray, sphere:BoundSphere, out:Vector3):Boolean {
-			
-			var distance:Number;
-			if (!intersectsRayAndSphereRD(ray, sphere, distance)) {
-				
-				out = Vector3.ZERO;
-				return false;
+		public static function intersectsRayAndSphereRP(ray:Ray, sphere:BoundSphere, out:Vector3):Number {
+			var distance:Number = intersectsRayAndSphereRD(ray, sphere);
+			if (distance===-1) {
+				Vector3.ZERO.cloneTo(out);
+				return distance;
 			}
 			
 			Vector3.scale(ray.direction, distance, _tempV30);
 			Vector3.add(ray.origin, _tempV30, _tempV31);
 			
-			out = _tempV31;
-			
-			return true;
+			_tempV31.cloneTo(out);
+			return distance;
 		}
 		
 		/**
@@ -732,10 +727,11 @@ package laya.d3.math {
 			
 			if (distance > 0)
 				return Plane.PlaneIntersectionType_Front;
-			else if (distance < 0)
+				
+		    if (distance < 0)
 				return Plane.PlaneIntersectionType_Back;
-			else
-				return Plane.PlaneIntersectionType_Intersecting;
+			
+			return Plane.PlaneIntersectionType_Intersecting;
 		}
 		
 		/**
@@ -953,12 +949,13 @@ package laya.d3.math {
 			if (box1MaxeZ < box2MineZ || box1MineZ > box2MaxeZ)
 				return ContainmentType.Disjoint;
 			
-			if (box1MineX <= box2MineX && box2MaxeX <= box2MineX && box1MineY <= box2MineY && box2MaxeY <= box1MaxeY && box1MineZ <= box2MineZ && box2MaxeZ <= box1MaxeZ) {
+			if (box1MineX <= box2MineX && box2MaxeX <= box2MaxeX && box1MineY <= box2MineY && box2MaxeY <= box1MaxeY && box1MineZ <= box2MineZ && box2MaxeZ <= box1MaxeZ) {
 				return ContainmentType.Contains;
 			}
 			
 			return ContainmentType.Intersects;
 		}
+		
 		
 		/**
 		 * 空间中包围盒是否包含另一个包围球
@@ -995,8 +992,8 @@ package laya.d3.math {
 				return ContainmentType.Disjoint;
 				
 			if ((((boxMineX + sphereR <= sphereCeX) && (sphereCeX <= boxMaxeX - sphereR)) && ((boxMaxeX - boxMineX > sphereR) &&
-                (boxMineY + sphereR <= sphereCeY))) && (((sphereCeY <= boxMaxeY - sphereR) && (boxMaxeY - boxMineY > sphereR)) &&
-                (((boxMineZ + sphereR <= sphereCeZ) && (sphereCeZ <= boxMaxeZ - sphereR)) && (boxMaxeZ - boxMineZ > sphereR))))
+			    (boxMineY + sphereR <= sphereCeY))) && (((sphereCeY <= boxMaxeY - sphereR) && (boxMaxeY - boxMineY > sphereR)) &&
+			    (((boxMineZ + sphereR <= sphereCeZ) && (sphereCeZ <= boxMaxeZ - sphereR)) && (boxMaxeZ - boxMineZ > sphereR))))
 				return ContainmentType.Contains;
 			
 			return ContainmentType.Intersects;
@@ -1011,9 +1008,8 @@ package laya.d3.math {
 		public static function sphereContainsPoint(sphere:BoundSphere, point:Vector3):int{
 			
 			if (Vector3.distanceSquared(point, sphere.center) <= sphere.radius * sphere.radius)
-                return ContainmentType.Contains;
-
-            return ContainmentType.Disjoint;
+			    return ContainmentType.Contains;
+			return ContainmentType.Disjoint;
 		}
 		
 		/**
@@ -1025,7 +1021,6 @@ package laya.d3.math {
 		 * @return  返回空间位置关系
 		 */
 		public static function sphereContainsTriangle(sphere:BoundSphere, vertex1:Vector3, vertex2:Vector3, vertex3:Vector3):int{
-			
 			var test1:int = sphereContainsPoint(sphere, vertex1);
 			var test2:int = sphereContainsPoint(sphere, vertex2);
 			var test3:int = sphereContainsPoint(sphere, vertex3);
@@ -1078,50 +1073,50 @@ package laya.d3.math {
 			var radiusSquared:Number = sphereR * sphereR;
 			
 			_tempV30eX = sphereCeX - boxMineX;
-            _tempV30eY = sphereCeY - boxMaxeY;
-            _tempV30eZ = sphereCeZ - boxMaxeZ;
+			_tempV30eY = sphereCeY - boxMaxeY;
+			_tempV30eZ = sphereCeZ - boxMaxeZ;
 			if (Vector3.scalarLengthSquared(_tempV30) > radiusSquared)
 				return ContainmentType.Intersects;
 				
 			_tempV30eX = sphereCeX - boxMaxeX;
-            _tempV30eY = sphereCeY - boxMaxeY;
-            _tempV30eZ = sphereCeZ - boxMaxeZ;
+			_tempV30eY = sphereCeY - boxMaxeY;
+			_tempV30eZ = sphereCeZ - boxMaxeZ;
 			if (Vector3.scalarLengthSquared(_tempV30) > radiusSquared)
 				return ContainmentType.Intersects;
 				
 			_tempV30eX = sphereCeX - boxMaxeX;
-            _tempV30eY = sphereCeY - boxMineY;
-            _tempV30eZ = sphereCeZ - boxMaxeZ;
+			_tempV30eY = sphereCeY - boxMineY;
+			_tempV30eZ = sphereCeZ - boxMaxeZ;
 			if (Vector3.scalarLengthSquared(_tempV30) > radiusSquared)
 				return ContainmentType.Intersects;
 				
 			_tempV30eX = sphereCeX - boxMineX;
-            _tempV30eY = sphereCeY - boxMineY;
-            _tempV30eZ = sphereCeZ - boxMaxeZ;
+			_tempV30eY = sphereCeY - boxMineY;
+			_tempV30eZ = sphereCeZ - boxMaxeZ;
 			if (Vector3.scalarLengthSquared(_tempV30) > radiusSquared)
 				return ContainmentType.Intersects;
 				
 			_tempV30eX = sphereCeX - boxMineX;
-            _tempV30eY = sphereCeY - boxMaxeY;
-            _tempV30eZ = sphereCeZ - boxMineZ;
+			_tempV30eY = sphereCeY - boxMaxeY;
+			_tempV30eZ = sphereCeZ - boxMineZ;
 			if (Vector3.scalarLengthSquared(_tempV30) > radiusSquared)
 				return ContainmentType.Intersects;
 				
 			_tempV30eX = sphereCeX - boxMaxeX;
-            _tempV30eY = sphereCeY - boxMaxeY;
-            _tempV30eZ = sphereCeZ - boxMineZ;
+			_tempV30eY = sphereCeY - boxMaxeY;
+			_tempV30eZ = sphereCeZ - boxMineZ;
 			if (Vector3.scalarLengthSquared(_tempV30) > radiusSquared)
 				return ContainmentType.Intersects;
 				
 			_tempV30eX = sphereCeX - boxMaxeX;
-            _tempV30eY = sphereCeY - boxMineY;
-            _tempV30eZ = sphereCeZ - boxMineZ;
+			_tempV30eY = sphereCeY - boxMineY;
+			_tempV30eZ = sphereCeZ - boxMineZ;
 			if (Vector3.scalarLengthSquared(_tempV30) > radiusSquared)
 				return ContainmentType.Intersects;
 			
 			_tempV30eX = sphereCeX - boxMineX;
-            _tempV30eY = sphereCeY - boxMineY;
-            _tempV30eZ = sphereCeZ - boxMineZ;
+			_tempV30eY = sphereCeY - boxMineY;
+			_tempV30eZ = sphereCeZ - boxMineZ;
 			if (Vector3.scalarLengthSquared(_tempV30) > radiusSquared)
 				return ContainmentType.Intersects;
 				
@@ -1208,7 +1203,7 @@ package laya.d3.math {
 			}
 			
 			var va:Number = d3 * d6 - d5 * d4;
-            if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0){
+			if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0){
 				var w3:Number = (d4 - d3) / ((d4 - d3) + (d5 - d6));
 				Vector3.subtract(vertex3, vertex2, out);
 				Vector3.scale(out, w3, out);
@@ -1247,7 +1242,6 @@ package laya.d3.math {
 		 * @param	out 最近点
 		 */
 		public static function closestPointBoxPoint(box:BoundBox, point:Vector3, out:Vector3):void{
-			
 			Vector3.max(point, box.min, _tempV30);
 			Vector3.min(_tempV30, box.max, out);
 		}
@@ -1259,7 +1253,6 @@ package laya.d3.math {
 		 * @param	out 最近点
 		 */
 		public static function closestPointSpherePoint(sphere:BoundSphere, point:Vector3, out:Vector3):void{
-			
 			var sphereC:Vector3 = sphere.center;
 			
 			Vector3.subtract(point, sphereC, out);
@@ -1276,7 +1269,6 @@ package laya.d3.math {
 		 * @param	out 最近点
 		 */
 		public static function closestPointSphereSphere(sphere1:BoundSphere, sphere2:BoundSphere, out:Vector3):void{
-			
 			var sphere1C:Vector3 = sphere1.center;
 			
 			Vector3.subtract(sphere2.center, sphere1C, out);

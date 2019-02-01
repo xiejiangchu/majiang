@@ -1,40 +1,74 @@
 package {
 	import laya.ani.AnimationTemplet;
-	import laya.d3.core.BaseCamera;
+	import laya.d3.animation.AnimationClip;
+	import laya.d3.animation.AnimationNode;
+	import laya.d3.component.Script;
+	import laya.d3.component.physics.Collider;
+	import laya.d3.core.Avatar;
 	import laya.d3.core.Layer;
 	import laya.d3.core.MeshSprite3D;
+	import laya.d3.core.PhasorSpriter3D;
+	import laya.d3.core.RenderableSprite3D;
+	import laya.d3.core.SkinnedMeshSprite3D;
 	import laya.d3.core.Sprite3D;
-	import laya.d3.core.material.GlitterMaterial;
-	import laya.d3.core.material.ParticleMaterial;
+	import laya.d3.core.material.BaseMaterial;
+	import laya.d3.core.material.BlinnPhongMaterial;
+	import laya.d3.core.material.ExtendTerrainMaterial;
+	import laya.d3.core.material.PBRMaterial;
+	import laya.d3.core.material.PBRSpecularMaterial;
+	import laya.d3.core.material.PBRStandardMaterial;
 	import laya.d3.core.material.StandardMaterial;
+	import laya.d3.core.material.TerrainMaterial;
+	import laya.d3.core.material.WaterMaterial;
 	import laya.d3.core.particleShuriKen.ShuriKenParticle3D;
 	import laya.d3.core.particleShuriKen.ShurikenParticleMaterial;
-	import laya.d3.core.render.RenderElement;
 	import laya.d3.core.render.RenderState;
-	import laya.d3.core.scene.BaseScene;
-	import laya.d3.graphics.VertexElementUsage;
+	import laya.d3.core.scene.OctreeNode;
+	import laya.d3.core.scene.Scene;
+	import laya.d3.math.BoundSphere;
+	import laya.d3.math.Collision;
+	import laya.d3.math.ContainmentType;
+	import laya.d3.resource.DataTexture2D;
 	import laya.d3.resource.Texture2D;
 	import laya.d3.resource.TextureCube;
 	import laya.d3.resource.models.Mesh;
-	import laya.d3.resource.models.Sky;
-	import laya.d3.shader.Shader3D;
-	import laya.d3.shader.ShaderDefines3D;
+	import laya.d3.shader.ShaderCompile3D;
+	import laya.d3.shader.ShaderInit3D;
+	import laya.d3.terrain.TerrainHeightData;
+	import laya.d3.terrain.TerrainRes;
+	import laya.d3.utils.CollisionManager;
+	import laya.d3.utils.Physics;
 	import laya.d3.utils.Utils3D;
 	import laya.events.Event;
 	import laya.net.Loader;
 	import laya.net.LoaderManager;
 	import laya.net.URL;
-	import laya.particle.shader.ParticleShader;
 	import laya.renders.Render;
+	import laya.utils.Browser;
 	import laya.utils.Byte;
 	import laya.utils.Handler;
 	import laya.utils.RunDriver;
 	import laya.webgl.WebGL;
+	import laya.webgl.WebGLContext;
+	import laya.webgl.atlas.AtlasResourceManager;
 	
 	/**
 	 * <code>Laya3D</code> 类用于初始化3D设置。
 	 */
 	public class Laya3D {
+		/**@private 层级文件资源标记。*/
+		private static const HIERARCHY:String = "SPRITE3DHIERARCHY";
+		/**@private 网格的原始资源标记。*/
+		private static const MESH:String = "MESH";
+		/**@private 材质的原始资源标记。*/
+		private static const MATERIAL:String = "MATERIAL";
+		/**@private PBR材质资源标记。*/
+		private static const PBRMATERIAL:String = "PBRMTL";
+		/**@private TextureCube原始资源标记。*/
+		private static const TEXTURECUBE:String = "TEXTURECUBE";
+		/**@private Terrain原始资源标记。*/
+		private static const TERRAIN:String = "TERRAIN";
+		
 		/**@private */
 		private static var _DATA:Object = {offset: 0, size: 0};
 		/**@private */
@@ -43,27 +77,29 @@ package {
 		private static var _readData:Byte;
 		
 		/**@private */
-		private static const _innerTextureCubeLoaderManager:LoaderManager = new LoaderManager();
+		private static const _innerFirstLevelLoaderManager:LoaderManager = new LoaderManager();//Mesh 
 		/**@private */
-		private static const _innerMaterialLoaderManager:LoaderManager = new LoaderManager();
+		private static const _innerSecondLevelLoaderManager:LoaderManager = new LoaderManager();//Material
 		/**@private */
-		private static const _innerMeshLoaderManager:LoaderManager = new LoaderManager();
+		private static const _innerThirdLevelLoaderManager:LoaderManager = new LoaderManager();//TextureCube、TerrainResou
 		/**@private */
-		private static const _innerSprite3DHierarchyLoaderManager:LoaderManager = new LoaderManager();
+		private static const _innerFourthLevelLoaderManager:LoaderManager = new LoaderManager();//Texture2D、Image、Avatar、AnimationClip
 		
-		/**@private 层级文件资源标记。*/
-		private static const SPRITE3DHIERARCHY:String = "SPRITE3DHIERARCHY";
-		/**@private 网格的原始资源标记。*/
-		private static const MESH:String = "MESH";
-		/**@private 材质的原始资源标记。*/
-		private static const MATERIAL:String = "MATERIAL";
-		/**@private TextureCube原始资源标记。*/
-		private static const TEXTURECUBE:String = "TEXTURECUBE";
+		/**@private */
+		public static var _debugPhasorSprite:PhasorSpriter3D;
+		
+		/**@private */
+		public static var debugMode:Boolean = false;
 		
 		/**
-		 * 创建一个 <code>Laya3D</code> 实例。
+		 *@private
 		 */
-		public function Laya3D() {
+		public static function _cancelLoadByUrl(url:String):void {
+			Laya.loader.cancelLoadByUrl(url);
+			_innerFirstLevelLoaderManager.cancelLoadByUrl(url);
+			_innerSecondLevelLoaderManager.cancelLoadByUrl(url);
+			_innerThirdLevelLoaderManager.cancelLoadByUrl(url);
+			_innerFourthLevelLoaderManager.cancelLoadByUrl(url);
 		}
 		
 		/**
@@ -78,268 +114,38 @@ package {
 		/**
 		 *@private
 		 */
-private static function _initShader():void {
-			Shader3D.addInclude("LightHelper.glsl", __INCLUDESTR__("laya/d3/shader/files/LightHelper.glsl"));
-			Shader3D.addInclude("VRHelper.glsl", __INCLUDESTR__("laya/d3/shader/files/VRHelper.glsl"));
-			
-			var vs:String, ps:String;
-			var attributeMap:Object = {
-		    'a_Position': VertexElementUsage.POSITION0,
-			'a_Color': VertexElementUsage.COLOR0, 
-			'a_Normal': VertexElementUsage.NORMAL0, 
-			'a_Texcoord0': VertexElementUsage.TEXTURECOORDINATE0, 
-			'a_Texcoord1': VertexElementUsage.TEXTURECOORDINATE1, 
-			'a_TexcoordNext0': VertexElementUsage.NEXTTEXTURECOORDINATE0, 
-			'a_BoneWeights': VertexElementUsage.BLENDWEIGHT0, 
-			'a_BoneIndices': VertexElementUsage.BLENDINDICES0, 
-			'a_Tangent0': VertexElementUsage.TANGENT0};
-			var uniformMap:Object = {
-			'u_Bones': [RenderElement.BONES, Shader3D.PERIOD_RENDERELEMENT],
-			'u_DiffuseTexture': [StandardMaterial.DIFFUSETEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_SpecularTexture': [StandardMaterial.SPECULARTEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_NormalTexture': [StandardMaterial.NORMALTEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_AmbientTexture': [StandardMaterial.AMBIENTTEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_ReflectTexture': [StandardMaterial.REFLECTTEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_Albedo': [StandardMaterial.ALBEDO,Shader3D.PERIOD_MATERIAL],
-			'u_AlphaTestValue': [StandardMaterial.ALPHATESTVALUE,Shader3D.PERIOD_MATERIAL],
-			'u_UVMatrix': [StandardMaterial.UVMATRIX,Shader3D.PERIOD_MATERIAL],
-			'u_UVAge': [StandardMaterial.UVAGE,Shader3D.PERIOD_MATERIAL],
-			'u_UVAniAge': [StandardMaterial.UVANIAGE,Shader3D.PERIOD_MATERIAL],
-			'u_MaterialDiffuse': [StandardMaterial.MATERIALDIFFUSE,Shader3D.PERIOD_MATERIAL],
-			'u_MaterialAmbient': [StandardMaterial.MATERIALAMBIENT,Shader3D.PERIOD_MATERIAL],
-			'u_MaterialSpecular':[StandardMaterial.MATERIALSPECULAR,Shader3D.PERIOD_MATERIAL],
-			'u_MaterialReflect': [StandardMaterial.MATERIALREFLECT, Shader3D.PERIOD_MATERIAL],
-			'u_WorldMat': [Sprite3D.WORLDMATRIX, Shader3D.PERIOD_SPRITE],
-			'u_MvpMatrix': [Sprite3D.MVPMATRIX, Shader3D.PERIOD_SPRITE],
-			'u_LightmapScaleOffset':[MeshSprite3D.LIGHTMAPSCALEOFFSET, Shader3D.PERIOD_SPRITE],
-			'u_CameraPos': [BaseCamera.CAMERAPOS, Shader3D.PERIOD_CAMERA],
-			'u_FogStart': [BaseScene.FOGSTART, Shader3D.PERIOD_SCENE],
-			'u_FogRange': [BaseScene.FOGRANGE, Shader3D.PERIOD_SCENE],
-			'u_FogColor': [BaseScene.FOGCOLOR, Shader3D.PERIOD_SCENE],
-			'u_DirectionLight.Direction': [BaseScene.LIGHTDIRECTION, Shader3D.PERIOD_SCENE],
-			'u_DirectionLight.Diffuse': [BaseScene.LIGHTDIRDIFFUSE, Shader3D.PERIOD_SCENE],
-			'u_DirectionLight.Ambient': [BaseScene.LIGHTDIRAMBIENT, Shader3D.PERIOD_SCENE],
-			'u_DirectionLight.Specular': [BaseScene.LIGHTDIRSPECULAR, Shader3D.PERIOD_SCENE],
-			'u_PointLight.Position': [BaseScene.POINTLIGHTPOS, Shader3D.PERIOD_SCENE],
-			'u_PointLight.Range': [BaseScene.POINTLIGHTRANGE, Shader3D.PERIOD_SCENE],
-			'u_PointLight.Attenuation': [BaseScene.POINTLIGHTATTENUATION, Shader3D.PERIOD_SCENE],
-			'u_PointLight.Diffuse': [BaseScene.POINTLIGHTDIFFUSE, Shader3D.PERIOD_SCENE],
-			'u_PointLight.Ambient': [BaseScene.POINTLIGHTAMBIENT, Shader3D.PERIOD_SCENE],
-			'u_PointLight.Specular': [BaseScene.POINTLIGHTSPECULAR, Shader3D.PERIOD_SCENE],
-			'u_SpotLight.Position': [BaseScene.SPOTLIGHTPOS, Shader3D.PERIOD_SCENE],
-			'u_SpotLight.Direction': [BaseScene.SPOTLIGHTDIRECTION, Shader3D.PERIOD_SCENE],
-			'u_SpotLight.Range': [BaseScene.SPOTLIGHTRANGE, Shader3D.PERIOD_SCENE],
-			'u_SpotLight.Spot': [BaseScene.SPOTLIGHTSPOT, Shader3D.PERIOD_SCENE],
-			'u_SpotLight.Attenuation': [BaseScene.SPOTLIGHTATTENUATION, Shader3D.PERIOD_SCENE],
-			'u_SpotLight.Diffuse': [BaseScene.SPOTLIGHTDIFFUSE, Shader3D.PERIOD_SCENE],
-			'u_SpotLight.Ambient': [BaseScene.SPOTLIGHTAMBIENT, Shader3D.PERIOD_SCENE],
-			'u_SpotLight.Specular': [BaseScene.SPOTLIGHTSPECULAR,Shader3D.PERIOD_SCENE]};
-			var SIMPLE:int = Shader3D.nameKey.add("SIMPLE");
-			vs = __INCLUDESTR__("laya/d3/shader/files/PixelSimpleTextureSkinnedMesh.vs");
-			ps = __INCLUDESTR__("laya/d3/shader/files/PixelSimpleTextureSkinnedMesh.ps");
-			Shader3D.preCompile(SIMPLE, vs, ps, attributeMap,uniformMap);
-			
-			var SIMPLEVEXTEX:int = Shader3D.nameKey.add("SIMPLEVEXTEX");
-			vs = __INCLUDESTR__("laya/d3/shader/files/VertexSimpleTextureSkinnedMesh.vs");
-			ps = __INCLUDESTR__("laya/d3/shader/files/VertexSimpleTextureSkinnedMesh.ps");
-			Shader3D.preCompile(SIMPLEVEXTEX, vs, ps,attributeMap, uniformMap);
-			
-			attributeMap = {
-			'a_Position': VertexElementUsage.POSITION0, 
-			'a_Texcoord': VertexElementUsage.TEXTURECOORDINATE0};
-			uniformMap = {
-			'u_BlendTexture': [StandardMaterial.DIFFUSETEXTURE,Shader3D.PERIOD_MATERIAL], 
-			'u_LayerTexture0': [StandardMaterial.NORMALTEXTURE,Shader3D.PERIOD_MATERIAL], 
-			'u_LayerTexture1': [StandardMaterial.SPECULARTEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_LayerTexture2': [StandardMaterial.EMISSIVETEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_LayerTexture3': [StandardMaterial.AMBIENTTEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_Albedo': [StandardMaterial.ALBEDO,Shader3D.PERIOD_MATERIAL],
-			'u_Ambient': [StandardMaterial.MATERIALAMBIENT,Shader3D.PERIOD_MATERIAL],
-			'u_UVMatrix': [StandardMaterial.UVMATRIX,Shader3D.PERIOD_MATERIAL],
-			'u_WorldMat': [Sprite3D.WORLDMATRIX,Shader3D.PERIOD_SPRITE],
-			'u_MvpMatrix': [Sprite3D.MVPMATRIX,Shader3D.PERIOD_SPRITE],
-			'u_CameraPos': [BaseCamera.CAMERAPOS,Shader3D.PERIOD_CAMERA],
-			'u_FogStart': [BaseScene.FOGSTART, Shader3D.PERIOD_SCENE],
-			'u_FogRange': [BaseScene.FOGRANGE, Shader3D.PERIOD_SCENE],
-			'u_FogColor': [BaseScene.FOGCOLOR,Shader3D.PERIOD_SCENE]};
-			var TERRAIN:int = Shader3D.nameKey.add("TERRAIN");
-			vs = __INCLUDESTR__("laya/d3/shader/files/modelTerrain.vs");
-			ps = __INCLUDESTR__("laya/d3/shader/files/modelTerrain.ps");
-			Shader3D.preCompile(TERRAIN, vs, ps,attributeMap, uniformMap);
-			
-			attributeMap = {
-			'a_CornerTextureCoordinate': VertexElementUsage.CORNERTEXTURECOORDINATE0, 
-			'a_Position': VertexElementUsage.POSITION0, 
-			'a_Velocity': VertexElementUsage.VELOCITY0, 
-			'a_StartColor': VertexElementUsage.STARTCOLOR0, 
-			'a_EndColor': VertexElementUsage.ENDCOLOR0, 
-			'a_SizeRotation': VertexElementUsage.SIZEROTATION0, 
-			'a_Radius': VertexElementUsage.RADIUS0, 
-			'a_Radian': VertexElementUsage.RADIAN0, 
-			'a_AgeAddScale': VertexElementUsage.STARTLIFETIME, 
-			'a_Time': VertexElementUsage.TIME0};
-			uniformMap = {
-			'u_CurrentTime': [ParticleMaterial.CURRENTTIME,Shader3D.PERIOD_MATERIAL], 
-			'u_Duration': [ParticleMaterial.DURATION,Shader3D.PERIOD_MATERIAL], 
-			'u_Gravity': [ParticleMaterial.GRAVITY,Shader3D.PERIOD_MATERIAL], 
-			'u_EndVelocity': [ParticleMaterial.ENDVELOCITY,Shader3D.PERIOD_MATERIAL], 
-			'u_texture': [ParticleMaterial.DIFFUSETEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_WorldMat': [Sprite3D.WORLDMATRIX,Shader3D.PERIOD_SPRITE], 
-			'u_View': [BaseCamera.VIEWMATRIX,Shader3D.PERIOD_CAMERA], 
-			'u_Projection': [BaseCamera.PROJECTMATRIX,Shader3D.PERIOD_CAMERA], 
-			'u_ViewportScale': [ParticleMaterial.VIEWPORTSCALE,Shader3D.PERIOD_MATERIAL]};//TODO:
-			var PARTICLE:int = Shader3D.nameKey.add("PARTICLE");
-			Shader3D.preCompile(PARTICLE, ParticleShader.vs, ParticleShader.ps, attributeMap, uniformMap);
-			
-			attributeMap = {
-		    'a_CornerTextureCoordinate': VertexElementUsage.CORNERTEXTURECOORDINATE0, 
-			'a_Position': VertexElementUsage.POSITION0, 
-			'a_Direction': VertexElementUsage.DIRECTION, 
-			'a_StartColor': VertexElementUsage.STARTCOLOR0, 
-			'a_EndColor': VertexElementUsage.ENDCOLOR0, 
-			'a_StartSize': VertexElementUsage.STARTSIZE, 
-			'a_StartRotation0': VertexElementUsage.STARTROTATION0, 
-			'a_StartRotation1': VertexElementUsage.STARTROTATION1, 
-			'a_StartRotation2': VertexElementUsage.STARTROTATION2, 
-			'a_StartLifeTime': VertexElementUsage.STARTLIFETIME, 
-			'a_StartSpeed': VertexElementUsage.STARTSPEED, 
-			'a_Time': VertexElementUsage.TIME0, 
-			'a_Random0': VertexElementUsage.RANDOM0, 
-			'a_Random1': VertexElementUsage.RANDOM1, 
-			'a_SimulationWorldPostion': VertexElementUsage.SIMULATIONWORLDPOSTION};
-			uniformMap = {
-			'u_WorldPosition': [ShuriKenParticle3D.WORLDPOSITION, Shader3D.PERIOD_SPRITE], 
-			'u_WorldRotationMat': [ShuriKenParticle3D.WORLDROTATIONMATRIX, Shader3D.PERIOD_SPRITE],
-			'u_View': [BaseCamera.VIEWMATRIX, Shader3D.PERIOD_CAMERA], 
-			'u_Projection': [BaseCamera.PROJECTMATRIX, Shader3D.PERIOD_CAMERA],
-			'u_CameraDirection': [ShurikenParticleMaterial.CAMERADIRECTION, Shader3D.PERIOD_MATERIAL],//TODO: 
-			'u_CameraUp': [ShurikenParticleMaterial.CAMERAUP, Shader3D.PERIOD_MATERIAL], //TODO:
-			'u_PositionScale': [ShuriKenParticle3D.POSITIONSCALE, Shader3D.PERIOD_SPRITE],
-			'u_SizeScale': [ShuriKenParticle3D.SIZESCALE, Shader3D.PERIOD_SPRITE],
-			'u_ThreeDStartRotation': [ShurikenParticleMaterial.THREEDSTARTROTATION, Shader3D.PERIOD_MATERIAL], 
-			'u_ScalingMode': [ShurikenParticleMaterial.SCALINGMODE, Shader3D.PERIOD_MATERIAL], 
-			'u_CurrentTime': [ShurikenParticleMaterial.CURRENTTIME, Shader3D.PERIOD_MATERIAL], 
-			'u_Gravity': [ShurikenParticleMaterial.GRAVITY, Shader3D.PERIOD_MATERIAL], 
-			'u_texture': [ShurikenParticleMaterial.DIFFUSETEXTURE, Shader3D.PERIOD_MATERIAL], 
-			'u_StretchedBillboardLengthScale': [ShurikenParticleMaterial.STRETCHEDBILLBOARDLENGTHSCALE, Shader3D.PERIOD_MATERIAL], 
-			'u_StretchedBillboardSpeedScale': [ShurikenParticleMaterial.STRETCHEDBILLBOARDSPEEDSCALE, Shader3D.PERIOD_MATERIAL], 
-			'u_ColorOverLifeGradientAlphas': [ShurikenParticleMaterial.COLOROVERLIFEGRADIENTALPHAS, Shader3D.PERIOD_MATERIAL], 
-			'u_ColorOverLifeGradientColors': [ShurikenParticleMaterial.COLOROVERLIFEGRADIENTCOLORS, Shader3D.PERIOD_MATERIAL], 
-			'u_MaxColorOverLifeGradientAlphas': [ShurikenParticleMaterial.MAXCOLOROVERLIFEGRADIENTALPHAS, Shader3D.PERIOD_MATERIAL], 
-			'u_MaxColorOverLifeGradientColors': [ShurikenParticleMaterial.MAXCOLOROVERLIFEGRADIENTCOLORS, Shader3D.PERIOD_MATERIAL], 
-			'u_SimulationSpace': [ShurikenParticleMaterial.SIMULATIONSPACE, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLType': [ShurikenParticleMaterial.VOLTYPE, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLVelocityConst': [ShurikenParticleMaterial.VOLVELOCITYCONST, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLVelocityGradientX': [ShurikenParticleMaterial.VOLVELOCITYGRADIENTX, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLVelocityGradientY': [ShurikenParticleMaterial.VOLVELOCITYGRADIENTY, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLVelocityGradientZ': [ShurikenParticleMaterial.VOLVELOCITYGRADIENTZ, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLVelocityConstMax': [ShurikenParticleMaterial.VOLVELOCITYCONSTMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLVelocityGradientMaxX': [ShurikenParticleMaterial.VOLVELOCITYGRADIENTXMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLVelocityGradientMaxY': [ShurikenParticleMaterial.VOLVELOCITYGRADIENTYMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLVelocityGradientMaxZ': [ShurikenParticleMaterial.VOLVELOCITYGRADIENTZMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_VOLSpaceType': [ShurikenParticleMaterial.VOLSPACETYPE, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLType': [ShurikenParticleMaterial.SOLTYPE, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSeprarate': [ShurikenParticleMaterial.SOLSEPRARATE, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSizeGradient': [ShurikenParticleMaterial.SOLSIZEGRADIENT, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSizeGradientX': [ShurikenParticleMaterial.SOLSIZEGRADIENTX, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSizeGradientY': [ShurikenParticleMaterial.SOLSIZEGRADIENTY, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSizeGradientZ': [ShurikenParticleMaterial.SOLSizeGradientZ, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSizeGradientMax': [ShurikenParticleMaterial.SOLSizeGradientMax, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSizeGradientMaxX': [ShurikenParticleMaterial.SOLSIZEGRADIENTXMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSizeGradientMaxY': [ShurikenParticleMaterial.SOLSIZEGRADIENTYMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_SOLSizeGradientMaxZ': [ShurikenParticleMaterial.SOLSizeGradientZMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLType': [ShurikenParticleMaterial.ROLTYPE, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLSeprarate': [ShurikenParticleMaterial.ROLSEPRARATE, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityConst': [ShurikenParticleMaterial.ROLANGULARVELOCITYCONST, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityConstSeprarate': [ShurikenParticleMaterial.ROLANGULARVELOCITYCONSTSEPRARATE, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityGradient': [ShurikenParticleMaterial.ROLANGULARVELOCITYGRADIENT, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityGradientX': [ShurikenParticleMaterial.ROLANGULARVELOCITYGRADIENTX, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityGradientY': [ShurikenParticleMaterial.ROLANGULARVELOCITYGRADIENTY, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityGradientZ': [ShurikenParticleMaterial.ROLANGULARVELOCITYGRADIENTZ, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityConstMax': [ShurikenParticleMaterial.ROLANGULARVELOCITYCONSTMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityConstMaxSeprarate': [ShurikenParticleMaterial.ROLANGULARVELOCITYCONSTMAXSEPRARATE, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityGradientMax': [ShurikenParticleMaterial.ROLANGULARVELOCITYGRADIENTMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityGradientMaxX': [ShurikenParticleMaterial.ROLANGULARVELOCITYGRADIENTXMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityGradientMaxY': [ShurikenParticleMaterial.ROLANGULARVELOCITYGRADIENTYMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_ROLAngularVelocityGradientMaxZ': [ShurikenParticleMaterial.ROLANGULARVELOCITYGRADIENTZMAX, Shader3D.PERIOD_MATERIAL], 
-			'u_TSAType': [ShurikenParticleMaterial.TEXTURESHEETANIMATIONTYPE, Shader3D.PERIOD_MATERIAL], 
-			'u_TSACycles': [ShurikenParticleMaterial.TEXTURESHEETANIMATIONCYCLES, Shader3D.PERIOD_MATERIAL], 
-			'u_TSASubUVLength': [ShurikenParticleMaterial.TEXTURESHEETANIMATIONSUBUVLENGTH, Shader3D.PERIOD_MATERIAL], 
-			'u_TSAGradientUVs': [ShurikenParticleMaterial.TEXTURESHEETANIMATIONGRADIENTUVS, Shader3D.PERIOD_MATERIAL], 
-			'u_TSAMaxGradientUVs': [ShurikenParticleMaterial.TEXTURESHEETANIMATIONGRADIENTMAXUVS,Shader3D.PERIOD_MATERIAL]};
-			var PARTICLESHURIKEN:int = Shader3D.nameKey.add("PARTICLESHURIKEN");
-			vs = __INCLUDESTR__("laya/d3/shader/files/ParticleShuriKen.vs");
-			ps = __INCLUDESTR__("laya/d3/shader/files/ParticleShuriKen.ps");
-			
-			Shader3D.preCompile(PARTICLESHURIKEN, vs, ps,attributeMap,uniformMap);
-			
-			attributeMap = {
-			'a_Position': VertexElementUsage.POSITION0, 
-			'a_Texcoord0': VertexElementUsage.TEXTURECOORDINATE0, 
-			'a_Time': VertexElementUsage.TIME0};
-			uniformMap = {
-			'u_Texture':  [GlitterMaterial.DIFFUSETEXTURE, Shader3D.PERIOD_MATERIAL],
-			'u_Albedo':  [GlitterMaterial.ALBEDO, Shader3D.PERIOD_MATERIAL],
-			'u_CurrentTime':  [GlitterMaterial.CURRENTTIME, Shader3D.PERIOD_MATERIAL],
-			'u_Color':  [GlitterMaterial.UNICOLOR, Shader3D.PERIOD_MATERIAL],
-			'u_Duration':  [GlitterMaterial.DURATION, Shader3D.PERIOD_MATERIAL],
-			'u_MvpMatrix':  [Sprite3D.MVPMATRIX, Shader3D.PERIOD_SPRITE]};
-			var GLITTER:int = Shader3D.nameKey.add("GLITTER");
-			vs = __INCLUDESTR__("laya/d3/shader/files/Glitter.vs");
-			ps = __INCLUDESTR__("laya/d3/shader/files/Glitter.ps");
-			Shader3D.preCompile(GLITTER, vs, ps,attributeMap, uniformMap);
-			
-			attributeMap = {
-			'a_Position': VertexElementUsage.POSITION0};
-			uniformMap = {
-			'u_Intensity': [Sky.INTENSITY, Shader3D.PERIOD_MATERIAL],
-			'u_AlphaBlending': [Sky.ALPHABLENDING, Shader3D.PERIOD_MATERIAL],
-			'u_CubeTexture': [Sky.DIFFUSETEXTURE,Shader3D.PERIOD_MATERIAL],
-			'u_MvpMatrix': [BaseCamera.VPMATRIX_NO_TRANSLATE, Shader3D.PERIOD_CAMERA]};//TODO:优化
-			var skyBox:int = Shader3D.nameKey.add("SkyBox");
-			vs = __INCLUDESTR__("laya/d3/shader/files/SkyBox.vs");
-			ps = __INCLUDESTR__("laya/d3/shader/files/SkyBox.ps");
-			Shader3D.preCompile(skyBox, vs, ps,attributeMap, uniformMap);
-			
-			attributeMap = {
-			'a_Position': VertexElementUsage.POSITION0, 
-			'a_Texcoord0': VertexElementUsage.TEXTURECOORDINATE0};
-			uniformMap = {
-			'u_Intensity': [Sky.INTENSITY, Shader3D.PERIOD_MATERIAL],
-			'u_AlphaBlending': [Sky.ALPHABLENDING, Shader3D.PERIOD_MATERIAL],
-			'u_texture': [Sky.DIFFUSETEXTURE, Shader3D.PERIOD_MATERIAL],
-			'u_MvpMatrix': [BaseCamera.VPMATRIX_NO_TRANSLATE, Shader3D.PERIOD_CAMERA]};//TODO:优化
-			var skyDome:int = Shader3D.nameKey.add("SkyDome");
-			vs = __INCLUDESTR__("laya/d3/shader/files/SkyDome.vs");
-			ps = __INCLUDESTR__("laya/d3/shader/files/SkyDome.ps");
-			Shader3D.preCompile(skyDome, vs, ps,attributeMap, uniformMap);
-		}
-		
-		/**
-		 *@private
-		 */
-		private static function _initResourceLoad():void {
-			//ClassUtils.regClass("Sprite3D", Sprite3D);
-			//ClassUtils.regClass("MeshSprite3D", MeshSprite3D);
-			//ClassUtils.regClass("Material", BaseMaterial);
-			
+		private static function __init__():void {
 			var createMap:Object = LoaderManager.createMap;
-			createMap["lh"] = [Sprite3D, Laya3D.SPRITE3DHIERARCHY];
+			createMap["lh"] = [Sprite3D, Laya3D.HIERARCHY];
+			createMap["ls"] = [Scene, Laya3D.HIERARCHY];
 			createMap["lm"] = [Mesh, Laya3D.MESH];
 			createMap["lmat"] = [StandardMaterial, Laya3D.MATERIAL];
+			createMap["lpbr"] = [PBRMaterial, Laya3D.MATERIAL];
 			createMap["ltc"] = [TextureCube, Laya3D.TEXTURECUBE];
 			createMap["jpg"] = [Texture2D, "nativeimage"];
 			createMap["jpeg"] = [Texture2D, "nativeimage"];
 			createMap["png"] = [Texture2D, "nativeimage"];
+			createMap["pkm"] = [Texture2D, Loader.BUFFER];
 			createMap["lsani"] = [AnimationTemplet, Loader.BUFFER];
 			createMap["lrani"] = [AnimationTemplet, Loader.BUFFER];
+			createMap["raw"] = [DataTexture2D, Loader.BUFFER];
+			createMap["mipmaps"] = [DataTexture2D, Loader.BUFFER];
+			createMap["thdata"] = [TerrainHeightData, Loader.BUFFER];
+			createMap["lt"] = [TerrainRes, Laya3D.TERRAIN];
+			createMap["lani"] = [AnimationClip, Loader.BUFFER];
+			createMap["lav"] = [Avatar, Loader.JSON];
 			createMap["ani"] = [AnimationTemplet, Loader.BUFFER];//兼容接口
-			createMap["lani"] = [AnimationTemplet, Loader.BUFFER];//兼容接口
 			
-			Loader.parserMap[Laya3D.SPRITE3DHIERARCHY] = _loadSprite3DHierarchy;
+			Loader.parserMap[Laya3D.HIERARCHY] = _loadHierarchy;
 			Loader.parserMap[Laya3D.MESH] = _loadMesh;
 			Loader.parserMap[Laya3D.MATERIAL] = _loadMaterial;
 			Loader.parserMap[Laya3D.TEXTURECUBE] = _loadTextureCube;
+			Loader.parserMap[Laya3D.TERRAIN] = _loadTerrain;
+			
+			_innerFirstLevelLoaderManager.on(Event.ERROR, null, _eventLoadManagerError);
+			_innerSecondLevelLoaderManager.on(Event.ERROR, null, _eventLoadManagerError);
+			_innerThirdLevelLoaderManager.on(Event.ERROR, null, _eventLoadManagerError);
+			_innerFourthLevelLoaderManager.on(Event.ERROR, null, _eventLoadManagerError);
 		}
 		
 		/**
@@ -372,7 +178,7 @@ private static function _initShader():void {
 			
 			for (var i:int = 0; i < _STRINGS.size; i++) {
 				var string:String = _readData.readUTFString();
-				if (string.lastIndexOf(".lmat") !== -1)
+				if (string.lastIndexOf(".lmat") !== -1 || string.lastIndexOf(".lpbr") !== -1)
 					materialUrls.push(string);
 			}
 			return materialUrls;
@@ -381,133 +187,392 @@ private static function _initShader():void {
 		/**
 		 *@private
 		 */
-		private static function _getSprite3DHierarchyInnerUrls(hierarchyNode:Object, urls:Array, urlMap:Object, urlVersion:String, hierarchyBasePath:String):void {
-			var path:String;
-			var clas:Class;
-			switch (hierarchyNode.type) {
-			case "MeshSprite3D": 
-				path = hierarchyNode.instanceParams.loadPath;
-				clas = Mesh;
-				break;
-			case "ShuriKenParticle3D": 
-				var materialPath:String = hierarchyNode.customProps.materialPath;
-				if (materialPath) {
-					path = materialPath;
-					clas = ShurikenParticleMaterial;//TODO:应该自动序列化类型
-				} else {
-					path = hierarchyNode.customProps.texturePath;
-					clas = Texture2D;
+		private static function formatRelativePath(base:String, value:String):String {
+			var path:*;
+			var char1:String = value.charAt(0);
+			if (char1 === ".") {
+				var parts:Array = (base + value).split("/");
+				for (var i:int = 0, len:int = parts.length; i < len; i++) {
+					if (parts[i] == '..') {
+						var index:int = i - 1;
+						if (index > 0 && parts[index] !== '..') {
+							parts.splice(index, 2);
+							i -= 2;
+						}
+					}
+				}
+				path = parts.join('/');
+			} else {
+				path = base + value;
+			}
+			(URL.customFormat != null)&&(path = URL.customFormat(path, null));
+			return path;
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _eventLoadManagerError(msg:String):void {
+			Laya.loader.event(Event.ERROR, msg);
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _addHierarchyInnerUrls(urls:Array, urlMap:Object, urlVersion:String, hierarchyBasePath:String, path:String, clas:Class):void {
+			var formatSubUrl:String = formatRelativePath(hierarchyBasePath, path);
+			(urlVersion) && (formatSubUrl = formatSubUrl + urlVersion);
+			urls.push({url: formatSubUrl, clas: clas});
+			urlMap[path] = formatSubUrl;
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _getSprite3DHierarchyInnerUrls(node:Object, firstLevelUrls:Array, secondLevelUrls:Array, fourthLelUrls:Array, urlMap:Object, urlVersion:String, hierarchyBasePath:String):void {
+			var i:int, n:int;
+			var customProps:Object;
+			switch (node.type) {
+			case "Scene": //TODO:应该自动序列化类型
+				var lightmaps:Array = node.customProps.lightmaps;
+				for (i = 0, n = lightmaps.length; i < n; i++) {
+					var lightMap:String = lightmaps[i].replace(".exr", ".png");
+					_addHierarchyInnerUrls(fourthLelUrls, urlMap, urlVersion, hierarchyBasePath, lightMap, Texture2D);
 				}
 				break;
+			case "MeshSprite3D": 
+			case "TrailSprite3D": 
+			case "LineSprite3D": 
+			case "SkinnedMeshSprite3D": 
+				var meshPath:String;
+				if (node.instanceParams) {//兼容代码
+					meshPath = node.instanceParams.loadPath;
+					(meshPath) && (_addHierarchyInnerUrls(firstLevelUrls, urlMap, urlVersion, hierarchyBasePath, meshPath, Mesh));
+				} else {
+					customProps = node.customProps;
+					meshPath = customProps.meshPath;
+					(meshPath) && (_addHierarchyInnerUrls(firstLevelUrls, urlMap, urlVersion, hierarchyBasePath, meshPath, Mesh));
+					var materials:Array = customProps.materials;
+					if (materials)
+						for (i = 0, n = materials.length; i < n; i++) {
+							var mat:Object = materials[i];
+							var clasPaths:Array = mat.type.split('.');
+							var clas:Class = Browser.window;
+							clasPaths.forEach(function(cls:*):void {
+								clas = clas[cls];
+							});
+							if (typeof(clas) == 'function') _addHierarchyInnerUrls(secondLevelUrls, urlMap, urlVersion, hierarchyBasePath, mat.path, clas);
+							else {
+								throw('_getSprite3DHierarchyInnerUrls 错误: ' + mat.type + ' 不是类');
+							}
+						}
+				}
+				break;
+			case "ShuriKenParticle3D": 
+				customProps = node.customProps;
+				var parMeshPath:String = customProps.meshPath;
+				(parMeshPath) && (_addHierarchyInnerUrls(firstLevelUrls, urlMap, urlVersion, hierarchyBasePath, parMeshPath, Mesh));
+				var materialData:Object = customProps.material;
+				if (materialData) {
+					clasPaths = materialData.type.split('.');
+					clas= Browser.window;
+					clasPaths.forEach(function(cls:*):void {
+						clas = clas[cls];
+					});
+					
+					_addHierarchyInnerUrls(secondLevelUrls, urlMap, urlVersion, hierarchyBasePath, materialData.path, clas);
+				} else {//兼容代码
+					var materialPath:String = customProps.materialPath;
+					if (materialPath) {//兼容代码
+						_addHierarchyInnerUrls(secondLevelUrls, urlMap, urlVersion, hierarchyBasePath, materialPath, ShurikenParticleMaterial);
+					} else {//兼容代码
+						var texturePath:String = customProps.texturePath;
+						if (texturePath)
+							_addHierarchyInnerUrls(fourthLelUrls, urlMap, urlVersion, hierarchyBasePath, texturePath, Texture2D);
+							//else 材质可能为空,非兼容代码
+					}
+				}
+				break;
+			case "Terrain": 
+				_addHierarchyInnerUrls(fourthLelUrls, urlMap, urlVersion, hierarchyBasePath, node.customProps.dataPath, TerrainRes);
+				break;
 			}
 			
-			if (path) {
-				var formatSubUrl:String = URL.formatURL(path, hierarchyBasePath);
-				(urlVersion) && (formatSubUrl = formatSubUrl + urlVersion);
-				urls.push({url: formatSubUrl, clas: clas});
-				urlMap[path] = formatSubUrl;
+			var components:Object = node.components;
+			for (var k:String in components) {
+				var component:Object = components[k];
+				switch (k) {
+				case "Animator": 
+					var avatarPath:String = component.avatarPath;
+					if (avatarPath) {//兼容代码
+						_addHierarchyInnerUrls(fourthLelUrls, urlMap, urlVersion, hierarchyBasePath, avatarPath, Avatar);
+					} else {
+						var avatarData:Object = component.avatar;
+						(avatarData) && (_addHierarchyInnerUrls(fourthLelUrls, urlMap, urlVersion, hierarchyBasePath, avatarData.path, Avatar));
+					}
+					
+					var clipPaths:Vector.<String> = component.clipPaths;
+					for (i = 0, n = clipPaths.length; i < n; i++)
+						_addHierarchyInnerUrls(fourthLelUrls, urlMap, urlVersion, hierarchyBasePath, clipPaths[i], AnimationClip);
+					break;
+				}
 			}
 			
-			var children:Array = hierarchyNode.child;
-			for (var i:int = 0, n:int = children.length; i < n; i++)
-				_getSprite3DHierarchyInnerUrls(children[i], urls, urlMap, urlVersion, hierarchyBasePath);
+			var children:Array = node.child;
+			for (i = 0, n = children.length; i < n; i++)
+				_getSprite3DHierarchyInnerUrls(children[i], firstLevelUrls, secondLevelUrls, fourthLelUrls, urlMap, urlVersion, hierarchyBasePath);
 		}
 		
 		/**
 		 *@private
 		 */
-		private static function _loadSprite3DHierarchy(loader:Loader):void {
-			var lmLoader:Loader = new Loader();
-			lmLoader.on(Event.COMPLETE, null, _onSprite3DHierarchylhLoaded, [loader]);
-			lmLoader.load(loader.url, Loader.TEXT, false, null, true);
+		private static function _loadHierarchy(loader:Loader):void {
+			loader.on(Event.LOADED, null, _onHierarchylhLoaded, [loader, loader._class._getGroup()]);
+			loader.load(loader.url, Loader.JSON, false, null, true);
 		}
 		
 		/**
 		 *@private
 		 */
-		private static function _onSprite3DHierarchylhLoaded(loader:Loader, lhData:String):void {
-			var url:String = loader.url;
-			var urlVersion:String = Utils3D.getURLVerion(url);
-			var hierarchyBasePath:String = URL.getPath(URL.formatURL(url));
-			var urls:Array = [];
-			var urlMap:Object = {};
-			var hierarchyData:Object = JSON.parse(lhData);
-			
-			_getSprite3DHierarchyInnerUrls(hierarchyData, urls, urlMap, urlVersion, hierarchyBasePath);
-			var urlCount:int = urls.length;
-			var totalProcessCount:int = urlCount + 1;
-			var lhWeight:Number = 1 / totalProcessCount;
-			_onProcessChange(loader, 0, lhWeight, 1.0);
-			
-			if (urlCount > 0) {
-				var processHandler:Handler = Handler.create(null, _onProcessChange, [loader, lhWeight, urlCount / totalProcessCount], false);
-				_innerSprite3DHierarchyLoaderManager.create(urls, Handler.create(null, _onSprite3DMeshsLoaded, [loader, processHandler, lhData, urlMap]), processHandler);
+		private static function _onHierarchylhLoaded(loader:Loader, group:String, lhData:Object):void {
+			if (loader._class.destroyed) {
+				loader.endLoad();
 			} else {
-				_onSprite3DMeshsLoaded(loader, null, lhData, null);
+				var url:String = loader.url;
+				var urlVersion:String = Utils3D.getURLVerion(url);
+				var hierarchyBasePath:String = URL.getPath(url);
+				var firstLevUrls:Array = [];
+				var secondLevUrls:Array = [];
+				var forthLevUrls:Array = [];
+				var urlMap:Object = {};
+				_getSprite3DHierarchyInnerUrls(lhData, firstLevUrls, secondLevUrls, forthLevUrls, urlMap, urlVersion, hierarchyBasePath);
+				var urlCount:int = firstLevUrls.length + secondLevUrls.length + forthLevUrls.length;
+				var totalProcessCount:int = urlCount + 1;
+				var weight:Number = 1 / totalProcessCount;
+				_onProcessChange(loader, 0, weight, 1.0);
+				if (forthLevUrls.length > 0) {
+					var processCeil:Number = urlCount / totalProcessCount;
+					var processHandler:Handler = Handler.create(null, _onProcessChange, [loader, weight, processCeil], false);
+					_innerFourthLevelLoaderManager.create(forthLevUrls, Handler.create(null, _onHierarchyInnerForthLevResouLoaded, [loader, group, processHandler, lhData, urlMap, firstLevUrls, secondLevUrls, weight + processCeil * forthLevUrls.length, processCeil]), processHandler, null, null, 1, true, group);
+				} else {
+					_onHierarchyInnerForthLevResouLoaded(loader, group, null, lhData, urlMap, firstLevUrls, secondLevUrls, weight, processCeil);
+				}
 			}
 		}
 		
 		/**
 		 *@private
 		 */
-		private static function _onSprite3DMeshsLoaded(loader:Loader, processHandler:Handler, lhData:Object, urlMap:Object):void {
-			loader.endLoad([lhData, urlMap]);
+		private static function _onHierarchyInnerForthLevResouLoaded(loader:Loader, group:String, processHandler:Handler, lhData:Object, urlMap:Object, firstLevUrls:Array, secondLevUrls:Array, processOffset:Number, processCeil:Number):void {
+			if (loader._class.destroyed) {
+				loader.endLoad();
+			} else {
+				(processHandler) && (processHandler.recover());
+				if (secondLevUrls.length > 0) {
+					var process:Handler = Handler.create(null, _onProcessChange, [loader, processOffset, processCeil], false);
+					_innerSecondLevelLoaderManager.create(secondLevUrls, Handler.create(null, _onHierarchyInnerSecondLevResouLoaded, [loader, group, process, lhData, urlMap, firstLevUrls, processOffset + processCeil * secondLevUrls.length, processCeil]), processHandler, null, null, 1, true, group);
+				} else {
+					_onHierarchyInnerSecondLevResouLoaded(loader, group, null, lhData, urlMap, firstLevUrls, processOffset, processCeil);
+				}
+			}
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _onHierarchyInnerSecondLevResouLoaded(loader:Loader, group:String, processHandler:Handler, lhData:Object, urlMap:Object, firstLevUrls:Array, processOffset:Number, processCeil:Number):void {
+			if (loader._class.destroyed) {
+				loader.endLoad();
+			} else {
+				(processHandler) && (processHandler.recover());
+				if (firstLevUrls.length > 0) {
+					var process:Handler = Handler.create(null, _onProcessChange, [loader, processOffset, processCeil], false);
+					_innerFirstLevelLoaderManager.create(firstLevUrls, Handler.create(null, _onHierarchyInnerFirstLevResouLoaded, [loader, process, lhData, urlMap, /*processOffset + processCeil * firstLevUrls.length, processCeil*/]), processHandler, null, null, 1, true, group);
+					
+				} else {
+					_onHierarchyInnerFirstLevResouLoaded(loader, null, lhData, urlMap);
+				}
+			}
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _onHierarchyInnerFirstLevResouLoaded(loader:Loader, processHandler:Handler, lhData:Object, urlMap:Object):void {
 			(processHandler) && (processHandler.recover());
+			loader.endLoad([lhData, urlMap]);
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _loadTerrain(loader:Loader):void {
+			loader.on(Event.LOADED, null, _onTerrainLtLoaded, [loader, loader._class._getGroup()]);
+			loader.load(loader.url, Loader.JSON, false, null, true);
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _onTerrainLtLoaded(loader:Loader, group:String, ltData:Object):void {
+			if (loader._class.destroyed) {
+				loader.endLoad();
+			} else {
+				var url:String = loader.url;
+				var urlVersion:String = Utils3D.getURLVerion(url);
+				var terrainBasePath:String = URL.getPath(url);
+				
+				var heightMapURL:String, textureURLs:Array = [];
+				var urlMap:Object = {};
+				var formatUrl:String;
+				var i:int, n:int, count:uint;
+				
+				var heightData:Object = ltData.heightData;
+				heightMapURL = heightData.url;
+				formatUrl = formatRelativePath(terrainBasePath, heightMapURL);
+				(urlVersion) && (formatUrl = formatUrl + urlVersion);
+				urlMap[heightMapURL] = formatUrl;
+				heightMapURL = formatUrl;
+				
+				var detailTextures:Array = ltData.detailTexture;
+				for (i = 0, n = detailTextures.length; i < n; i++)
+					textureURLs.push({url: detailTextures[i].diffuse});
+				
+				var normalMaps:Array = ltData.normalMap;
+				for (i = 0, n = normalMaps.length; i < n; i++)
+					textureURLs.push({url: normalMaps[i]});
+				
+				var alphaMaps:Array = ltData.alphaMap;
+				for (i = 0, n = alphaMaps.length; i < n; i++)
+					textureURLs.push({url: alphaMaps[i], params: [false, false, WebGLContext.RGBA, true]});
+				
+				for (i = 0, n = textureURLs.length; i < n; i++) {
+					var subUrl:String = textureURLs[i].url;
+					formatUrl = formatRelativePath(terrainBasePath, subUrl);
+					(urlVersion) && (formatUrl = formatUrl + urlVersion);
+					textureURLs[i].url = formatUrl;
+					urlMap[subUrl] = formatUrl;
+				}
+				
+				var texsUrlCount:int = textureURLs.length;
+				var totalProcessCount:int = texsUrlCount + 2;//heightMap始终为1个
+				var weight:Number = 1 / totalProcessCount;
+				_onProcessChange(loader, 0, weight, 1.0);
+				
+				var loadInfo:Object = {heightMapLoaded: false, texturesLoaded: false};//TODO:
+				var hmProcessHandler:Handler = Handler.create(null, _onProcessChange, [loader, weight, weight], false);
+				_innerFourthLevelLoaderManager.create(heightMapURL, Handler.create(null, _onTerrainHeightMapLoaded, [loader, hmProcessHandler, ltData, urlMap, loadInfo]), hmProcessHandler, null, [heightData.numX, heightData.numZ, heightData.bitType, heightData.value], 1, true, group);
+				
+				var texsProcessHandler:Handler = Handler.create(null, _onProcessChange, [loader, weight * 2, texsUrlCount / totalProcessCount], false);//TODO:
+				_innerFourthLevelLoaderManager.create(textureURLs, Handler.create(null, _onTerrainTexturesLoaded, [loader, texsProcessHandler, ltData, urlMap, loadInfo]), texsProcessHandler, null, null, 1, true, group);
+			}
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _onTerrainHeightMapLoaded(loader:Loader, processHandler:Handler, ltData:Object, urlMap:Object, loadInfo:Object):void {
+			loadInfo.heightMapLoaded = true;
+			if (loadInfo.texturesLoaded) {
+				loader.endLoad([ltData, urlMap]);
+				processHandler.recover();
+			}
+		}
+		
+		/**
+		 *@private
+		 */
+		private static function _onTerrainTexturesLoaded(loader:Loader, processHandler:Handler, ltData:Object, urlMap:Object, loadInfo:Object):void {
+			loadInfo.texturesLoaded = true;
+			if (loadInfo.heightMapLoaded) {
+				loader.endLoad([ltData, urlMap]);
+				processHandler.recover();
+			}
 		}
 		
 		/**
 		 *@private
 		 */
 		private static function _loadMesh(loader:Loader):void {
-			var lmLoader:Loader = new Loader();
-			lmLoader.on(Event.COMPLETE, null, _onMeshLmLoaded, [loader]);
-			lmLoader.load(loader.url, Loader.BUFFER, false, null, true);
+			loader.on(Event.LOADED, null, _onMeshLmLoaded, [loader, loader._class._getGroup()]);
+			loader.load(loader.url, Loader.BUFFER, false, null, true);
 		}
 		
 		/**
 		 *@private
 		 */
-		private static function _onMeshLmLoaded(loader:Loader, lmData:ArrayBuffer):void {
-			var url:String = loader.url;
-			var urlVersion:String = Utils3D.getURLVerion(url);
-			var meshBasePath:String = URL.getPath(URL.formatURL(url));
-			
-			var urls:Array;
-			var urlMap:Object = {};
-			var formatSubUrl:String;
-			
-			_readData = new Byte(lmData);
-			_readData.pos = 0;
-			_readData.readUTFString();
-			READ_BLOCK();
-			
-			var i:int, n:int;
-			for (i = 0; i < 2; i++) {
-				var index:int = _readData.getUint16();
-				var blockName:String = _strings[index];
-				var fn:Function = Laya3D["READ_" + blockName];
-				if (fn == null) throw new Error("model file err,no this function:" + index + " " + blockName);
+		private static function _onMeshLmLoaded(loader:Loader, group:String, lmData:ArrayBuffer):void {
+			if (loader._class.destroyed) {
+				loader.endLoad();
+			} else {
+				var url:String = loader.url;
+				var urlVersion:String = Utils3D.getURLVerion(url);
+				var meshBasePath:String = URL.getPath(url);
 				
-				if (i === 1)
-					urls = fn.call();
-				else
-					fn.call()
+				var urls:Array;
+				var urlMap:Object = {};
+				var formatSubUrl:String;
+				
+				var i:int, n:int, count:uint;
+				_readData = new Byte(lmData);
+				_readData.pos = 0;
+				var version:String = _readData.readUTFString();
+				switch (version) {
+				case "LAYAMODEL:02": 
+				case "LAYAMODEL:03": 
+				case "LAYAMODEL:0301": 
+					var dataOffset:uint = _readData.getUint32();
+					_readData.pos = _readData.pos + 4;//跳过数据信息区
+					
+					count = _readData.getUint16();//跳过内容段落信息区
+					_readData.pos = _readData.pos + count * 8;
+					
+					var offset:uint = _readData.getUint32();//读取字符区
+					count = _readData.getUint16();
+					_readData.pos = dataOffset + offset;
+					
+					urls = [];
+					for (i = 0; i < count; i++) {
+						var string:String = _readData.readUTFString();
+						if (string.lastIndexOf(".lmat") !== -1)
+							urls.push(string);
+					}
+					break;
+				default: 
+					READ_BLOCK();
+					for (i = 0; i < 2; i++) {
+						var index:int = _readData.getUint16();
+						var blockName:String = _strings[index];
+						var fn:Function = Laya3D["READ_" + blockName];
+						if (fn == null) throw new Error("model file err,no this function:" + index + " " + blockName);
+						
+						if (i === 1)
+							urls = fn.call();
+						else
+							fn.call()
+					}
+					
+				}
+				
+				for (i = 0, n = urls.length; i < n; i++) {
+					var subUrl:String = urls[i];
+					formatSubUrl = formatRelativePath(meshBasePath, subUrl);
+					(urlVersion) && (formatSubUrl = formatSubUrl + urlVersion);
+					urls[i] = formatSubUrl;
+					urlMap[subUrl] = formatSubUrl;
+				}
+				
+				if (urls.length > 0) {
+					var urlCount:int = 1;
+					var totalProcessCount:int = urlCount + 1;
+					var lmatWeight:Number = 1 / totalProcessCount;
+					_onProcessChange(loader, 0, lmatWeight, 1.0);
+					var processHandler:Handler = Handler.create(null, _onProcessChange, [loader, lmatWeight, urlCount / totalProcessCount], false);
+					_innerSecondLevelLoaderManager.create(urls, Handler.create(null, _onMeshMateialLoaded, [loader, processHandler, lmData, urlMap]), processHandler, null, null, 1, true, group);
+				} else {
+					loader.endLoad([lmData, urlMap]);
+				}
 			}
-			
-			for (i = 0, n = urls.length; i < n; i++) {
-				var subUrl:String = urls[i];
-				formatSubUrl = URL.formatURL(subUrl, meshBasePath);
-				(urlVersion) && (formatSubUrl = formatSubUrl + urlVersion);
-				urls[i] = formatSubUrl;
-				urlMap[subUrl] = formatSubUrl;
-			}
-			
-			var urlCount:int = 1;//TODO:以后可能为零
-			var totalProcessCount:int = urlCount + 1;
-			var lmatWeight:Number = 1 / totalProcessCount;
-			_onProcessChange(loader, 0, lmatWeight, 1.0);
-			var processHandler:Handler = Handler.create(null, _onProcessChange, [loader, lmatWeight, urlCount / totalProcessCount], false);
-			_innerMeshLoaderManager.create(urls, Handler.create(null, _onMeshMateialLoaded, [loader, processHandler, lmData, urlMap]), processHandler, StandardMaterial);
 		}
 		
 		/**
@@ -521,11 +586,12 @@ private static function _initShader():void {
 		/**
 		 *@private
 		 */
-		private static function _getMaterialTexturePath(path:String, urlVersion:String, materialBath:String):String {
+		public static function _getMaterialTexturePath(path:String, urlVersion:String, materialBath:String):String {
 			var extenIndex:int = path.length - 4;
 			if (path.indexOf(".dds") == extenIndex || path.indexOf(".tga") == extenIndex || path.indexOf(".exr") == extenIndex || path.indexOf(".DDS") == extenIndex || path.indexOf(".TGA") == extenIndex || path.indexOf(".EXR") == extenIndex)
 				path = path.substr(0, extenIndex) + ".png";
-			path = URL.formatURL(path, materialBath);
+			
+			path = formatRelativePath(materialBath, path);
 			(urlVersion) && (path = path + urlVersion);
 			return path;
 		}
@@ -534,74 +600,111 @@ private static function _initShader():void {
 		 *@private
 		 */
 		private static function _loadMaterial(loader:Loader):void {
-			var lmatLoader:Loader = new Loader();
-			lmatLoader.on(Event.COMPLETE, null, _onMaterilLmatLoaded, [loader]);
-			lmatLoader.load(loader.url, Loader.JSON, false, null, true);
+			loader.on(Event.LOADED, null, _onMaterilLmatLoaded, [loader, loader._class._getGroup()]);
+			loader.load(loader.url, Loader.JSON, false, null, true);
 		}
 		
 		/**
 		 *@private
 		 */
-		private static function _onMaterilLmatLoaded(loader:Loader, lmatData:Object):void {
-			var url:String = loader.url;
-			var urlVersion:String = Utils3D.getURLVerion(url);
-			var materialBasePath:String = URL.getPath(URL.formatURL(url));
-			
-			var urls:Array = [];
-			var urlMap:Object = {};
-			var customProps:Object = lmatData.customProps;
-			var formatSubUrl:String;
-			var diffuseTexture:String = customProps.diffuseTexture.texture2D;
-			if (diffuseTexture) {
-				formatSubUrl = _getMaterialTexturePath(diffuseTexture, urlVersion, materialBasePath);
-				urls.push(formatSubUrl);
-				urlMap[diffuseTexture] = formatSubUrl;
-			}
-			
-			var normalTexture:String = customProps.normalTexture.texture2D;
-			if (normalTexture) {
-				formatSubUrl = _getMaterialTexturePath(normalTexture, urlVersion, materialBasePath);
-				urls.push(formatSubUrl);
-				urlMap[normalTexture] = formatSubUrl;
-			}
-			
-			var specularTexture:String = customProps.specularTexture.texture2D;
-			if (specularTexture) {
-				formatSubUrl = _getMaterialTexturePath(specularTexture, urlVersion, materialBasePath);
-				urls.push(formatSubUrl);
-				urlMap[specularTexture] = formatSubUrl;
-			}
-			
-			var emissiveTexture:String = customProps.emissiveTexture.texture2D;
-			if (emissiveTexture) {
-				formatSubUrl = _getMaterialTexturePath(emissiveTexture, urlVersion, materialBasePath);
-				urls.push(formatSubUrl);
-				urlMap[emissiveTexture] = formatSubUrl;
-			}
-			
-			var ambientTexture:String = customProps.ambientTexture.texture2D;
-			if (ambientTexture) {
-				formatSubUrl = _getMaterialTexturePath(ambientTexture, urlVersion, materialBasePath);
-				urls.push(formatSubUrl);
-				urlMap[ambientTexture] = formatSubUrl;
-			}
-			
-			var reflectTexture:String = customProps.reflectTexture.texture2D;
-			if (reflectTexture) {
-				formatSubUrl = _getMaterialTexturePath(reflectTexture, urlVersion, materialBasePath);
-				urls.push(formatSubUrl);
-				urlMap[reflectTexture] = formatSubUrl;
-			}
-			
-			var urlCount:int = urls.length;
-			var totalProcessCount:int = urlCount + 1;
-			var lmatWeight:Number = 1 / totalProcessCount;
-			_onProcessChange(loader, 0, lmatWeight, 1.0);
-			if (urlCount > 0) {
-				var processHandler:Handler = Handler.create(null, _onProcessChange, [loader, lmatWeight, urlCount / totalProcessCount], false);
-				_innerMaterialLoaderManager.create(urls, Handler.create(null, _onMateialTexturesLoaded, [loader, processHandler, lmatData, urlMap]), processHandler, Texture2D);//TODO:还有可能是TextureCube
+		private static function _onMaterilLmatLoaded(loader:Loader, group:String, lmatData:Object):void {
+			if (loader._class.destroyed) {
+				loader.endLoad();
 			} else {
-				_onMateialTexturesLoaded(loader, null, lmatData, null);
+				var url:String = loader.url;
+				var urlVersion:String = Utils3D.getURLVerion(url);
+				var materialBasePath:String = URL.getPath(url);
+				var urls:Array = [];
+				var urlMap:Object = {};
+				var customProps:Object = lmatData.customProps;
+				var formatSubUrl:String;
+				var version:String = lmatData.version;
+				if (version) {
+					switch (version) {
+					case "LAYAMATERIAL:01": 
+					case "LAYAMATERIAL:02": 
+						var textures:Array = lmatData.props.textures;
+						for (var i:int = 0, n:int = textures.length; i < n; i++) {
+							var tex:Object = textures[i];
+							var path:String = tex.path;
+							if (path) {
+								var extenIndex:int = path.length - 4;
+								if (path.indexOf(".exr") == extenIndex || path.indexOf(".EXR") == extenIndex)
+									path = path.substr(0, extenIndex) + ".png";
+								formatSubUrl = formatRelativePath(materialBasePath, path);
+								(urlVersion) && (formatSubUrl = formatSubUrl + urlVersion);
+								urls.push({url: formatSubUrl, params: tex.params});
+								urlMap[path] = formatSubUrl;
+							}
+						}
+						break;
+					default: 
+						throw new Error("Laya3D:unkonwn version.");
+					}
+				} else {//兼容性代码
+					var diffuseTexture:String = customProps.diffuseTexture.texture2D;
+					if (diffuseTexture) {
+						formatSubUrl = _getMaterialTexturePath(diffuseTexture, urlVersion, materialBasePath);
+						urls.push(formatSubUrl);
+						urlMap[diffuseTexture] = formatSubUrl;
+					}
+					
+					if (customProps.normalTexture) {
+						var normalTexture:String = customProps.normalTexture.texture2D;
+						if (normalTexture) {
+							formatSubUrl = _getMaterialTexturePath(normalTexture, urlVersion, materialBasePath);
+							urls.push(formatSubUrl);
+							urlMap[normalTexture] = formatSubUrl;
+						}
+					}
+					
+					if (customProps.specularTexture) {
+						var specularTexture:String = customProps.specularTexture.texture2D;
+						if (specularTexture) {
+							formatSubUrl = _getMaterialTexturePath(specularTexture, urlVersion, materialBasePath);
+							urls.push(formatSubUrl);
+							urlMap[specularTexture] = formatSubUrl;
+						}
+					}
+					
+					if (customProps.emissiveTexture) {
+						var emissiveTexture:String = customProps.emissiveTexture.texture2D;
+						if (emissiveTexture) {
+							formatSubUrl = _getMaterialTexturePath(emissiveTexture, urlVersion, materialBasePath);
+							urls.push(formatSubUrl);
+							urlMap[emissiveTexture] = formatSubUrl;
+						}
+					}
+					
+					if (customProps.ambientTexture) {
+						var ambientTexture:String = customProps.ambientTexture.texture2D;
+						if (ambientTexture) {
+							formatSubUrl = _getMaterialTexturePath(ambientTexture, urlVersion, materialBasePath);
+							urls.push(formatSubUrl);
+							urlMap[ambientTexture] = formatSubUrl;
+						}
+					}
+					
+					if (customProps.reflectTexture) {//TODO:区分三、四级
+						var reflectTexture:String = customProps.reflectTexture.texture2D;
+						if (reflectTexture) {
+							formatSubUrl = _getMaterialTexturePath(reflectTexture, urlVersion, materialBasePath);
+							urls.push(formatSubUrl);
+							urlMap[reflectTexture] = formatSubUrl;
+						}
+					}
+				}
+				
+				var urlCount:int = urls.length;
+				var totalProcessCount:int = urlCount + 1;
+				var lmatWeight:Number = 1 / totalProcessCount;
+				_onProcessChange(loader, 0, lmatWeight, 1.0);
+				if (urlCount > 0) {
+					var processHandler:Handler = Handler.create(null, _onProcessChange, [loader, lmatWeight, urlCount / totalProcessCount], false);
+					_innerFourthLevelLoaderManager.create(urls, Handler.create(null, _onMateialTexturesLoaded, [loader, processHandler, lmatData, urlMap]), processHandler, Texture2D, null, 1, true, group);//TODO:还有可能是TextureCube,使用三级
+				} else {
+					_onMateialTexturesLoaded(loader, null, lmatData, null);
+				}
 			}
 		}
 		
@@ -617,21 +720,24 @@ private static function _initShader():void {
 		 *@private
 		 */
 		private static function _loadTextureCube(loader:Loader):void {
-			var ltcLoader:Loader = new Loader();
-			ltcLoader.on(Event.COMPLETE, null, _onTextureCubeLtcLoaded, [loader]);
-			ltcLoader.load(loader.url, Loader.JSON, false, null, true);
+			loader.on(Event.LOADED, null, _onTextureCubeLtcLoaded, [loader]);
+			loader.load(loader.url, Loader.JSON, false, null, true);
 		}
 		
 		/**
 		 *@private
 		 */
 		private static function _onTextureCubeLtcLoaded(loader:Loader, ltcData:Object):void {
-			var ltcBasePath:String = URL.getPath(URL.formatURL(loader.url));
-			var urls:Array = [URL.formatURL(ltcData.px, ltcBasePath), URL.formatURL(ltcData.nx, ltcBasePath), URL.formatURL(ltcData.py, ltcBasePath), URL.formatURL(ltcData.ny, ltcBasePath), URL.formatURL(ltcData.pz, ltcBasePath), URL.formatURL(ltcData.nz, ltcBasePath)];
-			var ltcWeight:Number = 1.0 / 7.0;
-			_onProcessChange(loader, 0, ltcWeight, 1.0);
-			var processHandler:Handler = Handler.create(null, _onProcessChange, [loader, ltcWeight, 6 / 7], false);
-			_innerTextureCubeLoaderManager.load(urls, Handler.create(null, _onTextureCubeImagesLoaded, [loader, urls, processHandler]), processHandler, "nativeimage");
+			if (loader._class.destroyed) {
+				loader.endLoad();
+			} else {
+				var ltcBasePath:String = URL.getPath(loader.url);
+				var urls:Array = [formatRelativePath(ltcBasePath, ltcData.px), formatRelativePath(ltcBasePath, ltcData.nx), formatRelativePath(ltcBasePath, ltcData.py), formatRelativePath(ltcBasePath, ltcData.ny), formatRelativePath(ltcBasePath, ltcData.pz), formatRelativePath(ltcBasePath, ltcData.nz)];
+				var ltcWeight:Number = 1.0 / 7.0;
+				_onProcessChange(loader, 0, ltcWeight, 1.0);
+				var processHandler:Handler = Handler.create(null, _onProcessChange, [loader, ltcWeight, 6 / 7], false);
+				_innerFourthLevelLoaderManager.load(urls, Handler.create(null, _onTextureCubeImagesLoaded, [loader, urls, processHandler]), processHandler, "nativeimage");
+			}
 		}
 		
 		/**
@@ -662,27 +768,57 @@ private static function _initShader():void {
 		 * @param	width  3D画布宽度。
 		 * @param	height 3D画布高度。
 		 */
-		public static function init(width:Number, height:Number, antialias:Boolean = false, alpha:Boolean = false, premultipliedAlpha:Boolean = false):void {
-			if (!Render.isConchNode && !WebGL.enable()) {
-				alert("Laya3D init err,must support webGL!");
-				return;
+		public static function init(width:Number, height:Number, antialias:Boolean = false, alpha:Boolean = false, premultipliedAlpha:Boolean = true, stencil:Boolean = true):void {
+			RunDriver.update3DLoop = function():void {
+				CollisionManager._triggerCollision();
 			}
 			
-			_innerTextureCubeLoaderManager.maxLoader = 1;
-			_innerMaterialLoaderManager.maxLoader = 1;
-			_innerMeshLoaderManager.maxLoader = 1;
-			_innerSprite3DHierarchyLoaderManager.maxLoader = 1;
+			RunDriver.cancelLoadByUrl = function(url:String):void {
+				Laya3D._cancelLoadByUrl(url);
+			}
 			
-			RunDriver.changeWebGLSize = _changeWebGLSize;
 			Config.isAntialias = antialias;
 			Config.isAlpha = alpha;
 			Config.premultipliedAlpha = premultipliedAlpha;
+			Config.isStencil = stencil;
+
+			if (!WebGL.enable()) {
+				alert("Laya3D init error,must support webGL!");
+				return;
+			}
+			
+			RunDriver.changeWebGLSize = _changeWebGLSize;
 			Render.is3DMode = true;
 			Laya.init(width, height);
 			Layer.__init__();
-			ShaderDefines3D.__init__();
-			_initShader();
-			_initResourceLoad();
+			Physics.__init__();
+			//RenderableSprite3D.__init__();
+			//SkinnedMeshSprite3D.__init__();
+			//ShuriKenParticle3D.__init__();
+			//BaseMaterial.__init__();
+			//BlinnPhongMaterial.__init__();
+			//StandardMaterial.__init__();
+			//PBRMaterial.__init__();
+			//PBRStandardMaterial.__init__();
+			//PBRSpecularMaterial.__init__();
+			//WaterMaterial.__init__();
+			//ShurikenParticleMaterial.__init__();
+			//TerrainMaterial.__init__();
+			ExtendTerrainMaterial.__init__();
+			ShaderInit3D.__init__();
+			MeshSprite3D.__init__();
+			AnimationNode.__init__();
+			__init__();
+			AtlasResourceManager.maxTextureCount = 2;
+			
+			if (Laya3D.debugMode || OctreeNode.debugMode)
+				_debugPhasorSprite = new PhasorSpriter3D();
+		}
+		
+		/**
+		 * 创建一个 <code>Laya3D</code> 实例。
+		 */
+		public function Laya3D() {
 		}
 	
 	}

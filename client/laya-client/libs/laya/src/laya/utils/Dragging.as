@@ -6,6 +6,7 @@ package laya.utils {
 	import laya.maths.Rectangle;
 	
 	/**
+	 * @private
 	 * <code>Dragging</code> 类是触摸滑动控件。
 	 */
 	public class Dragging {
@@ -64,11 +65,7 @@ package laya.utils {
 			this._disableMouseEvent = disableMouseEvent;
 			this.ratio = ratio;
 			
-			if (target.globalScaleX != 1 || target.globalScaleY != 1) {
-				_parent = target.parent as Sprite;
-			} else {
-				_parent = Laya.stage;
-			}
+			_parent = target.parent as Sprite;
 			
 			_clickOnly = true;
 			_dragging = true;

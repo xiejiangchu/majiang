@@ -1,4 +1,6 @@
 package laya.webgl.resource {
+	import laya.events.Event;
+	import laya.renders.Render;
 	import laya.resource.IDispose;
 	import laya.resource.Texture;
 	import laya.webgl.WebGL;
@@ -27,7 +29,7 @@ package laya.webgl.resource {
 		private var _repeat:Boolean;
 		private var _minFifter:int;
 		private var _magFifter:int;
-		private var _destroy:Boolean = false;
+		public var _destroy:Boolean = false;
 		
 		public function get surfaceFormat():int {
 			return _surfaceFormat;
@@ -62,7 +64,7 @@ package laya.webgl.resource {
 			if (_alreadyResolved)
 				return super.source;
 			return null;
-			throw new Error("RenderTarget  还未准备好！");
+			//throw new Error("RenderTarget  还未准备好！");
 		}
 		
 		/**
@@ -80,6 +82,10 @@ package laya.webgl.resource {
 			_surfaceFormat = surfaceFormat;
 			_surfaceType = surfaceType;
 			_depthStencilFormat = depthStencilFormat;
+			//OpenGL es extesion support DEPTH_STENCIL
+			if (Render.isConchWebGL && _depthStencilFormat === WebGLContext.DEPTH_STENCIL) {
+				_depthStencilFormat = WebGLContext.DEPTH_COMPONENT16; 
+			}
 			_mipMap = mipMap;
 			_repeat = repeat;
 			_minFifter = minFifter;
@@ -105,12 +111,11 @@ package laya.webgl.resource {
 		}
 		
 		public function size(w:Number, h:Number):void {
-			if (bitmap && _w == w && _h == h)
-				return;
+			if (_w == w && _h == h)return;
 			_w = w;
 			_h = h;
 			release();
-			_createWebGLRenderTarget();
+			if (_w != 0 && _h != 0)_createWebGLRenderTarget();
 		}
 		
 		public function release():void {
@@ -131,6 +136,10 @@ package laya.webgl.resource {
 				t._surfaceFormat = surfaceFormat;
 				t._surfaceType = surfaceType;
 				t._depthStencilFormat = depthStencilFormat;
+				//OpenGL es extesion support DEPTH_STENCIL
+				if (Render.isConchWebGL && t._depthStencilFormat === WebGLContext.DEPTH_STENCIL) {
+					t._depthStencilFormat = WebGLContext.DEPTH_COMPONENT16; 
+				}
 				t._mipMap = mipMap;
 				t._repeat = repeat;
 				t._minFifter = minFifter;
@@ -148,7 +157,6 @@ package laya.webgl.resource {
 			
 			RenderState2D.curRenderTarget = this;
 			gl.bindFramebuffer(WebGLContext.FRAMEBUFFER, bitmap.frameBuffer);
-			
 			_alreadyResolved = false;
 			
 			if (_type == TYPE2D) {
@@ -219,8 +227,12 @@ package laya.webgl.resource {
 		override public function destroy(foreDiposeTexture:Boolean = false):void {//待优化
 			if (!_destroy) {
 				_loaded = false;
+				bitmap.offAll();
+				bitmap.disposeResource();
 				bitmap.dispose();
+				this.offAll();
 				bitmap = null;
+				_alreadyResolved = false;
 				_destroy = true;
 				super.destroy();//待测试
 			}
@@ -235,6 +247,9 @@ package laya.webgl.resource {
 			_alreadyResolved = true;
 			_destroy = false;
 			_loaded = true;
+			bitmap.on( Event.RECOVERED, this, function(e:Event):void{
+				this.event(Event.RECOVERED);
+			})
 		}
 	
 	}

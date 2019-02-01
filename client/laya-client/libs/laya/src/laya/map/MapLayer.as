@@ -3,6 +3,7 @@ package laya.map {
 	import laya.map.GridSprite;
 	import laya.maths.Point;
 	import laya.maths.Rectangle;
+	import laya.renders.RenderContext;
 	import laya.resource.Texture;
 	
 	/**
@@ -13,7 +14,7 @@ package laya.map {
 	public class MapLayer extends Sprite {
 		
 		private var _map:TiledMap;
-		private var _mapData:Array = null;
+		public var _mapData:Array = null;
 		
 		private var _tileWidthHalf:Number = 0;
 		private var _tileHeightHalf:Number = 0;
@@ -21,13 +22,31 @@ package laya.map {
 		private var _mapWidthHalf:Number = 0;
 		private var _mapHeightHalf:Number = 0;
 		
-		private var _gridSpriteArray:Array = [];
+		/**
+		 * @private
+		 */
+		public var _gridSpriteArray:Array = [];
 		private var _objDic:Object = null;//用来做字典，方便查询
+		private var _dataDic:Object = null;
 		
 		private var _tempMapPos:Point = new Point();//临时变量
 		private var _properties:*;
+		
+		/**被合到的层*/
+		public var tarLayer:MapLayer;
+		
 		/**当前Layer的名称*/
 		public var layerName:String = null;
+		
+		/**
+		 * 当前需要更新的gridSprite列表 
+		 */		
+		private var _showGridList:Array = [];
+		
+		/**
+		 * 活动对象列表,活动对象不管是否显示都需要更新 
+		 */		
+		private var _aloneObjs:Array = [];
 		
 		/**
 		 * 解析LAYER数据，以及初始化一些数据
@@ -63,13 +82,15 @@ package laya.map {
 				var tObjectGid:int = 0;
 				var tArray:Array = layerData.objects;
 				if (tArray.length > 0) {
-					_objDic = {};
+					_objDic = { };
+					_dataDic = { };
 				}
 				var tObjectData:*;
 				var tObjWidth:Number;
 				var tObjHeight:Number;
 				for (var i:int = 0; i < tArray.length; i++) {
 					tObjectData = tArray[i];
+					_dataDic[tObjectData.name] = tObjectData;
 					//这里要看具体需求，看是不是要开放
 					if (tObjectData.visible == true) {
 						tObjWidth = tObjectData.width;
@@ -102,7 +123,15 @@ package laya.map {
 								break;
 							}
 							this.addChild(tSprite);
+			
 							_gridSpriteArray.push(tSprite);
+							if (tSprite.isAloneObject)
+							{
+								_showGridList.push(tSprite);
+								_aloneObjs.push(tSprite);
+							}
+							
+							
 							_objDic[tObjectData.name] = tSprite;
 						}
 					}
@@ -120,6 +149,19 @@ package laya.map {
 		public function getObjectByName(objName:String):GridSprite {
 			if (_objDic) {
 				return _objDic[objName];
+			}
+			return null;
+		}
+		
+		
+		/**
+		 * 通过名字获取数据，如果找不到返回为null
+		 * @param	objName 所要获取对象的名字
+		 * @return
+		 */
+		public function getObjectDataByName(objName:String):GridSprite {
+			if (_dataDic) {
+				return _dataDic[objName];
 			}
 			return null;
 		}
@@ -291,8 +333,50 @@ package laya.map {
 			tSprite.relativeX = gridX * _map.gridWidth;
 			tSprite.relativeY = gridY * _map.gridHeight;
 			tSprite.initData(_map);
+			tSprite.updatePos();
 			_gridSpriteArray.push(tSprite);
 			return tSprite;
+		}
+		
+		/**
+		 * 将gridSprite设为显示状态 
+		 * @param gridSprite 
+		 */		
+		public function showGridSprite(gridSprite:GridSprite):void
+		{
+			var gridList:Array=_showGridList;
+			var i:int, len:int;
+			len = gridList.length;
+			var ok_i:int = -1;//查找一个可替换的位置
+			var tGridSprite:GridSprite;
+			for (i = 0; i < len; i++)
+			{
+				tGridSprite = gridList[i];
+				if (tGridSprite == gridSprite) return;
+				if (!tGridSprite.isAloneObject && !tGridSprite.visible)
+				{
+					ok_i = i;
+				}
+				
+			}
+			if (ok_i >= 0)
+			{
+				gridList[ok_i] = gridSprite;
+			}else
+			{
+				gridList.push(gridSprite);
+			}
+			
+		}
+		
+		/**
+		 * 将gridSprite设为隐藏状态 
+		 * @param gridSprite
+		 * 
+		 */		
+		public function hideGridSprite(gridSprite:GridSprite):void
+		{
+			gridSprite.visible = false;
 		}
 		
 		/**
@@ -301,12 +385,49 @@ package laya.map {
 		 */
 		public function updateGridPos():void {
 			var tSprite:GridSprite;
-			for (var i:int = 0; i < this._gridSpriteArray.length; i++) {
-				tSprite = this._gridSpriteArray[i];
-				if ((tSprite.visible || tSprite.isAloneObject) && tSprite.drawImageNum > 0) {
+			var tList:Array;
+			tList = _showGridList;
+			var len:int;
+			len = tList.length;
+			for (var i:int = 0; i < len; i++) {
+				tSprite = tList[i];
+				if ((tSprite._style.visible || tSprite.isAloneObject) && tSprite.drawImageNum > 0) {
 					tSprite.updatePos();
 				}
 			}
+		}
+		
+		/**
+		 * 更新此层中的活动对象
+		 */
+		public function updateAloneObject():void
+		{
+			var tSprite:GridSprite;
+			var tList:Array;
+			tList = _aloneObjs;
+			var len:int;
+			len = tList.length;
+			for (var i:int = 0; i < len; i++) {
+				tSprite = tList[i];
+				if (tSprite.drawImageNum > 0) {
+					tSprite.updatePos();
+				}
+			}
+		}
+		
+		/**
+		 * 渲染时使用需要更新的列表进行渲染，减少遍历 
+		 * @param context
+		 * @param x
+		 * @param y
+		 * 
+		 */		
+		override public function render(context:RenderContext, x:Number, y:Number):void 
+		{
+			var childs:Array = this._childs;
+			this._childs = _showGridList;
+			super.render(context, x, y);
+			this._childs = childs;
 		}
 		
 		/**
@@ -356,7 +477,8 @@ package laya.map {
 								gridSprite.addChild(tAnimationSprite);
 								gridSprite.isHaveAnimation = true;
 							} else {
-								gridSprite.graphics.drawTexture(tTileTexSet.texture, tX + tTileTexSet.offX, tY + tTileTexSet.offY, tTexture.width, tTexture.height);
+								//gridSprite.graphics.drawTexture(tTileTexSet.texture, tX + tTileTexSet.offX, tY + tTileTexSet.offY, tTexture.width, tTexture.height);
+								gridSprite.graphics.drawTexture(tTileTexSet.texture, tX + tTileTexSet.offX, tY + tTileTexSet.offY);
 							}
 							return true;
 						}
@@ -385,6 +507,12 @@ package laya.map {
 				}
 				_objDic = null;
 			}
+			if (_dataDic) {
+				for (p in _dataDic) {
+					delete _dataDic[p];
+				}
+				_dataDic = null;
+			}
 			var tGridSprite:GridSprite;
 			for (i = 0; i < _gridSpriteArray.length; i++) {
 				tGridSprite = _gridSpriteArray[i];
@@ -392,6 +520,7 @@ package laya.map {
 			}
 			_properties = null;
 			_tempMapPos = null;
+			tarLayer = null;
 		}
 	}
 }

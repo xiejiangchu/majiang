@@ -1,15 +1,19 @@
 package laya.resource {
+	import laya.net.URL;
+	import laya.renders.Render;
 	import laya.utils.Browser;
 	
 	/**
-	 * <code>HTMLImage</code> 用于创建 HTML Image 元素。
 	 * @private
+	 * <p> <code>HTMLImage</code> 用于创建 HTML Image 元素。</p>
+	 * <p>请使用 <code>HTMLImage.create()<code>获取新实例，不要直接使用 <code>new HTMLImage<code> 。</p>
 	 */
 	public class HTMLImage extends FileBitmap {
 		/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
 		
 		/**
-		 * 创建一个 <code>HTMLImage</code> 实例。请不要直接使用 new HTMLImage
+		 * <p>创建一个 <code>HTMLImage</code> 实例。</p>
+		 * <p>请使用 <code>HTMLImage.create()<code>创建实例，不要直接使用 <code>new HTMLImage<code> 。</p>
 		 */
 		public static var create:Function = function(src:String, def:* = null):HTMLImage {
 			return new HTMLImage(src, def);
@@ -19,6 +23,8 @@ package laya.resource {
 		protected var _recreateLock:Boolean = false;
 		/**异步加载完成后是否需要释放（有可能在恢复过程中,再次被释放，用此变量做标记）*/
 		protected var _needReleaseAgain:Boolean = false;
+		
+		private var _enableMerageInAtlas:Boolean = true;
 		
 		/**
 		 * @inheritDoc
@@ -42,7 +48,8 @@ package laya.resource {
 		}
 		
 		/**
-		 * 创建一个 <code>HTMLImage</code> 实例。请不要直接使用 new HTMLImage
+		 * <p>创建一个 <code>HTMLImage</code> 实例。</p>
+		 * <p>请使用 <code>HTMLImage.create()<code>创建实例，不要直接使用 <code>new HTMLImage<code> 。</p>
 		 */
 		public function HTMLImage(src:String, def:* = null) {
 			super();
@@ -62,6 +69,17 @@ package laya.resource {
 			(src) && (_source.src = src);
 		}
 		
+		public function get enableMerageInAtlas():Boolean {
+			return _enableMerageInAtlas;
+		}
+		
+		public function set enableMerageInAtlas(value:Boolean):void {
+			_enableMerageInAtlas = value;
+			if (Render.isConchApp) {
+				if (_source) _source.enableMerageInAtlas = value;
+			}
+		}
+		
 		/**
 		 * @inheritDoc
 		 */
@@ -72,7 +90,6 @@ package laya.resource {
 			_needReleaseAgain = false;
 			if (!_source) {
 				_recreateLock = true;
-				startCreate();
 				var _this:HTMLImage = this;
 				_source = new Browser.window.Image();
 				_source.crossOrigin = "";
@@ -93,7 +110,6 @@ package laya.resource {
 			} else {
 				if (_recreateLock)
 					return;
-				startCreate();
 				memorySize = _w * _h * 4;
 				_recreateLock = false;
 				completeCreate();//处理创建完成后相关操作
@@ -103,7 +119,7 @@ package laya.resource {
 		/**
 		 * @inheritDoc
 		 */
-		override protected function detoryResource():void {
+		override protected function disposeResource():void {
 			if (_recreateLock)
 				_needReleaseAgain = true;
 			(_source) && (_source = null, memorySize = 0);

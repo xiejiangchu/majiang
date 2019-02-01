@@ -8,14 +8,14 @@ package laya.display {
 	 * <code>BitmapFont</code> 是位图字体类，用于定义位图字体信息。
 	 */
 	public class BitmapFont {
-		private var _texture:Texture;
-		private var _fontCharDic:Object = {};
-		private var _fontWidthMap:Object = {};
-		private var _complete:Handler;
-		private var _path:String;
-		private var _maxWidth:Number = 0;
-		private var _spaceWidth:Number = 10;
-		private var _padding:Array;
+		protected var _texture:Texture;
+		protected var _fontCharDic:Object = {};
+		protected var _fontWidthMap:Object = {};
+		protected var _complete:Handler;
+		protected var _path:String;
+		protected var _maxWidth:Number = 0;
+		protected var _spaceWidth:Number = 10;
+		protected var _padding:Array;
 		/**当前位图字体字号。*/
 		public var fontSize:Number = 12;
 		/**表示是否根据实际使用的字体大小缩放位图字体大小。*/
@@ -24,9 +24,9 @@ package laya.display {
 		public var letterSpacing:Number = 0;
 		
 		/**
-		 * 通过指定位图字体文件路径，加载位图字体文件。
+		 * 通过指定位图字体文件路径，加载位图字体文件，加载完成后会自动解析。
 		 * @param	path		位图字体文件的路径。
-		 * @param	complete	加载完成的回调，通知上层字体文件已经完成加载并解析。
+		 * @param	complete	加载并解析完成的回调。如果成功返回this,如果失败返回null
 		 */
 		public function loadFont(path:String, complete:Handler):void {
 			_path = path;
@@ -38,9 +38,9 @@ package laya.display {
 		/**
 		 * @private
 		 */
-		private function onLoaded():void {
+		protected function onLoaded():void {
 			this.parseFont(Loader.getRes(_path), Loader.getRes(_path.replace(".fnt", ".png")));
-			_complete && _complete.run();
+			_complete && _complete.runWith(_texture?this:null);
 		}
 		
 		/**
@@ -49,6 +49,53 @@ package laya.display {
 		 * @param	texture		字体的纹理。
 		 */
 		public function parseFont(xml:XmlDom, texture:Texture):void {
+			if (xml == null || texture == null) return;
+			_texture = texture;
+			var tX:int = 0;
+			var tScale:Number = 1;
+			
+			var tInfo:* = xml.getElementsByTagName("info");
+			if (!tInfo[0].getAttributeNode)
+			{
+				return parseFont2(xml, texture);
+			}
+			fontSize = parseInt(tInfo[0].getAttributeNode("size").nodeValue);
+			
+			var tPadding:String = tInfo[0].getAttributeNode("padding").nodeValue;
+			var tPaddingArray:Array = tPadding.split(",");
+			_padding = [parseInt(tPaddingArray[0]), parseInt(tPaddingArray[1]), parseInt(tPaddingArray[2]), parseInt(tPaddingArray[3])];
+			
+			var chars:Array;
+			chars = xml.getElementsByTagName("char");
+			var i:int = 0;
+			for (i = 0; i < chars.length; i++) {
+				var tAttribute:* = chars[i];
+				var tId:int = parseInt(tAttribute.getAttributeNode("id").nodeValue);
+				
+				var xOffset:Number = parseInt(tAttribute.getAttributeNode("xoffset").nodeValue) / tScale;
+				var yOffset:Number = parseInt(tAttribute.getAttributeNode("yoffset").nodeValue) / tScale;
+				var xAdvance:Number = parseInt(tAttribute.getAttributeNode("xadvance").nodeValue) / tScale;
+				
+				var region:Rectangle = new Rectangle();
+				region.x = parseInt(tAttribute.getAttributeNode("x").nodeValue);
+				region.y = parseInt(tAttribute.getAttributeNode("y").nodeValue);
+				region.width = parseInt(tAttribute.getAttributeNode("width").nodeValue);
+				region.height = parseInt(tAttribute.getAttributeNode("height").nodeValue);
+				
+				var tTexture:Texture = Texture.create(texture, region.x, region.y, region.width, region.height, xOffset, yOffset);
+				_maxWidth = Math.max(_maxWidth, xAdvance + letterSpacing);
+				_fontCharDic[tId] = tTexture;
+				_fontWidthMap[tId] = xAdvance;
+			}
+		}
+		
+		/**
+		 * @private
+		 * 解析字体文件。
+		 * @param	xml			字体文件XML。
+		 * @param	texture		字体的纹理。
+		 */
+		public function parseFont2(xml:XmlDom, texture:Texture):void {
 			if (xml == null || texture == null) return;
 			_texture = texture;
 			var tX:int = 0;
@@ -84,7 +131,6 @@ package laya.display {
 				_fontWidthMap[tId] = xAdvance;
 			}
 		}
-		
 		/**
 		 * 获取指定字符的字体纹理对象。
 		 * @param	char 字符。
@@ -154,7 +200,7 @@ package laya.display {
 		 * 获取最大字符高度。
 		 */
 		public function getMaxHeight():Number {
-			return _padding[0] + _padding[2] + fontSize;
+			return fontSize;
 		}
 		
 		/**
@@ -171,7 +217,7 @@ package laya.display {
 			for (var i:int = 0, n:int = text.length; i < n; i++) {
 				tTexture = getCharTexture(text.charAt(i));
 				if (tTexture) {
-					sprite.graphics.drawTexture(tTexture, drawX + tX + dx, drawY + _padding[0]);
+					sprite.graphics.drawTexture(tTexture, drawX + tX + dx, drawY);
 					tX += getCharWidth(text.charAt(i));
 				}
 			}

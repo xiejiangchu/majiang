@@ -1,26 +1,16 @@
 package laya.d3.resource.models {
-	import laya.d3.core.MeshSprite3D;
-	import laya.d3.core.material.BaseMaterial;
 	import laya.d3.core.render.IRenderable;
 	import laya.d3.core.render.RenderElement;
-	import laya.d3.core.render.RenderQueue;
 	import laya.d3.core.render.RenderState;
 	import laya.d3.graphics.IndexBuffer3D;
 	import laya.d3.graphics.VertexBuffer3D;
-	import laya.d3.graphics.VertexDeclaration;
 	import laya.d3.graphics.VertexElement;
 	import laya.d3.graphics.VertexElementFormat;
 	import laya.d3.graphics.VertexElementUsage;
-	import laya.d3.math.Matrix4x4;
 	import laya.d3.math.Vector3;
-	import laya.d3.shader.ShaderDefines3D;
-	import laya.d3.utils.Utils3D;
-	import laya.renders.Render;
 	import laya.utils.Stat;
+	import laya.webgl.WebGL;
 	import laya.webgl.WebGLContext;
-	import laya.webgl.shader.Shader;
-	import laya.webgl.utils.Buffer;
-	import laya.webgl.utils.Buffer2D;
 	
 	/**
 	 * @private
@@ -31,13 +21,6 @@ package laya.d3.resource.models {
 		protected var _numberIndices:int;
 		protected var _vertexBuffer:VertexBuffer3D;
 		protected var _indexBuffer:IndexBuffer3D;
-		
-		/** @private */
-		public var _indexOfHost:int;
-		
-		public function get indexOfHost():int {
-			return _indexOfHost;
-		}
 		
 		public function get _vertexBufferCount():int {
 			return 1;
@@ -54,15 +37,23 @@ package laya.d3.resource.models {
 				return null;
 		}
 		
+		public function _getVertexBuffers():Vector.<VertexBuffer3D> {
+			return null;
+		}
+		
 		public function _getIndexBuffer():IndexBuffer3D {
 			return _indexBuffer;
+		}
+		
+		public function PrimitiveMesh() {
+			super();
 		}
 		
 		/**
 		 * 获取网格顶点
 		 * @return 网格顶点。
 		 */
-		override public function get positions():Vector.<Vector3>//WEBGL1.0不能从Buffer显存中获取内存数据
+		override public function _getPositions():Vector.<Vector3>//WEBGL1.0不能从Buffer显存中获取内存数据
 		{
 			var vertices:Vector.<Vector3> = new Vector.<Vector3>();
 			
@@ -87,11 +78,6 @@ package laya.d3.resource.models {
 			return vertices;
 		}
 		
-		public function PrimitiveMesh() {
-			super();
-			_indexOfHost = 0;
-		}
-		
 		override public function getRenderElement(index:int):IRenderable {
 			return this;
 		}
@@ -100,29 +86,23 @@ package laya.d3.resource.models {
 			return 1;
 		}
 		
-		override protected function detoryResource():void {
-			(_vertexBuffer) && (_vertexBuffer.dispose(), _vertexBuffer = null);
-			(_indexBuffer) && (_indexBuffer.dispose(), _indexBuffer = null);
+		override protected function disposeResource():void {
+			(_vertexBuffer) && (_vertexBuffer.destroy(), _vertexBuffer = null);
+			(_indexBuffer) && (_indexBuffer.destroy(), _indexBuffer = null);
 			memorySize = 0;
 		}
 		
 		public function _beforeRender(state:RenderState):Boolean {
 			_vertexBuffer._bind();
 			_indexBuffer._bind();
-			return  true;
+			return true;
 		}
 		
 		public function _render(state:RenderState):void {
-			state.context.drawElements(WebGLContext.TRIANGLES, _numberIndices, WebGLContext.UNSIGNED_SHORT, 0);
+			WebGL.mainContext.drawElements(WebGLContext.TRIANGLES, _numberIndices, WebGLContext.UNSIGNED_SHORT, 0);
 			Stat.drawCall++;
 			Stat.trianglesFaces += _numberIndices / 3;
 		}
-		
-		/**NATIVE*/
-		public function _renderRuntime(conchGraphics3D:*,renderElement:RenderElement,state:RenderState):void {
-			conchGraphics3D.drawSubmesh(renderElement._conchSubmesh,0,WebGLContext.TRIANGLES, 0,_numberIndices);
-		}
-	
 	}
 
 }

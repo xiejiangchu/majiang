@@ -3,9 +3,11 @@ package laya.html.dom
 	import laya.display.Node;
 	import laya.display.Sprite;
 	import laya.display.css.CSSStyle;
+	import laya.display.Text;
 	import laya.events.Event;
 	import laya.html.utils.Layout;
 	import laya.net.URL;
+	import laya.renders.Render;
 	import laya.renders.RenderSprite;
 	import laya.utils.HTMLChar;
 	import laya.utils.Utils;
@@ -25,6 +27,7 @@ package laya.html.dom
 		
 		public function HTMLElement()
 		{
+			//_childRenderMax = true;
 			setStyle(new CSSStyle(this));
 			//设置CSS默认属性
 			this._getCSSStyle().valign = "middle";
@@ -44,7 +47,7 @@ package laya.html.dom
 				}
 			}
 			var word:Vector.<HTMLChar> = _getWords();
-			word&&fillWords(this, word, 0, 0, style.font, style.color);
+			word ? HTMLElement.fillWords(this,word,0,0,this.style.font,this.style.color,this.style.underLine) : this.graphics.clear();
 			
 		}
 		
@@ -64,6 +67,7 @@ package laya.html.dom
 				_text.text = value;
 				_text.words && (_text.words.length = 0);
 			}
+			Render.isConchApp && this.layaoutCallNative();
 			_renderType |= RenderSprite.CHILDS;
 			repaint();
 			updateHref();
@@ -105,9 +109,68 @@ package laya.html.dom
 		{
 			return _style as CSSStyle;
 		}
+
+		/**
+		 * rtl模式的getWords函數 
+		 */		
+		public function _getWords2():Vector.<HTMLChar>
+		{
+			var txt:String = _text.text;
+			if (!txt || txt.length === 0)
+				return null;
+			var i:int = 0, n:int;
+			var realWords:Array;
+			var drawWords:Array;
+			if (!_text.drawWords)
+			{
+				realWords = txt.split(" ");
+				n = realWords.length-1;
+				
+				drawWords = [];
+				for (i = 0; i < n; i++)
+				{
+					drawWords.push(realWords[i]," ")
+				}
+				if(n>=0)
+				drawWords.push(realWords[n]);
+				_text.drawWords = drawWords;
+			}else
+			{
+				drawWords = _text.drawWords;
+			}
+				
+			var words:Vector.<HTMLChar> = _text.words;
+			if (words && words.length === drawWords.length)
+				return words as Vector.<HTMLChar>;
+			words === null && (_text.words = words = new Vector.<HTMLChar>());
+			words.length = drawWords.length;
+			
+			var size:Object;
+			var style:CSSStyle = this.style;
+			var fontStr:String = style.font;
+
+			for (i= 0, n = drawWords.length; i < n; i++)
+			{
+				size = Utils.measureText(drawWords[i], fontStr);
+				
+				var tHTMLChar:HTMLChar = words[i] = new HTMLChar(drawWords[i], size.width, size.height || style.fontSize, style);
+				if (tHTMLChar.char.length > 1)
+				{
+					tHTMLChar.charNum = tHTMLChar.char as Number;
+				}
+				if (href)
+				{
+					var tSprite:Sprite = new Sprite();
+					addChild(tSprite);
+					tHTMLChar.setSprite(tSprite);
+				}
+			}
+			return words;
+		}
 		
 		override public function _getWords():Vector.<HTMLChar>
 		{
+			if (!Text.CharacterCache) return _getWords2();
 			var txt:String = _text.text;
 			if (!txt || txt.length === 0)
 				return null;
@@ -126,7 +189,7 @@ package laya.html.dom
 			for (var i:int = 0, n:int = txt.length; i < n; i++)
 			{
 				size = Utils.measureText(txt.charAt(i), fontStr);
-				var tHTMLChar:HTMLChar = words[i] = new HTMLChar(txt.charAt(i), size.width, size.height, style);
+				var tHTMLChar:HTMLChar = words[i] = new HTMLChar(txt.charAt(i), size.width, size.height||style.fontSize, style);
 				if (href)
 				{
 					var tSprite:Sprite = new Sprite();
@@ -178,7 +241,7 @@ package laya.html.dom
 		public function set onClick(value:String):void
 		{
 			var fn:Function;
-			__JS__('eval("fn=function(event){" + value+";}")');
+			Laya._runScript("fn=function(event){" + value+";}");
 			on(Event.CLICK, this, fn);
 		}
 		
@@ -201,6 +264,7 @@ package laya.html.dom
 			_href = url;
 			if (url != null)
 			{
+				_getCSSStyle().underLine = 1;
 				updateHref();
 			}
 		}
@@ -221,8 +285,10 @@ package laya.html.dom
 						if (tSprite)
 						{
 							//tSprite.graphics.drawRect(0, 0, tHTMLChar.width, tHTMLChar.height, null, '#ff0000');
-							var tHeight:Number = tHTMLChar.height - 1;
-							tSprite.graphics.drawLine(0, tHeight, tHTMLChar.width, tHeight, tHTMLChar._getCSSStyle().color);
+							//var tHeight:Number = tHTMLChar.height - 1;
+							//var dX:Number = tHTMLChar.style.letterSpacing*0.5;
+							//if (!dX) dX = 0;
+							//tSprite.graphics.drawLine(0-dX, tHeight, tHTMLChar.width+dX, tHeight, tHTMLChar._getCSSStyle().color);
 							tSprite.size(tHTMLChar.width, tHTMLChar.height);
 							tSprite.on(Event.CLICK, this, onLinkHandler);
 						}
@@ -252,6 +318,7 @@ package laya.html.dom
 		
 		public function formatURL(url:String):String
 		{
+			if (!URI) return url;
 			return URL.formatURL(url, URI ? URI.path : null);
 		}
 		
@@ -266,13 +333,12 @@ package laya.html.dom
 		}
 		
 		/*** @private */
-		public static function fillWords(ele:HTMLElement, words:Vector.<HTMLChar>, x:Number, y:Number, font:String, color:String):void {
+		public static function fillWords(ele:HTMLElement, words:Vector.<HTMLChar>, x:Number, y:Number, font:String, color:String,underLine:int):void {
 			ele.graphics.clear();
 			for (var i:int = 0, n:int = words.length; i < n; i++) {
 				var a:* = words[i];
-				ele.graphics.fillText(a.char, a.x + x, a.y + y, font, color, 'left');
+				ele.graphics.fillText(a.char, a.x + x, a.y + y, font, color, 'left',underLine);
 			}
-			
 		}
 	}
 

@@ -2,7 +2,6 @@ package laya.d3.graphics {
 	import laya.renders.Render;
 	import laya.webgl.WebGLContext;
 	import laya.webgl.utils.Buffer;
-	import laya.webgl.utils.Buffer2D;
 	
 	/**
 	 * <code>IndexBuffer3D</code> 类用于创建索引缓冲。
@@ -93,10 +92,9 @@ package laya.d3.graphics {
 			byteLength = _indexTypeByteCount * indexCount;
 			
 			_byteLength = byteLength;
-			if (!Render.isConchNode) {//!NATIVE
-				_bind();
-				_gl.bufferData(_bufferType, byteLength, _bufferUsage);
-			}
+			
+			_bind();
+			_gl.bufferData(_bufferType, byteLength, _bufferUsage);
 			
 			if (canRead) {
 				if (indexType == IndexBuffer3D.INDEXTYPE_USHORT)
@@ -129,10 +127,8 @@ package laya.d3.graphics {
 					data = new Uint8Array(data.buffer, dataStartIndex * byteCount, dataCount);
 			}
 			
-			if (!Render.isConchNode) {//!NATIVE
-				_bind();
-				_gl.bufferSubData(_bufferType, bufferOffset * byteCount, data);//offset==0情况下，某些特殊设备或情况下直接bufferData速度是否优于bufferSubData
-			}
+			_bind();
+			_gl.bufferSubData(_bufferType, bufferOffset * byteCount, data);//offset==0情况下，某些特殊设备或情况下直接bufferData速度是否优于bufferSubData
 			
 			if (_canRead) {
 				if (bufferOffset !== 0 || dataStartIndex !== 0 || dataCount !== 4294967295/*uint.MAX_VALUE*/) {
@@ -158,10 +154,12 @@ package laya.d3.graphics {
 				throw new Error("Can't read data from VertexBuffer with only write flag!");
 		}
 		
-		/** 彻底销毁索引缓冲。*/
-		override public function dispose():void {
+		/**
+		 * @inheritDoc
+		 */
+		override protected function disposeResource():void {
+			super.disposeResource();
 			_buffer = null;
-			super.dispose();
 			memorySize = 0;//还有release没判断
 		}
 	

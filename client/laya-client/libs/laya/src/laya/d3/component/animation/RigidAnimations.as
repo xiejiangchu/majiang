@@ -4,12 +4,10 @@ package laya.d3.component.animation {
 	import laya.d3.core.Sprite3D;
 	import laya.d3.core.render.RenderState;
 	import laya.d3.math.Matrix4x4;
-	import laya.d3.math.Quaternion;
-	import laya.d3.math.Vector3;
-	import laya.d3.resource.models.Mesh;
 	import laya.d3.utils.Utils3D;
 	import laya.display.Node;
 	import laya.events.Event;
+	import laya.d3.core.ComponentNode;
 	
 	/**
 	 * <code>RigidAnimations</code> 类用于创建变换动画组件。
@@ -34,19 +32,35 @@ package laya.d3.component.animation {
 		 * @param value 地址。
 		 */
 		override public function set url(value:String):void {
-			super.url = value;
-			_curOriginalData = null;
-			_curAnimationDatas = null;
-			_tempCurAnimationData = null;
-			(_templet._animationDatasCache) || (_templet._animationDatasCache = []);
+			trace("Warning: discard property,please use templet property instead.");
+			var templet:AnimationTemplet = Laya.loader.create(value, null, null, AnimationTemplet);
+			if (_templet !== templet) {
+				if (_player.state !== AnimationState.stopped)
+					_player.stop(true);
+				
+				_templet = templet;
+				_player.templet = templet;
+				_curOriginalData = null;
+				_curAnimationDatas = null;
+				_tempCurAnimationData = null;
+				(_templet._animationDatasCache) || (_templet._animationDatasCache = []);
+				event(Event.ANIMATION_CHANGED, this);
+			}
 		}
 		
 		override public function set templet(value:AnimationTemplet):void {
-			super.templet = value;
-			_curOriginalData = null;
-			_curAnimationDatas = null;
-			_tempCurAnimationData = null;
-			(_templet._animationDatasCache) || (_templet._animationDatasCache = []);
+			if (_templet !== value) {
+				if (_player.state !== AnimationState.stopped)
+					_player.stop(true);
+				
+				_templet = value;
+				_player.templet = value;
+				_curOriginalData = null;
+				_curAnimationDatas = null;
+				_tempCurAnimationData = null;
+				(_templet._animationDatasCache) || (_templet._animationDatasCache = []);
+				event(Event.ANIMATION_CHANGED, this);
+			}
 		}
 		
 		/**
@@ -131,7 +145,7 @@ package laya.d3.component.animation {
 		 * 初始化载入摄像机动画组件。
 		 * @param	owner 所属精灵对象。
 		 */
-		override public function _load(owner:Sprite3D):void {
+		override public function _load(owner:ComponentNode):void {
 			super._load(owner);
 			_player.on(Event.STOPPED, this, _animtionStop);
 			_player.on(Event.PLAYED, this, _animtionPlay);
@@ -198,7 +212,7 @@ package laya.d3.component.animation {
 		 * @private
 		 * 卸载组件时执行。
 		 */
-		override public function _unload(owner:Sprite3D):void {
+		override public function _unload(owner:ComponentNode):void {
 			super._unload(owner);
 			_animationSprites = null;
 			_animationSpritesInitLocalMatrix = null;

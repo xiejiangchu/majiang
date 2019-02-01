@@ -29,21 +29,25 @@ package laya.d3.graphics {
 		public static const STARTCOLOR0:int = 19;
 		public static const STARTSIZE:int = 20;
 		public static const AGEADDSCALE0:int = 21;
-		public static const STARTROTATION0:int = 22;
-		public static const STARTROTATION1:int = 23;
-		public static const STARTROTATION2:int = 24;
-		public static const ENDCOLOR0:int = 25;
+		public static const STARTROTATION:int = 22;
+		public static const ENDCOLOR0:int = 23;
+		public static const STARTLIFETIME:int = 24;
+		public static const TIME0:int = 33;
 		
+		public static const SHAPEPOSITIONSTARTLIFETIME:int = 30;
+		public static const DIRECTIONTIME:int = 32;
+		public static const SIZEROTATION0:int = 27;
+		public static const RADIUS0:int =28;
+		public static const RADIAN0:int = 29;
+		public static const STARTSPEED:int = 31;
+		public static const RANDOM0:int = 34;
+		public static const RANDOM1:int = 35;
+		public static const SIMULATIONWORLDPOSTION:int = 36;
+		public static const SIMULATIONWORLDROTATION:int = 37;
 		
-		public static const SIZEROTATION0:int = 26;
-		public static const RADIUS0:int =27;
-		public static const RADIAN0:int = 28;
-		public static const STARTLIFETIME:int = 29;
-		public static const STARTSPEED:int = 30;
-		public static const DIRECTION:int = 31;
-		public static const TIME0:int = 32;
-		public static const RANDOM0:int = 33;
-		public static const RANDOM1:int = 34;
-		public static const SIMULATIONWORLDPOSTION:int = 35;
+		public static const TEXTURECOORDINATE0X:int = 38;
+		public static const TEXTURECOORDINATE0X1:int = 39;
+		public static const TEXTURECOORDINATE0Y:int = 40;
+		public static const OFFSETVECTOR:int = 41;
 	}
 }

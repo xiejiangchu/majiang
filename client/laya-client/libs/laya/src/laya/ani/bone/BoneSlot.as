@@ -1,11 +1,14 @@
 package laya.ani.bone {
 	
 	import laya.ani.GraphicsAni;
+	import laya.ani.bone.canvasmesh.SimpleSkinMeshCanvas;
+	import laya.ani.bone.canvasmesh.SkinMeshCanvas;
 	import laya.display.Graphics;
 	import laya.maths.Matrix;
 	import laya.renders.Render;
 	import laya.resource.Texture;
 	import laya.utils.RunDriver;
+	import laya.display.Sprite;
 	
 	/**
 	 * @private
@@ -109,14 +112,18 @@ package laya.ani.bone {
 		 * @param	index
 		 */
 		public function showDisplayByIndex(index:int):void {
-			if (_replaceDic[index]) index = _replaceDic[index];
+			if (_replaceDic[index]!=null) index = _replaceDic[index];
 			if (currSlotData && index > -1 && index < currSlotData.displayArr.length) {
 				displayIndex = index;
 				currDisplayData = currSlotData.displayArr[index];
 				if (currDisplayData) {
 					var tName:String = currDisplayData.name;
 					currTexture = templet.getTexture(tName);
-					if (currTexture && Render.isWebGL && currDisplayData.type == 0 && currDisplayData.uvs)
+					//if (currTexture && Render.isWebGL && currDisplayData.type == 0 && currDisplayData.uvs)
+					//{
+						//currTexture = currDisplayData.createTexture(currTexture);
+					//}
+					if (currTexture && currDisplayData.type == 0 && currDisplayData.uvs && (!Render.isConchApp || (Render.isConchApp && Sprite.RUNTIMEVERION > "0.9.15")))
 					{
 						currTexture = currDisplayData.createTexture(currTexture);
 					}
@@ -136,6 +143,10 @@ package laya.ani.bone {
 		public function replaceSkin(_texture:Texture):void {
 			_diyTexture = _texture;
 			if (_curDiyUV) _curDiyUV.length = 0;
+			if (currDisplayData&&_diyTexture == currDisplayData.texture)
+			{
+				_diyTexture = null;
+			}
 		}
 		
 		/**
@@ -148,6 +159,27 @@ package laya.ani.bone {
 		
 		private var _mVerticleArr:Array;
 		private static var _tempMatrix:Matrix = new Matrix();
+		public static function createSkinMesh():*
+		{
+			if (Render.isWebGL || Render.isConchApp)
+			{
+				return RunDriver.skinAniSprite();
+			}else
+			{
+				if (!Render.isWebGL)
+				{
+					if (Skeleton.useSimpleMeshInCanvas)
+					{
+						return new SimpleSkinMeshCanvas();
+					}else
+					{
+						return new SkinMeshCanvas();
+					}
+					
+				}	
+			}
+			return null;
+		}
 		/**
 		 * 把纹理画到Graphics上
 		 * @param	graphics
@@ -211,11 +243,11 @@ package laya.ani.bone {
 				case 1:
 					if (noUseSave) {	
 						if (_skinSprite == null) {	
-							_skinSprite = RunDriver.skinAniSprite();
+							_skinSprite = createSkinMesh();
 						}
 						tSkinSprite = _skinSprite;
 					}else {
-						tSkinSprite = RunDriver.skinAniSprite();
+						tSkinSprite = createSkinMesh();
 					}
 					if (tSkinSprite == null)
 					{
@@ -276,16 +308,17 @@ package laya.ani.bone {
 					}else {
 						skinMesh(boneMatrixArray,tSkinSprite,alpha);
 					}
+					
 					graphics.drawSkin(tSkinSprite);
 					break;
 				case 2:
 					if (noUseSave) {	
 						if (_skinSprite == null) {	
-							_skinSprite = RunDriver.skinAniSprite();
+							_skinSprite = createSkinMesh();
 						}
 						tSkinSprite = _skinSprite;
 					}else {
-						tSkinSprite = RunDriver.skinAniSprite();
+						tSkinSprite = createSkinMesh();
 					}
 					if (tSkinSprite == null)
 					{
@@ -305,10 +338,12 @@ package laya.ani.bone {
 		 */
 		private function skinMesh(boneMatrixArray:Array,skinSprite:*,alpha:Number):void
 		{
+			var tTexture:Texture = currTexture;
 			var tBones:Array = currDisplayData.bones;
 			var tUvs:Array;				
 			if (_diyTexture)
 			{
+				tTexture = _diyTexture;
 				if (!_curDiyUV)
 				{
 					_curDiyUV = [];
@@ -379,7 +414,7 @@ package laya.ani.bone {
 			}
 			_mVerticleArr = tVertices;
 			tIBArray = tTriangles;
-			skinSprite.init2(currTexture, null, tIBArray, _mVerticleArr,tUvs);
+			skinSprite.init2(tTexture, null, tIBArray, _mVerticleArr,tUvs);
 		}
 		
 		/**

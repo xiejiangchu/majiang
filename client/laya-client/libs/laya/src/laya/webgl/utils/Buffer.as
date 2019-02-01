@@ -7,7 +7,10 @@ package laya.webgl.utils {
 	
 	public class Buffer extends Resource {
 		protected static var _gl:WebGLContext;
-		protected static var _bindActive:Object = {};
+		
+		public static var _bindActive:Object = {};
+		public static var _bindVertexBuffer:*;
+		public static var _enableAtributes:Array = [];
 		
 		protected var _glBuffer:*;
 		protected var _buffer:*;//可能为Float32Array、Uint16Array、Uint8Array、ArrayBuffer等。
@@ -15,15 +18,7 @@ package laya.webgl.utils {
 		protected var _bufferType:int;
 		protected var _bufferUsage:int;
 		
-		public var _byteLength:int = 0;//TODO:私有
-		
-		public function get byteLength():int {
-			return _byteLength;
-		}
-		
-		public function get bufferType():* {
-			return _bufferType;
-		}
+		public var _byteLength:int = 0;
 		
 		public function get bufferUsage():int {
 			return _bufferUsage;
@@ -35,26 +30,24 @@ package laya.webgl.utils {
 		
 		public function _bind():void {
 			activeResource();
-			(_bindActive[_bufferType] === _glBuffer) || (_gl.bindBuffer(_bufferType, _bindActive[_bufferType] = _glBuffer), BaseShader.activeShader = null);
+			if (_bindActive[_bufferType] !== _glBuffer) {
+				(_bufferType === WebGLContext.ARRAY_BUFFER) && (_bindVertexBuffer = _glBuffer);
+				_gl.bindBuffer(_bufferType, _bindActive[_bufferType] = _glBuffer);
+				BaseShader.activeShader = null;
+			}
 		}
 		
 		override protected function recreateResource():void {
-			startCreate();
 			_glBuffer || (_glBuffer = _gl.createBuffer());
 			completeCreate();
 		}
 		
-		override protected function detoryResource():void {
+		override protected function disposeResource():void {
 			if (_glBuffer) {
 				WebGL.mainContext.deleteBuffer(_glBuffer);
 				_glBuffer = null;
 			}
 			memorySize = 0;
-		}
-		
-		override public function dispose():void {
-			resourceManager.removeResource(this);
-			super.dispose();
 		}
 	
 	}

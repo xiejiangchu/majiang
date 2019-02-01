@@ -6,8 +6,8 @@
     <entry key="gatewayUserMaxConnect">8000</entry>
     <!--#jdbc.url=jdbc:mysql://192.168.8.200:3306/tr_test?autoReconnect=true&amp;characterEncoding=utf-8-->
     <entry key="jdbc.url">jdbc:mysql://127.0.0.1:3306/boss?autoReconnect=true&amp;characterEncoding=utf-8&amp;useSSL=false</entry>
-    <entry key="jdbc.username">root</entry>
-    <entry key="jdbc.password">YSsT4y>V4.EE</entry>
+    <entry key="jdbc.username">xie</entry>
+    <entry key="jdbc.password">Pass@1q2w3e4r</entry>
     <entry key="jdbc.maxNums">20</entry>
     <entry key="jdbc.minNums">5</entry>
     <entry key="gmStatus">true</entry>

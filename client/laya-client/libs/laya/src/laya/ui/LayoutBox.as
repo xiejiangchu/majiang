@@ -33,13 +33,6 @@ package laya.ui {
 		}
 		
 		/** @inheritDoc	*/
-		override public function removeChild(child:Node):Node {
-			child.off(Event.RESIZE, this, onResize);
-			_setItemChanged();
-			return super.removeChild(child);
-		}
-		
-		/** @inheritDoc	*/
 		override public function removeChildAt(index:int):Node {
 			getChildAt(index).off(Event.RESIZE, this, onResize);
 			_setItemChanged();
@@ -83,8 +76,7 @@ package laya.ui {
 		 * @param items  项目列表。
 		 */
 		protected function sortItem(items:Array):void {
-			if (items) items.sort(function(a:*, b:*):Number { return a.y > b.y ? 1 : -1
-			});
+			if (items) items.sort(function(a:*, b:*):Number { return a.y - b.y;});
 		}
 		
 		protected function _setItemChanged():void {

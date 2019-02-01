@@ -1,7 +1,13 @@
 package laya.d3.utils {
+	import laya.d3.component.Animator;
+	import laya.d3.core.Camera;
+	import laya.d3.core.ComponentNode;
 	import laya.d3.core.MeshRender;
 	import laya.d3.core.MeshSprite3D;
+	import laya.d3.core.SkinnedMeshRender;
+	import laya.d3.core.SkinnedMeshSprite3D;
 	import laya.d3.core.Sprite3D;
+	import laya.d3.core.light.DirectionLight;
 	import laya.d3.core.material.BaseMaterial;
 	import laya.d3.core.material.StandardMaterial;
 	import laya.d3.core.particleShuriKen.ShuriKenParticle3D;
@@ -32,31 +38,28 @@ package laya.d3.utils {
 	import laya.d3.core.particleShuriKen.module.shape.SphereShape;
 	import laya.d3.core.render.RenderElement;
 	import laya.d3.core.render.RenderState;
+	import laya.d3.core.scene.Scene;
+	import laya.d3.core.trail.TrailSprite3D;
 	import laya.d3.graphics.IndexBuffer3D;
 	import laya.d3.graphics.VertexBuffer3D;
 	import laya.d3.graphics.VertexDeclaration;
 	import laya.d3.graphics.VertexElement;
 	import laya.d3.graphics.VertexElementUsage;
-	import laya.d3.graphics.VertexPositionNormalColorSkinTangent;
-	import laya.d3.graphics.VertexPositionNormalColorTangent;
-	import laya.d3.graphics.VertexPositionNormalColorTexture0Texture1SkinTangent;
-	import laya.d3.graphics.VertexPositionNormalColorTexture0Texture1Tangent;
-	import laya.d3.graphics.VertexPositionNormalColorTextureSkinTangent;
-	import laya.d3.graphics.VertexPositionNormalColorTextureTangent;
-	import laya.d3.graphics.VertexPositionNormalTexture0Texture1SkinTangent;
-	import laya.d3.graphics.VertexPositionNormalTexture0Texture1Tangent;
-	import laya.d3.graphics.VertexPositionNormalTextureSkinTangent;
-	import laya.d3.graphics.VertexPositionNormalTextureTangent;
+	import laya.d3.graphics.VertexPositionTexture0;
 	import laya.d3.math.Matrix4x4;
 	import laya.d3.math.Quaternion;
 	import laya.d3.math.Vector2;
 	import laya.d3.math.Vector3;
 	import laya.d3.math.Vector4;
+	import laya.d3.math.Viewport;
 	import laya.d3.resource.Texture2D;
 	import laya.d3.resource.models.Mesh;
+	import laya.d3.terrain.Terrain;
+	import laya.display.Node;
 	import laya.events.Event;
 	import laya.net.Loader;
 	import laya.net.URL;
+	import laya.utils.Handler;
 	import laya.webgl.WebGLContext;
 	
 	/**
@@ -67,39 +70,30 @@ package laya.d3.utils {
 		private static const _typeToFunO:Object = {"INT16": "writeInt16", "SHORT": "writeInt16", "UINT16": "writeUint16", "UINT32": "writeUint32", "FLOAT32": "writeFloat32", "INT": "writeInt32", "UINT": "writeUint32", "BYTE": "writeByte", "STRING": "writeUTFString"};
 		
 		/** @private */
-		private static var _tempVector3_0:Vector3 = /*[STATIC SAFE]*/ new Vector3();
+		private static var _tempVector3_0:Vector3 = new Vector3();
 		/** @private */
-		private static var _tempVector3_1:Vector3 = /*[STATIC SAFE]*/ new Vector3();
+		private static var _tempVector3_1:Vector3 = new Vector3();
 		/** @private */
-		private static var _tempVector3_2:Vector3 = /*[STATIC SAFE]*/ new Vector3();
+		private static var _tempVector3_2:Vector3 = new Vector3();
 		/** @private */
-		private static var _tempVector3_3:Vector3 = /*[STATIC SAFE]*/ new Vector3();
+		private static var _tempVector3_3:Vector3 = new Vector3();
 		/** @private */
-		private static var _tempVector3_4:Vector3 = /*[STATIC SAFE]*/ new Vector3();
+		private static var _tempVector3_4:Vector3 = new Vector3();
 		/** @private */
-		private static var _tempVector3_5:Vector3 = /*[STATIC SAFE]*/ new Vector3();
+		private static var _tempVector3_5:Vector3 = new Vector3();
 		/** @private */
-		private static var _tempVector3_6:Vector3 = /*[STATIC SAFE]*/ new Vector3();
+		private static var _tempVector3_6:Vector3 = new Vector3();
 		
 		/** @private */
-		private static var _tempArray4_0:Float32Array = /*[STATIC SAFE]*/ new Float32Array(4);
+		private static var _tempArray4_0:Float32Array = new Float32Array(4);
 		/** @private */
-		private static var _tempArray16_0:Float32Array = /*[STATIC SAFE]*/ new Float32Array(16);
+		private static var _tempArray16_0:Float32Array = new Float32Array(16);
 		/** @private */
-		private static var _tempArray16_1:Float32Array = /*[STATIC SAFE]*/ new Float32Array(16);
+		private static var _tempArray16_1:Float32Array = new Float32Array(16);
 		/** @private */
-		private static var _tempArray16_2:Float32Array = /*[STATIC SAFE]*/ new Float32Array(16);
+		private static var _tempArray16_2:Float32Array = new Float32Array(16);
 		/** @private */
-		private static var _tempArray16_3:Float32Array =  /*[STATIC SAFE]*/ new Float32Array(16);
-		
-		/** @private */
-		private static function _getTexturePath(path:String):String {
-			var extenIndex:int = path.length - 4;
-			if (path.indexOf(".dds") == extenIndex || path.indexOf(".tga") == extenIndex || path.indexOf(".exr") == extenIndex || path.indexOf(".DDS") == extenIndex || path.indexOf(".TGA") == extenIndex || path.indexOf(".EXR") == extenIndex)
-				path = path.substr(0, extenIndex) + ".png";
-			
-			return path = URL.formatURL(path);
-		}
+		private static var _tempArray16_3:Float32Array = new Float32Array(16);
 		
 		/**
 		 *通过数平移、旋转、缩放值计算到结果矩阵数组,骨骼动画专用。
@@ -161,7 +155,6 @@ package laya.d3.utils {
 			se[10] = sz;
 			
 			var i:int, a:Float32Array, b:Float32Array, e:Float32Array, ai0:Number, ai1:Number, ai2:Number, ai3:Number;
-			
 			//mul(rMat, tMat, tsMat)......................................
 			for (i = 0; i < 4; i++) {
 				ai0 = re[i];
@@ -187,558 +180,79 @@ package laya.d3.utils {
 			}
 		}
 		
-		/** @private */
-		private static function _applyMeshMaterials(meshSprite3D:MeshSprite3D, mesh:Mesh):void {//对应Mesh内部
-			var meshRender:MeshRender = meshSprite3D.meshRender;
-			var shaderMaterials:Vector.<BaseMaterial> = meshRender.sharedMaterials;
-			var meshMaterials:Vector.<BaseMaterial> = mesh.materials;
-			for (var i:int = 0, n:int = meshMaterials.length; i < n; i++)
-				(shaderMaterials[i]) || (shaderMaterials[i] = meshMaterials[i]);
-			
-			meshRender.sharedMaterials = shaderMaterials;
-		}
-		
-		/** @private */
-		public static function _loadParticle(settting:Object, particle:ShuriKenParticle3D, innerResouMap:Object = null):void {
-			const anglelToRad:Number = Math.PI / 180.0;
-			var i:int, n:int;
-			//Material
-			var material:ShurikenParticleMaterial;
-			var materialPath:String = settting.materialPath;
-			if (materialPath) {
-				material = Loader.getRes(innerResouMap[materialPath]);
-			} else {//TODO:兼容性代码
-				material = new ShurikenParticleMaterial();
-				material.diffuseTexture = innerResouMap ? Loader.getRes(innerResouMap[settting.texturePath]) : Texture2D.load(settting.texturePath);
-			}
-			material.renderMode = BaseMaterial.RENDERMODE_DEPTHREAD_ADDTIVEDOUBLEFACE;//TODO:不应自动设置
-			
-			particle.particleRender.sharedMaterial = material;
-			//particleSystem
-			var particleSystem:ShurikenParticleSystem = particle.particleSystem;
-			particleSystem.isPerformanceMode = settting.isPerformanceMode;
-			
-			particleSystem.duration = settting.duration;
-			particleSystem.looping = settting.looping;
-			particleSystem.prewarm = settting.prewarm;
-			
-			particleSystem.startDelayType = settting.startDelayType;
-			particleSystem.startDelay = settting.startDelay;
-			particleSystem.startDelayMin = settting.startDelayMin;
-			particleSystem.startDelayMax = settting.startDelayMax;
-			
-			particleSystem.startLifetimeType = settting.startLifetimeType;
-			particleSystem.startLifetimeConstant = settting.startLifetimeConstant;
-			particleSystem.startLifeTimeGradient = _initStartLife(settting.startLifetimeGradient);
-			particleSystem.startLifetimeConstantMin = settting.startLifetimeConstantMin;
-			particleSystem.startLifetimeConstantMax = settting.startLifetimeConstantMax;
-			particleSystem.startLifeTimeGradientMin = _initStartLife(settting.startLifetimeGradientMin);
-			particleSystem.startLifeTimeGradientMax = _initStartLife(settting.startLifetimeGradientMax);
-			
-			particleSystem.startSpeedType = settting.startSpeedType;
-			particleSystem.startSpeedConstant = settting.startSpeedConstant;
-			particleSystem.startSpeedConstantMin = settting.startSpeedConstantMin;
-			particleSystem.startSpeedConstantMax = settting.startSpeedConstantMax;
-			
-			particleSystem.threeDStartSize = settting.threeDStartSize;
-			particleSystem.startSizeType = settting.startSizeType;
-			particleSystem.startSizeConstant = settting.startSizeConstant;
-			var startSizeConstantSeparateArray:Array = settting.startSizeConstantSeparate;
-			var startSizeConstantSeparateElement:Float32Array = particleSystem.startSizeConstantSeparate.elements;
-			startSizeConstantSeparateElement[0] = startSizeConstantSeparateArray[0];
-			startSizeConstantSeparateElement[1] = startSizeConstantSeparateArray[1];
-			startSizeConstantSeparateElement[2] = startSizeConstantSeparateArray[2];
-			particleSystem.startSizeConstantMin = settting.startSizeConstantMin;
-			particleSystem.startSizeConstantMax = settting.startSizeConstantMax;
-			var startSizeConstantMinSeparateArray:Array = settting.startSizeConstantMinSeparate;
-			var startSizeConstantMinSeparateElement:Float32Array = particleSystem.startSizeConstantMinSeparate.elements;
-			startSizeConstantMinSeparateElement[0] = startSizeConstantMinSeparateArray[0];
-			startSizeConstantMinSeparateElement[1] = startSizeConstantMinSeparateArray[1];
-			startSizeConstantMinSeparateElement[2] = startSizeConstantMinSeparateArray[2];
-			var startSizeConstantMaxSeparateArray:Array = settting.startSizeConstantMaxSeparate;
-			var startSizeConstantMaxSeparateElement:Float32Array = particleSystem.startSizeConstantMaxSeparate.elements;
-			startSizeConstantMaxSeparateElement[0] = startSizeConstantMaxSeparateArray[0];
-			startSizeConstantMaxSeparateElement[1] = startSizeConstantMaxSeparateArray[1];
-			startSizeConstantMaxSeparateElement[2] = startSizeConstantMaxSeparateArray[2];
-			
-			particleSystem.threeDStartRotation = settting.threeDStartRotation;
-			particleSystem.startRotationType = settting.startRotationType;
-			particleSystem.startRotationConstant = settting.startRotationConstant * anglelToRad;
-			var startRotationConstantSeparateArray:Array = settting.startRotationConstantSeparate;
-			var startRotationConstantSeparateElement:Float32Array = particleSystem.startRotationConstantSeparate.elements;
-			startRotationConstantSeparateElement[0] = startRotationConstantSeparateArray[0] * anglelToRad;
-			startRotationConstantSeparateElement[1] = startRotationConstantSeparateArray[1] * anglelToRad;
-			startRotationConstantSeparateElement[2] = startRotationConstantSeparateArray[2] * anglelToRad;
-			particleSystem.startRotationConstantMin = settting.startRotationConstantMin * anglelToRad;
-			particleSystem.startRotationConstantMax = settting.startRotationConstantMax * anglelToRad;
-			var startRotationConstantMinSeparateArray:Array = settting.startRotationConstantMinSeparate;
-			var startRotationConstantMinSeparateElement:Float32Array = particleSystem.startRotationConstantMinSeparate.elements;
-			startRotationConstantMinSeparateElement[0] = startRotationConstantMinSeparateArray[0] * anglelToRad;
-			startRotationConstantMinSeparateElement[1] = startRotationConstantMinSeparateArray[1] * anglelToRad;
-			startRotationConstantMinSeparateElement[2] = startRotationConstantMinSeparateArray[2] * anglelToRad;
-			var startRotationConstantMaxSeparateArray:Array = settting.startRotationConstantMaxSeparate;
-			var startRotationConstantMaxSeparateElement:Float32Array = particleSystem.startRotationConstantMaxSeparate.elements;
-			startRotationConstantMaxSeparateElement[0] = startRotationConstantMaxSeparateArray[0] * anglelToRad;
-			startRotationConstantMaxSeparateElement[1] = startRotationConstantMaxSeparateArray[1] * anglelToRad;
-			startRotationConstantMaxSeparateElement[2] = startRotationConstantMaxSeparateArray[2] * anglelToRad;
-			
-			particleSystem.randomizeRotationDirection = settting.randomizeRotationDirection;
-			
-			particleSystem.startColorType = settting.startColorType;
-			var startColorConstantArray:Array = settting.startColorConstant;
-			var startColorConstantElement:Float32Array = particleSystem.startColorConstant.elements;
-			startColorConstantElement[0] = startColorConstantArray[0];
-			startColorConstantElement[1] = startColorConstantArray[1];
-			startColorConstantElement[2] = startColorConstantArray[2];
-			startColorConstantElement[3] = startColorConstantArray[3];
-			var startColorConstantMinArray:Array = settting.startColorConstantMin;
-			var startColorConstantMinElement:Float32Array = particleSystem.startColorConstantMin.elements;
-			startColorConstantMinElement[0] = startColorConstantMinArray[0];
-			startColorConstantMinElement[1] = startColorConstantMinArray[1];
-			startColorConstantMinElement[2] = startColorConstantMinArray[2];
-			startColorConstantMinElement[3] = startColorConstantMinArray[3];
-			var startColorConstantMaxArray:Array = settting.startColorConstantMax;
-			var startColorConstantMaxElement:Float32Array = particleSystem.startColorConstantMax.elements;
-			startColorConstantMaxElement[0] = startColorConstantMaxArray[0];
-			startColorConstantMaxElement[1] = startColorConstantMaxArray[1];
-			startColorConstantMaxElement[2] = startColorConstantMaxArray[2];
-			startColorConstantMaxElement[3] = startColorConstantMaxArray[3];
-			
-			var gravityArray:Array = settting.gravity;
-			var gravityE:Float32Array = particleSystem.gravity.elements;
-			gravityE[0] = gravityArray[0];
-			gravityE[1] = gravityArray[1];
-			gravityE[2] = gravityArray[2];
-			
-			particleSystem.gravityModifier = settting.gravityModifier;
-			
-			particleSystem.simulationSpace = settting.simulationSpace;
-			
-			particleSystem.scaleMode = settting.scaleMode;
-			
-			particleSystem.playOnAwake = settting.playOnAwake;
-			particleSystem.maxParticles = settting.maxParticles;
-			
-			//Emission
-			var emissionData:Object = settting.emission;
-			var emission:Emission = new Emission();
-			emission.emissionRate = emissionData.emissionRate;
-			var burstsData:Array = emissionData.bursts;
-			if (burstsData)
-				for (i = 0, n = burstsData.length; i < n; i++) {
-					var brust:Object = burstsData[i];
-					emission.addBurst(new Burst(brust.time, brust.min, brust.max));
+		/**
+		 * @private
+		 */
+		public static function _createNodeByJson(rootNode:ComponentNode, nodeData:Object, node:*, innerResouMap:Object):* {
+			if (!node) {
+				switch (nodeData.type) {
+				case "Sprite3D": 
+					node = new Sprite3D();
+					break;
+				case "MeshSprite3D": 
+					node = new MeshSprite3D();
+					break;
+				case "SkinnedMeshSprite3D": 
+					node = new SkinnedMeshSprite3D();
+					break;
+				case "ShuriKenParticle3D": 
+					node = new ShuriKenParticle3D();
+					break;
+				case "TrailSprite3D":
+					node = new TrailSprite3D();
+					break;
+					break;
+				case "Terrain": 
+					node = new Terrain();
+					break;
+				case "Camera": 
+					node = new Camera();
+					break;
+				case "DirectionLight": 
+					node = new DirectionLight();
+					break;
+				default: 
+					throw new Error("Utils3D:unidentified class type in (.lh) file.");
 				}
-			emission.enbale = emissionData.enable;
-			particleSystem.emission = emission;
-			
-			//Shape
-			var shapeData:Object = settting.shape;
-			var shape:BaseShape;
-			switch (shapeData.shapeType) {
-			case 0: 
-				var sphereShape:SphereShape;
-				shape = sphereShape = new SphereShape();
-				sphereShape.radius = shapeData.sphereRadius;
-				sphereShape.emitFromShell = shapeData.sphereEmitFromShell;
-				sphereShape.randomDirection = shapeData.sphereRandomDirection;
-				break;
-			case 1: 
-				var hemiSphereShape:HemisphereShape;
-				shape = hemiSphereShape = new HemisphereShape();
-				hemiSphereShape.radius = shapeData.hemiSphereRadius;
-				hemiSphereShape.emitFromShell = shapeData.hemiSphereEmitFromShell;
-				hemiSphereShape.randomDirection = shapeData.hemiSphereRandomDirection;
-				break;
-			case 2: 
-				var coneShape:ConeShape;
-				shape = coneShape = new ConeShape();
-				coneShape.angle = shapeData.coneAngle * anglelToRad;
-				coneShape.radius = shapeData.coneRadius;
-				coneShape.length = shapeData.coneLength;
-				coneShape.emitType = shapeData.coneEmitType;
-				coneShape.randomDirection = shapeData.coneRandomDirection;
-				break;
-			case 3: 
-				var boxShape:BoxShape;
-				shape = boxShape = new BoxShape();
-				boxShape.x = shapeData.boxX;
-				boxShape.y = shapeData.boxY;
-				boxShape.z = shapeData.boxZ;
-				boxShape.randomDirection = shapeData.boxRandomDirection;
-				break;
-			case 7: 
-				var circleShape:CircleShape;
-				shape = circleShape = new CircleShape();
-				circleShape.radius = shapeData.circleRadius;
-				circleShape.arc = shapeData.circleArc * anglelToRad;
-				circleShape.emitFromEdge = shapeData.circleEmitFromEdge;
-				circleShape.randomDirection = shapeData.circleRandomDirection;
-				break;
 			}
-			shape.enable = shapeData.enable;
-			particleSystem.shape = shape;
+			var props:Object = nodeData.props;
+			if (props)
+				for (var key:String in props)
+					node[key] = props[key];
 			
-			//VelocityOverLifetime
-			var velocityOverLifetimeData:Object = settting.velocityOverLifetime;
-			if (velocityOverLifetimeData) {
-				var velocityData:Object = velocityOverLifetimeData.velocity;
-				var velocity:GradientVelocity;
-				switch (velocityData.type) {
-				case 0: 
-					var constantData:Array = velocityData.constant;
-					velocity = GradientVelocity.createByConstant(new Vector3(constantData[0], constantData[1], constantData[2]));
-					break;
-				case 1: 
-					velocity = GradientVelocity.createByGradient(_initParticleVelocity(velocityData.gradientX), _initParticleVelocity(velocityData.gradientY), _initParticleVelocity(velocityData.gradientZ));
-					break;
-				case 2: 
-					var constantMinData:Array = velocityData.constantMin;
-					var constantMaxData:Array = velocityData.constantMax;
-					velocity = GradientVelocity.createByRandomTwoConstant(new Vector3(constantMinData[0], constantMinData[1], constantMinData[2]), new Vector3(constantMaxData[0], constantMaxData[1], constantMaxData[2]));
-					break;
-				case 3: 
-					velocity = GradientVelocity.createByRandomTwoGradient(_initParticleVelocity(velocityData.gradientXMin), _initParticleVelocity(velocityData.gradientXMax), _initParticleVelocity(velocityData.gradientYMin), _initParticleVelocity(velocityData.gradientYMax), _initParticleVelocity(velocityData.gradientZMin), _initParticleVelocity(velocityData.gradientZMax));
-					break;
+			var customProps:Object = nodeData.customProps;
+			if (customProps) {
+				if (node is Sprite3D) {
+					node._parseBaseCustomProps(customProps);
+					node._parseCustomProps(rootNode, innerResouMap, customProps, nodeData);//json为兼容参数，日后移除
+					node._parseCustomComponent(rootNode, innerResouMap, nodeData.components);
+				} else {
+					node._parseCustomProps(rootNode, innerResouMap, customProps, nodeData);//json为兼容参数，日后移除
 				}
-				var velocityOverLifetime:VelocityOverLifetime = new VelocityOverLifetime(velocity);
-				velocityOverLifetime.space = velocityOverLifetimeData.space;
-				velocityOverLifetime.enbale = velocityOverLifetimeData.enable;
-				particleSystem.velocityOverLifetime = velocityOverLifetime;
 			}
 			
-			//ColorOverLifetime
-			var colorOverLifetimeData:Object = settting.colorOverLifetime;
-			if (colorOverLifetimeData) {
-				var colorData:Object = colorOverLifetimeData.color;
-				var color:GradientColor;
-				switch (colorData.type) {
-				case 0: 
-					var constColorData:Array = colorData.constant;
-					color = GradientColor.createByConstant(new Vector4(constColorData[0], constColorData[1], constColorData[2], constColorData[3]));
-					break;
-				case 1: 
-					color = GradientColor.createByGradient(_initParticleColor(colorData.gradient));
-					break;
-				case 2: 
-					var minConstColorData:Array = colorData.constantMin;
-					var maxConstColorData:Array = colorData.constantMax;
-					color = GradientColor.createByRandomTwoConstant(new Vector4(minConstColorData[0], minConstColorData[1], minConstColorData[2], minConstColorData[3]), new Vector4(maxConstColorData[0], maxConstColorData[1], maxConstColorData[2], maxConstColorData[3]));
-					break;
-				case 3: 
-					color = GradientColor.createByRandomTwoGradient(_initParticleColor(colorData.gradientMin), _initParticleColor(colorData.gradientMax));
-					break;
+			var childData:Array = nodeData.child;
+			if (childData) {
+				for (var i:int = 0, n:int = childData.length; i < n; i++) {
+					var child:* = _createNodeByJson(rootNode, childData[i], null, innerResouMap)
+					node.addChild(child);
 				}
-				var colorOverLifetime:ColorOverLifetime = new ColorOverLifetime(color);
-				colorOverLifetime.enbale = colorOverLifetimeData.enable;
-				particleSystem.colorOverLifetime = colorOverLifetime;
 			}
-			
-			//SizeOverLifetime
-			var sizeOverLifetimeData:Object = settting.sizeOverLifetime;
-			if (sizeOverLifetimeData) {
-				var sizeData:Object = sizeOverLifetimeData.size;
-				var size:GradientSize;
-				switch (sizeData.type) {
-				case 0: 
-					if (sizeData.separateAxes) {
-						size = GradientSize.createByGradientSeparate(_initParticleSize(sizeData.gradientX), _initParticleSize(sizeData.gradientY), _initParticleSize(sizeData.gradientZ));
-					} else {
-						size = GradientSize.createByGradient(_initParticleSize(sizeData.gradient));
-					}
-					break;
-				case 1: 
-					if (sizeData.separateAxes) {
-						var constantMinSeparateData:Array = sizeData.constantMinSeparate;
-						var constantMaxSeparateData:Array = sizeData.constantMaxSeparate;
-						size = GradientSize.createByRandomTwoConstantSeparate(new Vector3(constantMinSeparateData[0], constantMinSeparateData[1], constantMinSeparateData[2]), new Vector3(constantMaxSeparateData[0], constantMaxSeparateData[1], constantMaxSeparateData[2]));
-					} else {
-						size = GradientSize.createByRandomTwoConstant(sizeData.constantMin, sizeData.constantMax);
-					}
-					break;
-				case 2: 
-					if (sizeData.separateAxes) {
-						size = GradientSize.createByRandomTwoGradientSeparate(_initParticleSize(sizeData.gradientXMin), _initParticleSize(sizeData.gradientYMin), _initParticleSize(sizeData.gradientZMin), _initParticleSize(sizeData.gradientXMax), _initParticleSize(sizeData.gradientYMax), _initParticleSize(sizeData.gradientZMax));
-					} else {
-						size = GradientSize.createByRandomTwoGradient(_initParticleSize(sizeData.gradientMin), _initParticleSize(sizeData.gradientMax));
-					}
-					break;
-				}
-				var sizeOverLifetime:SizeOverLifetime = new SizeOverLifetime(size);
-				sizeOverLifetime.enbale = sizeOverLifetimeData.enable;
-				particleSystem.sizeOverLifetime = sizeOverLifetime;
-			}
-			
-			//RotationOverLifetime
-			var rotationOverLifetimeData:Object = settting.rotationOverLifetime;
-			if (rotationOverLifetimeData) {
-				var angularVelocityData:Object = rotationOverLifetimeData.angularVelocity;
-				var angularVelocity:GradientAngularVelocity;
-				switch (angularVelocityData.type) {
-				case 0: 
-					if (angularVelocityData.separateAxes) {
-						//TODO:待补充
-					} else {
-						angularVelocity = GradientAngularVelocity.createByConstant(angularVelocityData.constant * anglelToRad);
-					}
-					break;
-				case 1: 
-					if (angularVelocityData.separateAxes) {
-						//TODO:待补充
-					} else {
-						angularVelocity = GradientAngularVelocity.createByGradient(_initParticleRotation(angularVelocityData.gradient));
-					}
-					break;
-				case 2: 
-					if (angularVelocityData.separateAxes) {
-						//TODO:待补充
-					} else {
-						angularVelocity = GradientAngularVelocity.createByRandomTwoConstant(angularVelocityData.constantMin * anglelToRad, angularVelocityData.constantMax * anglelToRad);
-					}
-					break;
-				case 3: 
-					if (angularVelocityData.separateAxes) {
-						//TODO:待补充
-					} else {
-						angularVelocity = GradientAngularVelocity.createByRandomTwoGradient(_initParticleRotation(angularVelocityData.gradientMin), _initParticleRotation(angularVelocityData.gradientMax));
-					}
-					break;
-				}
-				var rotationOverLifetime:RotationOverLifetime = new RotationOverLifetime(angularVelocity);
-				rotationOverLifetime.enbale = rotationOverLifetimeData.enable;
-				particleSystem.rotationOverLifetime = rotationOverLifetime;
-			}
-			
-			//TextureSheetAnimation
-			var textureSheetAnimationData:Object = settting.textureSheetAnimation;
-			if (textureSheetAnimationData) {
-				var frameData:Object = textureSheetAnimationData.frame;
-				var frameOverTime:FrameOverTime;
-				switch (frameData.type) {
-				case 0: 
-					frameOverTime = FrameOverTime.createByConstant(frameData.constant);
-					break;
-				case 1: 
-					frameOverTime = FrameOverTime.createByOverTime(_initParticleFrame(frameData.overTime));
-					break;
-				case 2: 
-					frameOverTime = FrameOverTime.createByRandomTwoConstant(frameData.constantMin, frameData.constantMax);
-					break;
-				case 3: 
-					frameOverTime = FrameOverTime.createByRandomTwoOverTime(_initParticleFrame(frameData.overTimeMin), _initParticleFrame(frameData.overTimeMax));
-					break;
-				}
-				var startFrameData:Object = textureSheetAnimationData.startFrame;
-				var startFrame:StartFrame;
-				switch (startFrameData.type) {
-				case 0: 
-					startFrame = StartFrame.createByConstant(startFrameData.constant);
-					break;
-				case 1: 
-					startFrame = StartFrame.createByRandomTwoConstant(startFrameData.constantMin, startFrameData.constantMax);
-					break;
-				}
-				var textureSheetAnimation:TextureSheetAnimation = new TextureSheetAnimation(frameOverTime, startFrame);
-				textureSheetAnimation.enbale = textureSheetAnimationData.enable;
-				var tilesData:Array = textureSheetAnimationData.tiles;
-				textureSheetAnimation.tiles = new Vector2(tilesData[0], tilesData[1]);
-				textureSheetAnimation.type = textureSheetAnimationData.type;
-				textureSheetAnimation.randomRow = textureSheetAnimationData.randomRow;
-				textureSheetAnimation.cycles = textureSheetAnimationData.cycles;
-				particleSystem.textureSheetAnimation = textureSheetAnimation;
-			}
-			
-			//Render
-			var particleRender:ShurikenParticleRender = particle.particleRender;
-			particleRender.renderMode = settting.renderMode;
-			particleRender.stretchedBillboardCameraSpeedScale = settting.stretchedBillboardCameraSpeedScale;
-			particleRender.stretchedBillboardSpeedScale = settting.stretchedBillboardSpeedScale;
-			particleRender.stretchedBillboardLengthScale = settting.stretchedBillboardLengthScale;
-			particleRender.sortingFudge = settting.sortingFudge ? settting.sortingFudge : 0.0;
-			
-			(particleSystem.playOnAwake) && (particleSystem.play());
+			return node;
 		}
 		
 		/** @private */
-		public static function _parseHierarchyProp(innerResouMap:Object, node:Sprite3D, json:Object):void {
-			var customProps:Object = json.customProps;
-			var transValue:Array = customProps.translate;
-			var loccalPosition:Vector3 = node.transform.localPosition;
-			var loccalPositionElments:Float32Array = loccalPosition.elements;
-			loccalPositionElments[0] = transValue[0];
-			loccalPositionElments[1] = transValue[1];
-			loccalPositionElments[2] = transValue[2];
-			node.transform.localPosition = loccalPosition;
-			var rotValue:Array = customProps.rotation;
-			var localRotation:Quaternion = node.transform.localRotation;
-			var localRotationElement:Float32Array = localRotation.elements;
-			localRotationElement[0] = rotValue[0];
-			localRotationElement[1] = rotValue[1];
-			localRotationElement[2] = rotValue[2];
-			localRotationElement[3] = rotValue[3];
-			node.transform.localRotation = localRotation;
-			var scaleValue:Array = customProps.scale;
-			var localScale:Vector3 = node.transform.localScale;
-			var localSceleElement:Float32Array = localScale.elements;
-			localSceleElement[0] = scaleValue[0];
-			localSceleElement[1] = scaleValue[1];
-			localSceleElement[2] = scaleValue[2];
-			node.transform.localScale = localScale;
-			
-			
-			switch (json.type) {
-			case "Sprite3D": 
-				break;
-			case "MeshSprite3D": 
-				var meshSprite3D:MeshSprite3D = (node as MeshSprite3D);
-				var meshRender:MeshRender = meshSprite3D.meshRender;
-				var lightmapIndex:* = customProps.lightmapIndex;//TODO:
-				(lightmapIndex !== null) && (meshRender.lightmapIndex=lightmapIndex);
-				var lightmapScaleOffsetArray:Array = customProps.lightmapScaleOffset;
-				(lightmapScaleOffsetArray)&&(meshRender.lightmapScaleOffset = new Vector4(lightmapScaleOffsetArray[0], lightmapScaleOffsetArray[1], lightmapScaleOffsetArray[2], lightmapScaleOffsetArray[3]));
-	
-				var mesh:Mesh = Loader.getRes(innerResouMap[json.instanceParams.loadPath]);			
-				meshSprite3D.meshFilter.sharedMesh = mesh;
-				if (mesh.loaded)
-					meshRender.sharedMaterials = mesh.materials;
-				else
-					mesh.once(Event.LOADED, meshSprite3D, meshSprite3D._applyMeshMaterials);
-				break;
-			case "ShuriKenParticle3D": 
-				var shuriKenParticle3D:ShuriKenParticle3D = (node as ShuriKenParticle3D);
-				_loadParticle(customProps, shuriKenParticle3D, innerResouMap);
-				break;
-			}
-		}
-		
-		/** @private */
-		public static function _parseHierarchyNode(json:Object):Sprite3D {
-			switch (json.type) {
-			case "Sprite3D": 
-				return new Sprite3D();
-				break;
-			case "MeshSprite3D": 
-				return new MeshSprite3D();
-				break;
-			case "ShuriKenParticle3D": 
-				return new ShuriKenParticle3D();
-				break;
-			default: 
-				throw new Error("Utils3D:unidentified class type in (.lh) file.");
-			}
-		}
-		
-		private static function _initStartLife(gradientData:Object):GradientDataNumber {
-			var gradient:GradientDataNumber = new GradientDataNumber();
-			var startLifetimesData:Array = gradientData.startLifetimes;
-			for (var i:int = 0, n:int = startLifetimesData.length; i < n; i++) {
-				var valueData:Object = startLifetimesData[i];
-				gradient.add(valueData.key, valueData.value);
-			}
-			return gradient
-		}
-		
-		private static function _initParticleVelocity(gradientData:Object):GradientDataNumber {
-			var gradient:GradientDataNumber = new GradientDataNumber();
-			var velocitysData:Array = gradientData.velocitys;
-			for (var i:int = 0, n:int = velocitysData.length; i < n; i++) {
-				var valueData:Object = velocitysData[i];
-				gradient.add(valueData.key, valueData.value);
-			}
-			return gradient;
-		}
-		
-		private static function _initParticleColor(gradientColorData:Object):GradientDataColor {
-			var gradientColor:GradientDataColor = new GradientDataColor();
-			var alphasData:Array = gradientColorData.alphas;
-			var i:int, n:int;
-			for (i = 0, n = alphasData.length; i < n; i++) {
-				var alphaData:Object = alphasData[i];
-				gradientColor.addAlpha(alphaData.key, alphaData.value);
-			}
-			var rgbsData:Array = gradientColorData.rgbs;
-			for (i = 0, n = rgbsData.length; i < n; i++) {
-				var rgbData:Object = rgbsData[i];
-				var rgbValue:Array = rgbData.value;
-				gradientColor.addRGB(rgbData.key, new Vector3(rgbValue[0], rgbValue[1], rgbValue[2]));
-			}
-			return gradientColor;
-		}
-		
-		private static function _initParticleSize(gradientSizeData:Object):GradientDataNumber {
-			var gradientSize:GradientDataNumber = new GradientDataNumber();
-			var sizesData:Array = gradientSizeData.sizes;
-			for (var i:int = 0, n:int = sizesData.length; i < n; i++) {
-				var valueData:Object = sizesData[i];
-				gradientSize.add(valueData.key, valueData.value);
-			}
-			return gradientSize;
-		}
-		
-		private static function _initParticleRotation(gradientData:Object):GradientDataNumber {
-			var gradient:GradientDataNumber = new GradientDataNumber();
-			var angularVelocitysData:Array = gradientData.angularVelocitys;
-			for (var i:int = 0, n:int = angularVelocitysData.length; i < n; i++) {
-				var valueData:Object = angularVelocitysData[i];
-				gradient.add(valueData.key, valueData.value / 180.0 * Math.PI);
-			}
-			return gradient;
-		}
-		
-		private static function _initParticleFrame(overTimeFramesData:Object):GradientDataInt {
-			var overTimeFrame:GradientDataInt = new GradientDataInt();
-			var framesData:Array = overTimeFramesData.frames;
-			for (var i:int = 0, n:int = framesData.length; i < n; i++) {
-				var frameData:Object = framesData[i];
-				overTimeFrame.add(frameData.key, frameData.value);
-			}
-			return overTimeFrame;
-		}
-		
-		/** @private */
-		public static function _parseMaterial(textureMap:Object, material:StandardMaterial, json:Object):void {
-			var customProps:Object = json.customProps;
-			var ambientColorValue:Array = customProps.ambientColor;
-			material.ambientColor = new Vector3(ambientColorValue[0], ambientColorValue[1], ambientColorValue[2]);
-			var diffuseColorValue:Array = customProps.diffuseColor;
-			material.diffuseColor = new Vector3(diffuseColorValue[0], diffuseColorValue[1], diffuseColorValue[2]);
-			var specularColorValue:Array = customProps.specularColor;
-			material.specularColor = new Vector4(specularColorValue[0], specularColorValue[1], specularColorValue[2], specularColorValue[3]);
-			var reflectColorValue:Array = customProps.reflectColor;
-			material.reflectColor = new Vector3(reflectColorValue[0], reflectColorValue[1], reflectColorValue[2]);
-			
-			var diffuseTexture:String = customProps.diffuseTexture.texture2D;
-			(diffuseTexture) && (material.diffuseTexture = Loader.getRes(textureMap[diffuseTexture]));
-			
-			var normalTexture:String = customProps.normalTexture.texture2D;
-			(normalTexture) && (material.normalTexture = Loader.getRes(textureMap[normalTexture]));
-			
-			var specularTexture:String = customProps.specularTexture.texture2D;
-			(specularTexture) && (material.specularTexture = Loader.getRes(textureMap[specularTexture]));
-			
-			var emissiveTexture:String = customProps.emissiveTexture.texture2D;
-			(emissiveTexture) && (material.emissiveTexture = Loader.getRes(textureMap[emissiveTexture]));
-			
-			var ambientTexture:String = customProps.ambientTexture.texture2D;
-			(ambientTexture) && (material.ambientTexture = Loader.getRes(textureMap[ambientTexture]));
-			
-			var reflectTexture:String = customProps.reflectTexture.texture2D;
-			(reflectTexture) && (material.reflectTexture = Loader.getRes(textureMap[reflectTexture]));
-		}
-		
-		/** @private */
-		public static function _computeBoneAndAnimationDatas(bones:*, curData:Float32Array, exData:Float32Array, outBonesDatas:Float32Array, outAnimationDatas:Float32Array):void {
+		public static function _computeBoneAndAnimationDatasByBindPoseMatrxix(bones:*, curData:Float32Array, inverGlobalBindPose:Vector.<Matrix4x4>, outBonesDatas:Float32Array, outAnimationDatas:Float32Array, boneIndexToMesh:Vector.<int>):void {
 			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
 			var offset:int = 0;
 			var matOffset:int = 0;
 			
-			var len:int = exData.length / 2;
 			var i:int;
 			var parentOffset:int;
 			var boneLength:int = bones.length;
 			for (i = 0; i < boneLength; offset += bones[i].keyframeWidth, matOffset += 16, i++) {
 				//将旋转平移缩放合成矩阵...........................................
-				Utils3D._rotationTransformScaleSkinAnimation(curData[offset + 7], curData[offset + 8], curData[offset + 9], curData[offset + 3], curData[offset + 4], curData[offset + 5], curData[offset + 6], curData[offset + 0], curData[offset + 1], curData[offset + 2], outBonesDatas, matOffset);
+				Utils3D._rotationTransformScaleSkinAnimation(curData[offset + 0], curData[offset + 1], curData[offset + 2], curData[offset + 3], curData[offset + 4], curData[offset + 5], curData[offset + 6], curData[offset + 7], curData[offset + 8], curData[offset + 9], outBonesDatas, matOffset);
 				
 				if (i != 0) {
 					parentOffset = bones[i].parentIndex * 16;
@@ -746,21 +260,21 @@ package laya.d3.utils {
 				}
 			}
 			
-			for (i = 0; i < len; i += 16) {//将绝对矩阵乘以反置矩阵................................................
-				Utils3D.mulMatrixByArrayFast(outBonesDatas, i, exData, len + i, outAnimationDatas, i);
+			var n:int = inverGlobalBindPose.length;
+			for (i = 0; i < n; i++)//将绝对矩阵乘以反置矩阵................................................
+			{
+				Utils3D.mulMatrixByArrayAndMatrixFast(outBonesDatas, boneIndexToMesh[i] * 16, inverGlobalBindPose[i], outAnimationDatas, i * 16);//TODO:-1处理
 			}
 		}
 		
 		/** @private */
-		public static function _computeAnimationDatas(exData:Float32Array, bonesDatas:Float32Array, outAnimationDatas:Float32Array):void {
-			var len:int = exData.length / 2;
-			for (var i:int = 0; i < len; i += 16) {//将绝对矩阵乘以反置矩阵................................................
-				Utils3D.mulMatrixByArrayFast(bonesDatas, i, exData, len + i, outAnimationDatas, i);
-			}
+		public static function _computeAnimationDatasByArrayAndMatrixFast(inverGlobalBindPose:Vector.<Matrix4x4>, bonesDatas:Float32Array, outAnimationDatas:Float32Array, boneIndexToMesh:Vector.<int>):void {
+			for (var i:int = 0, n:int = inverGlobalBindPose.length; i < n; i++)//将绝对矩阵乘以反置矩阵
+				Utils3D.mulMatrixByArrayAndMatrixFast(bonesDatas, boneIndexToMesh[i] * 16, inverGlobalBindPose[i], outAnimationDatas, i * 16);//TODO:-1处理
 		}
 		
 		/** @private */
-		public static function _computeBoneAndAnimationDatasByBindPoseMatrxix(bones:*, curData:Float32Array, inverGlobalBindPose:Vector.<Matrix4x4>, outBonesDatas:Float32Array, outAnimationDatas:Float32Array):void {
+		public static function _computeBoneAndAnimationDatasByBindPoseMatrxixOld(bones:*, curData:Float32Array, inverGlobalBindPose:Vector.<Matrix4x4>, outBonesDatas:Float32Array, outAnimationDatas:Float32Array):void {
 			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
 			var offset:int = 0;
 			var matOffset:int = 0;
@@ -787,7 +301,7 @@ package laya.d3.utils {
 		}
 		
 		/** @private */
-		public static function _computeAnimationDatasByArrayAndMatrixFast(inverGlobalBindPose:Vector.<Matrix4x4>, bonesDatas:Float32Array, outAnimationDatas:Float32Array):void {
+		public static function _computeAnimationDatasByArrayAndMatrixFastOld(inverGlobalBindPose:Vector.<Matrix4x4>, bonesDatas:Float32Array, outAnimationDatas:Float32Array):void {
 			var n:int = inverGlobalBindPose.length;
 			for (var i:int = 0; i < n; i++)//将绝对矩阵乘以反置矩阵................................................
 			{
@@ -804,169 +318,6 @@ package laya.d3.utils {
 		}
 		
 		/**
-		 * @private
-		 */
-		public function testTangent(renderElement:RenderElement, vertexBuffer:VertexBuffer3D, indeBuffer:IndexBuffer3D, bufferUsage:Object):VertexBuffer3D {
-			var vertexDeclaration:VertexDeclaration = vertexBuffer.vertexDeclaration;
-			var material:StandardMaterial = renderElement._material as StandardMaterial;//TODO待调整
-			if (material.normalTexture && !vertexDeclaration.getVertexElementByUsage(VertexElementUsage.TANGENT0)) {
-				var vertexDatas:Float32Array = vertexBuffer.getData();
-				var newVertexDatas:Float32Array = Utils3D.generateTangent(vertexDatas, vertexDeclaration.vertexStride / 4, vertexDeclaration.getVertexElementByUsage(VertexElementUsage.POSITION0).offset / 4, vertexDeclaration.getVertexElementByUsage(VertexElementUsage.TEXTURECOORDINATE0).offset / 4, indeBuffer.getData());
-				vertexDeclaration = Utils3D.getVertexTangentDeclaration(vertexDeclaration.getVertexElements());
-				
-				var newVB:VertexBuffer3D = VertexBuffer3D.create(vertexDeclaration, WebGLContext.STATIC_DRAW);
-				newVB.setData(newVertexDatas);
-				vertexBuffer.dispose();
-				
-				bufferUsage[VertexElementUsage.TANGENT0] = newVB;
-				return newVB;
-			}
-			return vertexBuffer;
-		}
-		
-		/** @private */
-		public static function generateTangent(vertexDatas:Float32Array, vertexStride:int, positionOffset:int, uvOffset:int, indices:Uint16Array/*还有UNIT8类型*/):Float32Array {
-			const tangentElementCount:int = 3;
-			var newVertexStride:int = vertexStride + tangentElementCount;
-			var tangentVertexDatas:Float32Array = new Float32Array(newVertexStride * (vertexDatas.length / vertexStride));
-			
-			for (var i:int = 0; i < indices.length; i += 3) {
-				var index1:uint = indices[i + 0];
-				var index2:uint = indices[i + 1];
-				var index3:uint = indices[i + 2];
-				
-				var position1Offset:int = vertexStride * index1 + positionOffset;
-				var position1:Vector3 = _tempVector3_0;
-				position1.x = vertexDatas[position1Offset + 0];
-				position1.y = vertexDatas[position1Offset + 1];
-				position1.z = vertexDatas[position1Offset + 2];
-				
-				var position2Offset:int = vertexStride * index2 + positionOffset;
-				var position2:Vector3 = _tempVector3_1;
-				position2.x = vertexDatas[position2Offset + 0];
-				position2.y = vertexDatas[position2Offset + 1];
-				position2.z = vertexDatas[position2Offset + 2];
-				
-				var position3Offset:int = vertexStride * index3 + positionOffset;
-				var position3:Vector3 = _tempVector3_2;
-				position3.x = vertexDatas[position3Offset + 0];
-				position3.y = vertexDatas[position3Offset + 1];
-				position3.z = vertexDatas[position3Offset + 2];
-				
-				var uv1Offset:int = vertexStride * index1 + uvOffset;
-				var UV1X:Number = vertexDatas[uv1Offset + 0];
-				var UV1Y:Number = vertexDatas[uv1Offset + 1];
-				
-				var uv2Offset:int = vertexStride * index2 + uvOffset;
-				var UV2X:Number = vertexDatas[uv2Offset + 0];
-				var UV2Y:Number = vertexDatas[uv2Offset + 1];
-				
-				var uv3Offset:int = vertexStride * index3 + uvOffset;
-				var UV3X:Number = vertexDatas[uv3Offset + 0];
-				var UV3Y:Number = vertexDatas[uv3Offset + 1];
-				
-				var lengthP2ToP1:Vector3 = _tempVector3_3;
-				Vector3.subtract(position2, position1, lengthP2ToP1);
-				var lengthP3ToP1:Vector3 = _tempVector3_4;
-				Vector3.subtract(position3, position1, lengthP3ToP1);
-				
-				Vector3.scale(lengthP2ToP1, UV3Y - UV1Y, lengthP2ToP1);
-				Vector3.scale(lengthP3ToP1, UV2Y - UV1Y, lengthP3ToP1);
-				
-				var tangent:Vector3 = _tempVector3_5;
-				Vector3.subtract(lengthP2ToP1, lengthP3ToP1, tangent);
-				
-				Vector3.scale(tangent, 1.0 / ((UV2X - UV1X) * (UV3Y - UV1Y) - (UV2Y - UV1Y) * (UV3X - UV1X)), tangent);
-				
-				var j:int;
-				for (j = 0; j < vertexStride; j++)
-					tangentVertexDatas[newVertexStride * index1 + j] = vertexDatas[vertexStride * index1 + j];
-				for (j = 0; j < tangentElementCount; j++)
-					tangentVertexDatas[newVertexStride * index1 + vertexStride + j] = +tangent.elements[j];
-				
-				for (j = 0; j < vertexStride; j++)
-					tangentVertexDatas[newVertexStride * index2 + j] = vertexDatas[vertexStride * index2 + j];
-				for (j = 0; j < tangentElementCount; j++)
-					tangentVertexDatas[newVertexStride * index2 + vertexStride + j] = +tangent.elements[j];
-				
-				for (j = 0; j < vertexStride; j++)
-					tangentVertexDatas[newVertexStride * index3 + j] = vertexDatas[vertexStride * index3 + j];
-				for (j = 0; j < tangentElementCount; j++)
-					tangentVertexDatas[newVertexStride * index3 + vertexStride + j] = +tangent.elements[j];
-				
-					//tangent = ((UV3.Y - UV1.Y) * (position2 - position1) - (UV2.Y - UV1.Y) * (position3 - position1))/ ((UV2.X - UV1.X) * (UV3.Y - UV1.Y) - (UV2.Y - UV1.Y) * (UV3.X - UV1.X));
-			}
-			
-			for (i = 0; i < tangentVertexDatas.length; i += newVertexStride) {
-				var tangentStartIndex:int = newVertexStride * i + vertexStride;
-				var t:Vector3 = _tempVector3_6;
-				t.x = tangentVertexDatas[tangentStartIndex + 0];
-				t.y = tangentVertexDatas[tangentStartIndex + 1];
-				t.z = tangentVertexDatas[tangentStartIndex + 2];
-				
-				Vector3.normalize(t, t);
-				tangentVertexDatas[tangentStartIndex + 0] = t.x;
-				tangentVertexDatas[tangentStartIndex + 1] = t.y;
-				tangentVertexDatas[tangentStartIndex + 2] = t.z;
-			}
-			
-			return tangentVertexDatas;
-		}
-		
-		public static function getVertexTangentDeclaration(vertexElements:Array):VertexDeclaration {
-			var position:Boolean, normal:Boolean, color:Boolean, texcoord0:Boolean, texcoord1:Boolean, blendWeight:Boolean, blendIndex:Boolean;
-			for (var i:int = 0; i < vertexElements.length; i++) {
-				switch ((vertexElements[i] as VertexElement).elementUsage) {
-				case "POSITION": 
-					position = true;
-					break;
-				case "NORMAL": 
-					normal = true;
-					break;
-				case "COLOR": 
-					color = true;
-					break;
-				case "UV": 
-					texcoord0 = true;
-					break;
-				case "UV1": 
-					texcoord1 = true;
-					break;
-				case "BLENDWEIGHT": 
-					blendWeight = true;
-					break;
-				case "BLENDINDICES": 
-					blendIndex = true;
-					break;
-				}
-			}
-			var vertexDeclaration:VertexDeclaration;
-			
-			if (position && normal && color && texcoord0 && texcoord1 && blendWeight && blendIndex)
-				vertexDeclaration = VertexPositionNormalColorTexture0Texture1SkinTangent.vertexDeclaration;
-			if (position && normal && color && texcoord0 && blendWeight && blendIndex)
-				vertexDeclaration = VertexPositionNormalColorTextureSkinTangent.vertexDeclaration;
-			else if (position && normal && texcoord0 && texcoord1 && blendWeight && blendIndex)
-				vertexDeclaration = VertexPositionNormalTexture0Texture1SkinTangent.vertexDeclaration;
-			else if (position && normal && texcoord0 && blendWeight && blendIndex)
-				vertexDeclaration = VertexPositionNormalTextureSkinTangent.vertexDeclaration;
-			else if (position && normal && color && blendWeight && blendIndex)
-				vertexDeclaration = VertexPositionNormalColorSkinTangent.vertexDeclaration;
-			else if (position && normal && color && texcoord0 && texcoord1)
-				vertexDeclaration = VertexPositionNormalColorTexture0Texture1Tangent.vertexDeclaration;
-			else if (position && normal && color && texcoord0)
-				vertexDeclaration = VertexPositionNormalColorTextureTangent.vertexDeclaration;
-			else if (position && normal && texcoord0 && texcoord1)
-				vertexDeclaration = VertexPositionNormalTexture0Texture1Tangent.vertexDeclaration;
-			else if (position && normal && texcoord0)
-				vertexDeclaration = VertexPositionNormalTextureTangent.vertexDeclaration;
-			else if (position && normal && color)
-				vertexDeclaration = VertexPositionNormalColorTangent.vertexDeclaration;
-			
-			return vertexDeclaration;
-		}
-		
-		/**
 		 * 根据四元数旋转三维向量。
 		 * @param	source 源三维向量。
 		 * @param	rotation 旋转四元数。
@@ -974,11 +325,7 @@ package laya.d3.utils {
 		 */
 		public static function transformVector3ArrayByQuat(sourceArray:Float32Array, sourceOffset:int, rotation:Quaternion, outArray:Float32Array, outOffset:int):void {
 			var re:Float32Array = rotation.elements;
-			
-			var x:Number = sourceArray[sourceOffset], y:Number = sourceArray[sourceOffset + 1], z:Number = sourceArray[sourceOffset + 2], qx:Number = re[0], qy:Number = re[1], qz:Number = re[2], qw:Number = re[3],
-			
-			ix:Number = qw * x + qy * z - qz * y, iy:Number = qw * y + qz * x - qx * z, iz:Number = qw * z + qx * y - qy * x, iw:Number = -qx * x - qy * y - qz * z;
-			
+			var x:Number = sourceArray[sourceOffset], y:Number = sourceArray[sourceOffset + 1], z:Number = sourceArray[sourceOffset + 2], qx:Number = re[0], qy:Number = re[1], qz:Number = re[2], qw:Number = re[3], ix:Number = qw * x + qy * z - qz * y, iy:Number = qw * y + qz * x - qx * z, iz:Number = qw * z + qx * y - qy * x, iw:Number = -qx * x - qy * y - qz * z;
 			outArray[outOffset] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
 			outArray[outOffset + 1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
 			outArray[outOffset + 2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
@@ -1147,30 +494,21 @@ package laya.d3.utils {
 		}
 		
 		/**
-		 * 通过转换光照贴图UV。
-		 * @param	source 源三维向量所在数组。
-		 * @param	sourceOffset 源三维向量数组偏移。
-		 * @param	lightingMapScaleOffset  光照贴图的缩放和偏移。
-		 * @param	result 输出三维向量所在数组。
-		 * @param	resultOffset 输出三维向量数组偏移。
+		 * @private
 		 */
-		public static function transformLightingMapTexcoordArray(source:Float32Array, sourceOffset:int, lightingMapScaleOffset:Vector4, result:Float32Array, resultOffset:int):void {
+		public static function transformLightingMapTexcoordByUV0Array(source:Float32Array, sourceOffset:int, lightingMapScaleOffset:Vector4, result:Float32Array, resultOffset:int):void {
 			var lightingMapScaleOffsetE:Float32Array = lightingMapScaleOffset.elements;
 			result[resultOffset + 0] = source[sourceOffset + 0] * lightingMapScaleOffsetE[0] + lightingMapScaleOffsetE[2];
-			result[resultOffset + 1] = source[sourceOffset + 1] * lightingMapScaleOffsetE[1]- lightingMapScaleOffsetE[3];
+			result[resultOffset + 1] = (source[sourceOffset + 1] - 1.0) * lightingMapScaleOffsetE[1] + lightingMapScaleOffsetE[3];
 		}
 		
 		/**
-		 * 转换3D投影坐标系统到2D屏幕坐标系统，以像素为单位,通常用于正交投影下的3D坐标（（0，0）在屏幕中心）到2D屏幕坐标（（0，0）在屏幕左上角）的转换。
-		 * @param	source 源坐标。
-		 * @param	out 输出坐标。
+		 * @private
 		 */
-		public static function convert3DCoordTo2DScreenCoord(source:Vector3, out:Vector3):void {
-			var se:Array = source.elements;
-			var oe:Array = out.elements;
-			oe[0] = -RenderState.clientWidth / 2 + se[0];
-			oe[1] = RenderState.clientHeight / 2 - se[1];
-			oe[2] = se[2];
+		public static function transformLightingMapTexcoordByUV1Array(source:Float32Array, sourceOffset:int, lightingMapScaleOffset:Vector4, result:Float32Array, resultOffset:int):void {
+			var lightingMapScaleOffsetE:Float32Array = lightingMapScaleOffset.elements;
+			result[resultOffset + 0] = source[sourceOffset + 0] * lightingMapScaleOffsetE[0] + lightingMapScaleOffsetE[2];
+			result[resultOffset + 1] = 1.0 + source[sourceOffset + 1] * lightingMapScaleOffsetE[1] + lightingMapScaleOffsetE[3];
 		}
 		
 		/**
@@ -1181,6 +519,209 @@ package laya.d3.utils {
 		public static function getURLVerion(url:String):String {
 			var index:int = url.indexOf("?");
 			return index >= 0 ? url.substr(index) : null;
+		}
+		
+		/**
+		 * @private
+		 */
+		public static function _quaternionCreateFromYawPitchRollArray(yaw:Number, pitch:Number, roll:Number, out:Float32Array):void {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
+			var halfRoll:Number = roll * 0.5;
+			var halfPitch:Number = pitch * 0.5;
+			var halfYaw:Number = yaw * 0.5;
+			
+			var sinRoll:Number = Math.sin(halfRoll);
+			var cosRoll:Number = Math.cos(halfRoll);
+			var sinPitch:Number = Math.sin(halfPitch);
+			var cosPitch:Number = Math.cos(halfPitch);
+			var sinYaw:Number = Math.sin(halfYaw);
+			var cosYaw:Number = Math.cos(halfYaw);
+			
+			out[0] = (cosYaw * sinPitch * cosRoll) + (sinYaw * cosPitch * sinRoll);
+			out[1] = (sinYaw * cosPitch * cosRoll) - (cosYaw * sinPitch * sinRoll);
+			out[2] = (cosYaw * cosPitch * sinRoll) - (sinYaw * sinPitch * cosRoll);
+			out[3] = (cosYaw * cosPitch * cosRoll) + (sinYaw * sinPitch * sinRoll);
+		}
+		
+		/**
+		 * @private
+		 */
+		public static function _createAffineTransformationArray(trans:Float32Array, rot:Float32Array, scale:Float32Array, outE:Float32Array):void {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
+			var x:Number = rot[0], y:Number = rot[1], z:Number = rot[2], w:Number = rot[3], x2:Number = x + x, y2:Number = y + y, z2:Number = z + z;
+			var xx:Number = x * x2, xy:Number = x * y2, xz:Number = x * z2, yy:Number = y * y2, yz:Number = y * z2, zz:Number = z * z2;
+			var wx:Number = w * x2, wy:Number = w * y2, wz:Number = w * z2, sx:Number = scale[0], sy:Number = scale[1], sz:Number = scale[2];
+			
+			outE[0] = (1 - (yy + zz)) * sx;
+			outE[1] = (xy + wz) * sx;
+			outE[2] = (xz - wy) * sx;
+			outE[3] = 0;
+			outE[4] = (xy - wz) * sy;
+			outE[5] = (1 - (xx + zz)) * sy;
+			outE[6] = (yz + wx) * sy;
+			outE[7] = 0;
+			outE[8] = (xz + wy) * sz;
+			outE[9] = (yz - wx) * sz;
+			outE[10] = (1 - (xx + yy)) * sz;
+			outE[11] = 0;
+			outE[12] = trans[0];
+			outE[13] = trans[1];
+			outE[14] = trans[2];
+			outE[15] = 1;
+		}
+		
+		/**
+		 * @private
+		 */
+		public static function _mulMatrixArray(leftMatrixE:Float32Array, rightMatrix:Matrix4x4, outArray:Float32Array, outOffset:int):void {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
+			var i:int, ai0:Number, ai1:Number, ai2:Number, ai3:Number;
+			var rightMatrixE:Float32Array = rightMatrix.elements;
+			//var leftMatrixE:Float32Array = leftMatrix.elements;
+			var m11:Number = rightMatrixE[0], m12:Number = rightMatrixE[1], m13:Number = rightMatrixE[2], m14:Number = rightMatrixE[3];
+			var m21:Number = rightMatrixE[4], m22:Number = rightMatrixE[5], m23:Number = rightMatrixE[6], m24:Number = rightMatrixE[7];
+			var m31:Number = rightMatrixE[8], m32:Number = rightMatrixE[9], m33:Number = rightMatrixE[10], m34:Number = rightMatrixE[11];
+			var m41:Number = rightMatrixE[12], m42:Number = rightMatrixE[13], m43:Number = rightMatrixE[14], m44:Number = rightMatrixE[15];
+			
+			var ai0OutOffset:Number = outOffset;
+			var ai1OutOffset:Number = outOffset + 4;
+			var ai2OutOffset:Number = outOffset + 8;
+			var ai3OutOffset:Number = outOffset + 12;
+			
+			for (i = 0; i < 4; i++) {
+				ai0 = leftMatrixE[i];
+				ai1 = leftMatrixE[i + 4];
+				ai2 = leftMatrixE[i + 8];
+				ai3 = leftMatrixE[i + 12];
+				outArray[ai0OutOffset + i] = ai0 * m11 + ai1 * m12 + ai2 * m13 + ai3 * m14;
+				outArray[ai1OutOffset + i] = ai0 * m21 + ai1 * m22 + ai2 * m23 + ai3 * m24;
+				outArray[ai2OutOffset + i] = ai0 * m31 + ai1 * m32 + ai2 * m33 + ai3 * m34;
+				outArray[ai3OutOffset + i] = ai0 * m41 + ai1 * m42 + ai2 * m43 + ai3 * m44;
+			}
+		}
+		
+		public static function getYawPitchRoll(quaternion:Float32Array, out:Float32Array):void {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
+			transformQuat(Vector3.ForwardRH, quaternion, Quaternion.TEMPVector31/*forwarldRH*/);
+			
+			transformQuat(Vector3.Up, quaternion, Quaternion.TEMPVector32/*up*/);
+			var upe:Float32Array = Quaternion.TEMPVector32.elements;
+			
+			angleTo(Vector3.ZERO, Quaternion.TEMPVector31, Quaternion.TEMPVector33/*angle*/);
+			var anglee:Float32Array = Quaternion.TEMPVector33.elements;
+			
+			if (anglee[0] == Math.PI / 2) {
+				anglee[1] = arcTanAngle(upe[2], upe[0]);
+				anglee[2] = 0;
+			} else if (anglee[0] == -Math.PI / 2) {
+				anglee[1] = arcTanAngle(-upe[2], -upe[0]);
+				anglee[2] = 0;
+			} else {
+				Matrix4x4.createRotationY(-anglee[1], Quaternion.TEMPMatrix0);
+				Matrix4x4.createRotationX(-anglee[0], Quaternion.TEMPMatrix1);
+				
+				Vector3.transformCoordinate(Quaternion.TEMPVector32, Quaternion.TEMPMatrix0, Quaternion.TEMPVector32);
+				Vector3.transformCoordinate(Quaternion.TEMPVector32, Quaternion.TEMPMatrix1, Quaternion.TEMPVector32);
+				anglee[2] = arcTanAngle(upe[1], -upe[0]);
+			}
+			
+			// Special cases.
+			if (anglee[1] <= -Math.PI)
+				anglee[1] = Math.PI;
+			if (anglee[2] <= -Math.PI)
+				anglee[2] = Math.PI;
+			
+			if (anglee[1] >= Math.PI && anglee[2] >= Math.PI) {
+				anglee[1] = 0;
+				anglee[2] = 0;
+				anglee[0] = Math.PI - anglee[0];
+			}
+			
+			out[0] = anglee[1];
+			out[1] = anglee[0];
+			out[2] = anglee[2];
+		}
+		
+		private static function arcTanAngle(x:Number, y:Number):Number {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
+			if (x == 0) {
+				if (y == 1)
+					return Math.PI / 2;
+				return -Math.PI / 2;
+			}
+			if (x > 0)
+				return Math.atan(y / x);
+			if (x < 0) {
+				if (y > 0)
+					return Math.atan(y / x) + Math.PI;
+				return Math.atan(y / x) - Math.PI;
+			}
+			return 0;
+		}
+		
+		private static function angleTo(from:Vector3, location:Vector3, angle:Vector3):void {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
+			Vector3.subtract(location, from, Quaternion.TEMPVector30);
+			Vector3.normalize(Quaternion.TEMPVector30, Quaternion.TEMPVector30);
+			
+			angle.elements[0] = Math.asin(Quaternion.TEMPVector30.y);
+			angle.elements[1] = arcTanAngle(-Quaternion.TEMPVector30.z, -Quaternion.TEMPVector30.x);
+		}
+		
+		public static function transformQuat(source:Vector3, rotation:Float32Array, out:Vector3):void {
+			var destination:Float32Array = out.elements;
+			var se:Float32Array = source.elements;
+			var re:Float32Array = rotation;
+			
+			var x:Number = se[0], y:Number = se[1], z:Number = se[2], qx:Number = re[0], qy:Number = re[1], qz:Number = re[2], qw:Number = re[3],
+			
+			ix:Number = qw * x + qy * z - qz * y, iy:Number = qw * y + qz * x - qx * z, iz:Number = qw * z + qx * y - qy * x, iw:Number = -qx * x - qy * y - qz * z;
+			
+			destination[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+			destination[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+			destination[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+		}
+		
+		/**
+		 * @private
+		 */
+		public static function quaterionNormalize(f:Float32Array, e:Float32Array):void {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
+			var x:Number = f[0], y:Number = f[1], z:Number = f[2], w:Number = f[3];
+			var len:Number = x * x + y * y + z * z + w * w;
+			if (len > 0) {
+				len = 1 / Math.sqrt(len);
+				e[0] = x * len;
+				e[1] = y * len;
+				e[2] = z * len;
+				e[3] = w * len;
+			}
+		}
+		
+		public static function matrix4x4MultiplyFFF(a:Float32Array, b:Float32Array, e:Float32Array):void {
+			/*[DISABLE-ADD-VARIABLE-DEFAULT-VALUE]*/
+			var i:int, ai0:Number, ai1:Number, ai2:Number, ai3:Number;
+			if (e === b) {
+				b = new Float32Array(16);
+				for (i = 0; i < 16; ++i) {
+					b[i] = e[i];
+				}
+			}
+			
+			for (i = 0; i < 4; i++) {
+				ai0 = a[i];
+				ai1 = a[i + 4];
+				ai2 = a[i + 8];
+				ai3 = a[i + 12];
+				e[i] = ai0 * b[0] + ai1 * b[1] + ai2 * b[2] + ai3 * b[3];
+				e[i + 4] = ai0 * b[4] + ai1 * b[5] + ai2 * b[6] + ai3 * b[7];
+				e[i + 8] = ai0 * b[8] + ai1 * b[9] + ai2 * b[10] + ai3 * b[11];
+				e[i + 12] = ai0 * b[12] + ai1 * b[13] + ai2 * b[14] + ai3 * b[15];
+			}
+		}
+		
+		public static function matrix4x4MultiplyMFM(left:Matrix4x4, right:Float32Array, out:Matrix4x4):void {
+			matrix4x4MultiplyFFF(left.elements,right,out.elements);
 		}
 	}
 

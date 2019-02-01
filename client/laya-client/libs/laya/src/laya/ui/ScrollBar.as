@@ -92,6 +92,8 @@ package laya.ui {
 		
 		/**@inheritDoc */
 		override public function destroy(destroyChild:Boolean = true):void {
+			stopScroll();
+			target = null;
 			super.destroy(destroyChild);
 			upButton && upButton.destroy(destroyChild);
 			downButton && downButton.destroy(destroyChild);
@@ -124,7 +126,7 @@ package laya.ui {
 		 * 滑块位置发生改变的处理函数。
 		 */
 		protected function onSliderChange():void {
-			value = slider.value;
+			if(_value !=slider.value) value = slider.value;
 		}
 		
 		/**
@@ -187,11 +189,13 @@ package laya.ui {
 			if (slider.isVertical) slider.y = _showButtons ? upButton.height : 0;
 			else slider.x = _showButtons ? upButton.width : 0;
 			resetPositions();
+			repaint();
 		}
 		
 		/**@inheritDoc */
 		override protected function changeSize():void {
 			super.changeSize();
+			repaint();
 			resetPositions();
 			event(Event.CHANGE);
 			changeHandler && changeHandler.runWith(value);
@@ -269,13 +273,16 @@ package laya.ui {
 		
 		public function set value(v:Number):void {
 			if (v !== _value) {
-				if (_isElastic) _value = v;
-				else {
-					slider.value = v;
-					_value = slider.value;
+				_value = v;
+				if (!_isElastic) {	
+					if (slider._value != v) {
+						slider._value = v;
+						slider.changeValue();
+					}
+					_value = slider._value;
 				}
 				event(Event.CHANGE);
-				changeHandler && changeHandler.runWith(value);
+				changeHandler && changeHandler.runWith(_value);
 			}
 		}
 		
@@ -394,6 +401,7 @@ package laya.ui {
 		
 		public function set mouseWheelEnable(value:Boolean):void {
 			_mouseWheelEnable = value;
+			target = _target; 		
 		}
 		
 		/**@private */
@@ -445,9 +453,9 @@ package laya.ui {
 			if (!this._checkElastic) {
 				if (this.elasticDistance > 0) {
 					if (!this._checkElastic && _lastOffset != 0) {
-						this._checkElastic = true;
 						if ((_lastOffset > 0 && _value <= min) || (_lastOffset < 0 && _value >= max)) {
 							this._isElastic = true;
+							this._checkElastic = true;
 						} else {
 							this._isElastic = false;
 						}
@@ -456,16 +464,14 @@ package laya.ui {
 					_checkElastic = true;
 				}
 			}
-			if (this._checkElastic) {
-				if (this._isElastic) {
-					if (_value <= min) {
-						value -= _lastOffset * Math.max(0, (1 - ((min - _value) / elasticDistance)));
-					} else if (_value >= max) {
-						value -= _lastOffset * Math.max(0, (1 - ((_value - max) / elasticDistance)));
-					}
-				} else {
-					value -= _lastOffset;
+			if (this._isElastic) {
+				if (_value <= min) {
+					value -= _lastOffset * Math.max(0, (1 - ((min - _value) / elasticDistance)));
+				} else if (_value >= max) {
+					value -= _lastOffset * Math.max(0, (1 - ((_value - max) / elasticDistance)));
 				}
+			} else {
+				value -= _lastOffset;
 			}
 		}
 		
@@ -475,7 +481,11 @@ package laya.ui {
 			Laya.stage.off(Event.MOUSE_OUT, this, onStageMouseUp2);
 			Laya.timer.clear(this, loop);
 			
-			if (_clickOnly) return;
+			if (_clickOnly)
+			{
+				if(_value>=min&&_value<=max)
+				 return;
+			}
 			_target.mouseEnabled = true;
 			
 			if (this._isElastic) {
@@ -485,6 +495,7 @@ package laya.ui {
 					Tween.to(this, {value: max}, elasticBackTime, Ease.sineOut, Handler.create(this, elasticOver));
 				}
 			} else {
+				if (!_offsets) return;
 				//计算平均值
 				if (_offsets.length < 1) {
 					_offsets[0] = isVertical ? Laya.stage.mouseY - _lastPoint.y : Laya.stage.mouseX - _lastPoint.x;
@@ -502,7 +513,8 @@ package laya.ui {
 					return;
 				}
 				if (offset > 60) _lastOffset = _lastOffset > 0 ? 60 : -60;
-				Laya.timer.frameLoop(1, this, tweenMove);
+				var dis:int = Math.round(Math.abs(elasticDistance * (_lastOffset / 240)));
+				Laya.timer.frameLoop(1, this, tweenMove, [dis]);
 			}
 		}
 		
@@ -516,11 +528,35 @@ package laya.ui {
 		}
 		
 		/**@private */
-		protected function tweenMove():void {
+		protected function tweenMove(maxDistance:Number):void {
 			_lastOffset *= rollRatio;
+			var tarSpeed:Number;
+			if (maxDistance > 0) {
+				if (_lastOffset > 0 && value <= min) {
+					_isElastic = true;
+					tarSpeed = -(min - maxDistance - value) * 0.5;
+					if (_lastOffset > tarSpeed) _lastOffset = tarSpeed;
+				} else if (_lastOffset < 0 && value >= max) {
+					_isElastic = true;
+					tarSpeed = -(max + maxDistance - value) * 0.5;
+					if (_lastOffset < tarSpeed) _lastOffset = tarSpeed;
+				}
+			}
+			
 			value -= _lastOffset;
-			if (Math.abs(_lastOffset) < 1 || value== max || value == min) {
+			//if (Math.abs(_lastOffset) < 1 || value == max || value == min) 
+			if (Math.abs(_lastOffset) < 1) {
 				Laya.timer.clear(this, tweenMove);
+				if (_isElastic) {
+					if (_value < min) {
+						Tween.to(this, {value: min}, elasticBackTime, Ease.sineOut, Handler.create(this, elasticOver));
+					} else if (_value > max) {
+						Tween.to(this, {value: max}, elasticBackTime, Ease.sineOut, Handler.create(this, elasticOver));
+					} else {
+						elasticOver();
+					}
+					return;
+				}
 				event(Event.END);
 				if (!hide && autoHide) {
 					Tween.to(this, {alpha: 0}, 500);
@@ -535,6 +571,17 @@ package laya.ui {
 			onStageMouseUp2(null);
 			Laya.timer.clear(this, tweenMove);
 			Tween.clearTween(this);
+		}
+		
+		/**
+		 * 滚动的刻度值，滑动数值为tick的整数倍。默认值为1。
+		 */
+		public function get tick():Number {
+			return slider.tick;
+		}
+		
+		public function set tick(value:Number):void {
+			slider.tick = value;
 		}
 	}
 }

@@ -151,11 +151,11 @@ package mj.net
                 var msg:Message = msgFactory.getMessage(type, id);
                 msg.decode(in0);
 
-                Console.log(
-                        "收到消息[type:{0},id:{1},msg:{2}]",
-                        msg.getMessageType(), msg.getMessageId(),
-                        msg
-                );
+                // Console.log(
+                //         "收到消息[type:{0},id:{1},msg:{2}]",
+                //         msg.getMessageType(), msg.getMessageId(),
+                //         msg
+                // );
                 var handler:MessageHandler = msgHandler.getHandler(type, id);
                 handler.handler(msg);
             }
@@ -200,11 +200,11 @@ package mj.net
 
             buffer.pos = 0;
             socket.send(buffer.buffer);
-            Console.log(
-                    "发送消息[type:{0},id:{1},len:{2}] msg:{3}",
-                    msg.getMessageType(), msg.getMessageId(),
-                    buffer.length, msg
-            );
+            // Console.log(
+            //         "发送消息[type:{0},id:{1},len:{2}] msg:{3}",
+            //         msg.getMessageType(), msg.getMessageId(),
+            //         buffer.length, msg
+            // );
 //            Console.log("发送消息debug:{0}", debug(buffer));
         }
 

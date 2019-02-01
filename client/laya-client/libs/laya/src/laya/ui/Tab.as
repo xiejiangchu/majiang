@@ -4,11 +4,16 @@ package laya.ui {
 	import laya.ui.UIGroup;
 	
 	/**
+	 * 当 <code>Group</code> 实例的 <code>selectedIndex</code> 属性发生变化时调度。
+	 * @eventType laya.events.Event
+	 */
+	[Event(name = "change", type = "laya.events.Event")]
+	
+	/**
 	 * <code>Tab</code> 组件用来定义选项卡按钮组。	 *
 	 * @internal <p>属性：<code>selectedIndex</code> 的默认值为-1。</p>
 	 *
-	 * @example 以下示例代码，创建了一个 <code>Tab</code> 实例。
-	 * <listing version="3.0">
+	 * @example <caption>以下示例代码，创建了一个 <code>Tab</code> 实例。</caption>
 	 * package
 	 *	{
 	 *		import laya.ui.Tab;
@@ -37,8 +42,7 @@ package laya.ui {
 	 *			}
 	 *		}
 	 *	}
-	 * </listing>
-	 * <listing version="3.0">
+	 * @example
 	 * Laya.init(640, 800);//设置游戏画布宽高
 	 * Laya.stage.bgColor = "#efefef";//设置画布的背景颜色
 	 * Laya.loader.load(["resource/ui/tab.png"], laya.utils.Handler.create(this, onLoadComplete));
@@ -54,8 +58,7 @@ package laya.ui {
 	 * function onSelect(index) {
 	 *     console.log("当前选择的标签页索引: index= ", index);
 	 * }
-	 * </listing>
-	 * <listing version="3.0">
+	 * @example
 	 * import Tab = laya.ui.Tab;
 	 * import Handler = laya.utils.Handler;
 	 * class Tab_Example {
@@ -77,7 +80,6 @@ package laya.ui {
 	 *         console.log("当前选择的表情页索引: index= ", index);
 	 *     }
 	 * }
-	 * </listing>
 	 */
 	public class Tab extends UIGroup {
 		

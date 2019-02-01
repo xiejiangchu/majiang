@@ -67,14 +67,10 @@ package laya.d3.graphics {
 			_bufferType = WebGLContext.ARRAY_BUFFER;
 			_canRead = canRead;
 			
-			var byteLength:int = _vertexDeclaration.vertexStride * vertexCount;
-			memorySize = byteLength;
-			_byteLength = byteLength;
-			if (!Render.isConchNode) {//!NATIVE
-				_bind();
-				_gl.bufferData(_bufferType, byteLength, _bufferUsage);
-			}
-			canRead && (_buffer = new Float32Array(byteLength / 4));
+			memorySize = _byteLength = _vertexDeclaration.vertexStride * vertexCount;
+			_bind();
+			_gl.bufferData(_bufferType, _byteLength, _bufferUsage);
+			canRead && (_buffer = new Float32Array(_byteLength / 4));
 		}
 		
 		/**
@@ -96,11 +92,8 @@ package laya.d3.graphics {
 		public function setData(data:Float32Array, bufferOffset:int = 0, dataStartIndex:int = 0, dataCount:uint = 4294967295/*uint.MAX_VALUE*/):void {
 			if (dataStartIndex !== 0 || dataCount !== 4294967295/*uint.MAX_VALUE*/)
 				data = new Float32Array(data.buffer, dataStartIndex * 4, dataCount);
-			
-			if (!Render.isConchNode) {//!NATIVE
-				_bind();
-				_gl.bufferSubData(_bufferType, bufferOffset * 4, data);
-			}
+			_bind();
+			_gl.bufferSubData(_bufferType, bufferOffset * 4, data);
 			
 			if (_canRead) {
 				if (bufferOffset !== 0 || dataStartIndex !== 0 || dataCount !== 4294967295/*uint.MAX_VALUE*/) {
@@ -127,21 +120,21 @@ package laya.d3.graphics {
 		}
 		
 		/** 销毁顶点缓冲。*/
-		override protected function detoryResource():void {
-			var elements:Array = _vertexDeclaration.getVertexElements();//TODO:应该判定当前状态是否绑定，如绑定则disableVertexAttribArray。
-			for (var i:int = 0; i < elements.length; i++)
-				WebGL.mainContext.disableVertexAttribArray(i);
-			super.detoryResource();
-		}
-		
-		/** 彻底销毁顶点缓冲。*/
-		override public function dispose():void {
-			super.dispose();
+		override protected function disposeResource():void {
+			var gl:WebGLContext = WebGL.mainContext;
+			var elements:Array = _vertexDeclaration.getVertexElements();
+			var enableAtributes:Array = Buffer._enableAtributes;
+			for (var i:int = 0, n:int = elements.length; i < n; i++) {
+				if (enableAtributes[i] === _glBuffer) {
+					gl.disableVertexAttribArray(i);
+					enableAtributes[i] = null;
+				}
+			}
+			super.disposeResource();
 			_buffer = null;
 			_vertexDeclaration = null;
 			memorySize = 0;
 		}
-	
 	}
 
 }

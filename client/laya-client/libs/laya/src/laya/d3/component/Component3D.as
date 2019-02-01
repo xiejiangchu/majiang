@@ -1,10 +1,10 @@
 package laya.d3.component {
-	import laya.d3.core.Layer;
-	import laya.d3.core.Sprite3D;
+	import laya.d3.core.ComponentNode;
 	import laya.d3.core.render.IUpdate;
 	import laya.d3.core.render.RenderState;
 	import laya.events.Event;
 	import laya.events.EventDispatcher;
+	import laya.resource.IDestroy;
 	
 	/**
 	 * 在enable属性发生变化后调度。
@@ -15,19 +15,20 @@ package laya.d3.component {
 	/**
 	 * <code>Component3D</code> 类用于创建组件的父类。
 	 */
-	public class Component3D extends EventDispatcher implements IUpdate {
+	public class Component3D extends EventDispatcher implements IUpdate, IDestroy {
+		/** @private */
+		private static var _isSingleton:Boolean = true;
+		
+		/**@private */
+		private var _destroyed:Boolean;
 		/** @private 唯一标识ID计数器。*/
 		protected static var _uniqueIDCounter:int = 1;
 		/** @private 唯一标识ID。*/
 		protected var _id:int;
-		/** @private 所属节点遮罩层。*/
-		protected var _cachedOwnerLayerMask:uint;
-		/** @private 所属节点是否启动。*/
-		protected var _cachedOwnerEnable:Boolean;
 		/** @private 是否启动。*/
 		protected var _enable:Boolean;
 		/** @private 所属Sprite3D节点。*/
-		protected var _owner:Sprite3D;
+		protected var _owner:ComponentNode;
 		
 		/**是否已执行start函数。*/
 		public var started:Boolean;
@@ -44,7 +45,7 @@ package laya.d3.component {
 		 * 获取所属Sprite3D节点。
 		 * @return 所属Sprite3D节点。
 		 */
-		public function get owner():Sprite3D {
+		public function get owner():ComponentNode {
 			return _owner;
 		}
 		
@@ -63,50 +64,33 @@ package laya.d3.component {
 		public function set enable(value:Boolean):void {
 			if (_enable !== value) {
 				_enable = value;
-				this.event(Event.ENABLED_CHANGED, _enable);
+				this.event(Event.ENABLE_CHANGED, _enable);
 			}
 		}
 		
 		/**
-		 * 获取是否激活。
-		 * @return 是否激活。
+		 * 获取是否为单实例组件。
+		 * @return  是否为单实例组件。
 		 */
-		public function get isActive():Boolean {
-			return Layer.isActive(_cachedOwnerLayerMask) && _cachedOwnerEnable && _enable;
+		public function get isSingleton():Boolean {
+			return _isSingleton;
 		}
 		
 		/**
-		 * 获取是否可见。
-		 * @return 是否可见。
+		 * 获取是否已销毁。
+		 * @return 是否已销毁。
 		 */
-		public function get isVisible():Boolean {
-			return Layer.isVisible(_cachedOwnerLayerMask) && _cachedOwnerEnable && _enable;
+		public function get destroyed():Boolean {
+			return _destroyed;
 		}
 		
 		/**
 		 * 创建一个新的 <code>Component3D</code> 实例。
 		 */
 		public function Component3D() {
+			_destroyed = false;
 			_id = _uniqueIDCounter;
 			_uniqueIDCounter++;
-		}
-		
-		/**
-		 * @private
-		 * owner蒙版变化事件处理。
-		 * @param	mask 蒙版值。
-		 */
-		protected function _onLayerChanged(layer:Layer):void {
-			_cachedOwnerLayerMask = layer.mask;
-		}
-		
-		/**
-		 * @private
-		 * owner启用变化事件处理。
-		 * @param	enable 是否启用。
-		 */
-		protected function _onEnableChanged(enable:Boolean):void {
-			_cachedOwnerEnable = enable;
 		}
 		
 		/**
@@ -114,31 +98,28 @@ package laya.d3.component {
 		 * 初始化组件。
 		 * @param	owner 所属Sprite3D节点。
 		 */
-		public function _initialize(owner:Sprite3D):void {
+		public function _initialize(owner:ComponentNode):void {
 			_owner = owner;
-			enable = true;
+			_enable = true;
 			started = false;
-			_cachedOwnerLayerMask = owner.layer.mask;
-			_owner.on(Event.LAYER_CHANGED, this, _onLayerChanged);
-			_cachedOwnerEnable = owner.enable;
-			_owner.on(Event.ENABLED_CHANGED, this, _onEnableChanged);
 			_load(owner);
 		}
 		
 		/**
 		 * @private
-		 * 卸载组件。
+		 * 销毁组件。
 		 */
-		public function _uninitialize():void {
-			_unload(owner);
+		public function _destroy():void {
+			_unload(_owner);
 			_owner = null;
+			_destroyed = true;
 		}
 		
 		/**
 		 * @private
 		 * 载入组件时执行,可重写此函数。
 		 */
-		public function _load(owner:Sprite3D):void {
+		public function _load(owner:ComponentNode):void {
 		}
 		
 		/**
@@ -184,13 +165,14 @@ package laya.d3.component {
 		 * @private
 		 * 卸载组件时执行,可重写此函数。
 		 */
-		public function _unload(owner:Sprite3D):void {
+		public function _unload(owner:ComponentNode):void {
 			this.offAll();
 		}
-	
-		////日后添加，物理相关函数
-		//public  function onCollisionEnter():void{}
-		//public  function onCollisionExit():void {}
-		//public  function onCollisionStay():void{}	
+		
+		/**
+		 * @private
+		 */
+		public function _cloneTo(dest:Component3D):void {
+		}
 	}
 }

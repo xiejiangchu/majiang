@@ -1,4 +1,5 @@
 package laya.webgl.utils {
+	import laya.display.css.TransformInfo;
 	import laya.display.Sprite;
 	import laya.display.Sprite;
 	import laya.display.css.Style;
@@ -17,6 +18,7 @@ package laya.webgl.utils {
 	
 	public class RenderSprite3D extends RenderSprite {
 		
+		public static var tempUV:Array = new Array(8);
 		public function RenderSprite3D(type:int, next:RenderSprite) {
 			super(type, next);
 		}
@@ -70,6 +72,7 @@ package laya.webgl.utils {
 				tRect.x=Math.round(tRect.x);
 				tRect.y=Math.round(tRect.y);
 				if (tRect.width > 0 && tRect.height > 0) {
+					var tf:TransformInfo=sprite._style._tf;
 					var scope:SubmitCMDScope = SubmitCMDScope.create();
 					scope.addValue("bounds", tRect);
 					submitCMD = SubmitCMD.create([scope, context], RenderSprite3D.tmpTarget);
@@ -79,7 +82,7 @@ package laya.webgl.utils {
 					context.addRenderObject(submitCMD);
 					//裁剪
 					context.ctx.save();
-					context.clipRect(x + tRect.x, y + tRect.y, tRect.width, tRect.height);
+					context.clipRect(x - tf.translateX  + tRect.x, y - tf.translateY + tRect.y, tRect.width, tRect.height);
 					next._fun.call(next, sprite, context, x, y);
 					context.ctx.restore();
 					//设置混合模式
@@ -98,7 +101,7 @@ package laya.webgl.utils {
 					const tempLimit:Number = 32;
 					if ( tRect.width < tempLimit || tRect.height < tempLimit )
 					{
-						uv = new Array(8);
+						uv = tempUV;
 						uv[0] = 0;
 						uv[1] = 0;
 						uv[2] = ( tRect.width >= 32 ) ? 1 : tRect.width/tempLimit;
@@ -114,7 +117,7 @@ package laya.webgl.utils {
 						uv[1] += 1;uv[3] += 1;uv[5] += 1;uv[7] += 1;
 					}
 					
-					(context.ctx as WebGLContext2D).drawTarget(scope, x + tRect.x, y + tRect.y, w, h, Matrix.TEMP, "tmpTarget", shaderValue, uv, 6);
+					(context.ctx as WebGLContext2D).drawTarget(scope, x + tRect.x - tf.translateX, y + tRect.y - tf.translateY, w, h, Matrix.TEMP, "tmpTarget", shaderValue, uv, 6);
 					submitCMD = SubmitCMD.create([scope], RenderSprite3D.recycleTarget);
 					context.addRenderObject(submitCMD);
 					submitStencil = SubmitStencil.create(6);
@@ -147,7 +150,7 @@ package laya.webgl.utils {
 		}
 		
 		override public function _transform(sprite:Sprite, context:RenderContext, x:Number, y:Number):void {
-			'use strict';
+			
 			var transform:Matrix = sprite.transform, _next:RenderSprite = this._next;
 			if (transform && _next != NORENDER) {
 				var ctx:WebGLContext2D = context.ctx;

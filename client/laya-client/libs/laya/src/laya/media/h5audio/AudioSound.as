@@ -3,9 +3,11 @@ package laya.media.h5audio {
 	import laya.events.EventDispatcher;
 	import laya.media.SoundChannel;
 	import laya.media.SoundManager;
+	import laya.net.URL;
+	import laya.renders.Render;
 	import laya.utils.Browser;
 	import laya.utils.Pool;
-
+	
 	/**
 	 * @private
 	 * 使用Audio标签播放声音
@@ -25,7 +27,8 @@ package laya.media.h5audio {
 		 * 是否已加载完成
 		 */
 		public var loaded:Boolean = false;
-		
+		/**@private */
+		public static var _musicAudio:Audio;
 		/**
 		 * 释放声音
 		 *
@@ -34,7 +37,31 @@ package laya.media.h5audio {
 			var ad:Audio = _audioCache[url];
 			if (ad) {
 				ad.src = "";
-				delete _audioCache[url];
+				delete _audioCache[url];	
+			}
+		}
+		
+		/**@private */
+		public static function _initMusicAudio():void
+		{
+			if (_musicAudio) return;
+			if (!_musicAudio) _musicAudio = Browser.createElement("audio") as Audio;
+			if (!Render.isConchApp) {
+				Browser.document.addEventListener("mousedown", _makeMusicOK);
+			}
+		}
+		
+		/**@private */
+		private static function _makeMusicOK():void
+		{
+			Browser.document.removeEventListener("mousedown", _makeMusicOK);
+			if (!_musicAudio.src)
+			{
+				_musicAudio.src = "";
+				_musicAudio.load();
+			}else
+			{
+				_musicAudio.play();
 			}
 		}
 		
@@ -45,16 +72,37 @@ package laya.media.h5audio {
 		 *
 		 */
 		public function load(url:String):void {
+			url = URL.formatURL(url);
 			this.url = url;
-			var ad:Audio = _audioCache[url];
+			var ad:Audio;
+			if (url == SoundManager._tMusic)
+			{
+				_initMusicAudio();
+				ad = _musicAudio;
+				if (ad.src != url)
+				{
+					_audioCache[ad.src] = null;
+					ad = null;
+				}
+			}else
+			{
+				ad = _audioCache[url];
+			}
 			if (ad && ad.readyState >= 2) {
 				event(Event.COMPLETE);
 				return;
 			}
 			if (!ad) {
-				ad = Browser.createElement("audio") as Audio;
-				ad.src = url;
+				if (url == SoundManager._tMusic)
+				{
+					_initMusicAudio();
+					ad = _musicAudio;
+				}else
+				{
+					ad = Browser.createElement("audio") as Audio;		
+				}
 				_audioCache[url] = ad;
+				ad.src = url;		
 			}
 			
 			ad.addEventListener("canplaythrough", onLoaded);
@@ -67,6 +115,7 @@ package laya.media.h5audio {
 			}
 			
 			function onErr():void {
+				ad.load = null;
 				offs();
 				me.event(Event.ERROR);
 			}
@@ -79,10 +128,10 @@ package laya.media.h5audio {
 			this.audio = ad;
 			if (ad.load) {
 				ad.load();
-			}else {
+			} else {
 				onErr();
 			}
-			
+		
 		}
 		
 		/**
@@ -96,11 +145,36 @@ package laya.media.h5audio {
 			//trace("playAudioSound");
 			if (!url) return null;
 			var ad:Audio;
-			ad = _audioCache[url];
+			if (url == SoundManager._tMusic)
+			{
+				ad = _musicAudio;
+			}else
+			{
+				ad = _audioCache[url];
+			}
+			
 			if (!ad) return null;
 			var tAd:Audio;
-			tAd=Pool.getItem("audio:"+url);
-			tAd=tAd?tAd:ad.cloneNode(true);
+
+			tAd = Pool.getItem("audio:" + url);
+			
+			if ( Render.isConchApp ){
+				if ( !tAd ){
+					tAd = Browser.createElement("audio") as Audio;
+					tAd.src = this.url;
+				}
+			}
+			else {
+				if (url == SoundManager._tMusic)
+				{
+					_initMusicAudio();
+					tAd = _musicAudio;		
+					tAd.src = url;
+				}else
+				{
+					tAd = tAd ? tAd : ad.cloneNode(true);
+				}			
+			}
 			var channel:AudioSoundChannel = new AudioSoundChannel(tAd);
 			channel.url = this.url;
 			channel.loops = loops;
@@ -113,8 +187,7 @@ package laya.media.h5audio {
 		/**
 		 * 获取总时间。
 		 */
-		public function get duration():Number 
-		{
+		public function get duration():Number {
 			var ad:Audio;
 			ad = _audioCache[url];
 			if (!ad)

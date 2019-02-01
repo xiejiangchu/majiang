@@ -66,6 +66,8 @@ package laya.display.css {
 		private var _border:Object = null;
 		private var _ower:Sprite;
 		private var _rect:Object = null;
+		/**@private */
+		public var underLine:int = 0;
 		
 		/**
 		 * 是否显示为块级元素。
@@ -565,7 +567,7 @@ package laya.display.css {
 		
 		public function set backgroundColor(value:String):void {
 			if (value === 'none') _bgground = null;
-			else (_bgground || (_bgground = { } ), _bgground.color = value);
+			else (_bgground || (_bgground = {}), _bgground.color = value);
 			_ower.conchModel && _ower.conchModel.bgColor(value);
 			_ower._renderType |= RenderSprite.STYLE;
 		}

@@ -1,18 +1,21 @@
 package laya.webgl.resource {
 	import laya.maths.Arith;
+	import laya.net.Loader;
+	import laya.net.URL;
 	import laya.renders.Render;
 	import laya.resource.HTMLImage;
 	import laya.utils.Browser;
+	import laya.utils.Byte;
+	import laya.utils.Handler;
 	import laya.webgl.WebGL;
 	import laya.webgl.WebGLContext;
 	import laya.webgl.atlas.AtlasResourceManager;
 	
 	public class WebGLImage extends HTMLImage implements IMergeAtlasBitmap {
-		/**HTML Image*/
-		private var _image:*;
-		
-		/**图片数据。*/
-		private var _imageDatas:Uint8Array;//TODO:临时
+		/**@private */
+		private var _format:int;
+		/**@private */
+		public var _mipmap:Boolean;
 		
 		/***是否创建私有Source,值为false时不根据src创建私有WebGLTexture,同时销毁时也只清空source=null,不调用WebGL.mainContext.deleteTexture类似函数，调用资源激活前有效*/
 		private var _allowMerageInAtlas:Boolean;
@@ -21,19 +24,26 @@ package laya.webgl.resource {
 		
 		/**是否使用重复模式纹理寻址*/
 		public var repeat:Boolean;
-		/**是否使用mipLevel*/
-		public var mipmap:Boolean;
+		
+		/**@private */
+		public var _image:*;
 		/**缩小过滤器*/
 		public var minFifter:int;//动态默认值，判断是否可生成miplevel
 		/**放大过滤器*/
 		public var magFifter:int;//动态默认值，判断是否可生成miplevel
 		
 		/**
-		 * 返回HTML Image,as3无internal货friend，通常禁止开发者修改image内的任何属性
-		 * @param HTML Image
+		 * 获取纹理格式。
 		 */
-		public function get image():* {
-			return _image;
+		public function get format():int {
+			return _format;
+		}
+		
+		/**
+		 * 获取是否具有mipmap。
+		 */
+		public function get mipmap():Boolean {
+			return _mipmap;
 		}
 		
 		public function get atlasSource():* {
@@ -52,7 +62,7 @@ package laya.webgl.resource {
 		 * 是否创建私有Source
 		 * @return 是否创建
 		 */
-		public function get enableMerageInAtlas():Boolean {
+		override public function get enableMerageInAtlas():Boolean {
 			return _enableMerageInAtlas;
 		}
 		
@@ -60,7 +70,7 @@ package laya.webgl.resource {
 		 * 是否创建私有Source,通常禁止修改
 		 * @param value 是否创建
 		 */
-		public function set enableMerageInAtlas(value:Boolean):void {
+		override public function set enableMerageInAtlas(value:Boolean):void {
 			_enableMerageInAtlas = value;
 		}
 		
@@ -87,44 +97,86 @@ package laya.webgl.resource {
 			}) : null);
 		}
 		
-		public function WebGLImage(src:String, def:*) {
-			super(src, def);
+		public function WebGLImage(data:String, def:*, format:int = WebGLContext.RGBA, mipmap:Boolean = true) {
+			super(data, def);
+			_format = format;
+			_mipmap = mipmap;
 			repeat = false;
-			mipmap = false;
 			minFifter = -1;
 			magFifter = -1;
-			_src = src;
-			_image = new Browser.window.Image();
-			if (def) {
-				def.onload && (this.onload = def.onload);
-				def.onerror && (this.onerror = def.onerror);
-				def.onCreate && def.onCreate(this);
+			if (data is String) {
+				_url = data;
+				_src = data;
+				_image = new Browser.window.Image();
+				if (def) {
+					def.onload && (this.onload = def.onload);
+					def.onerror && (this.onerror = def.onerror);
+					def.onCreate && def.onCreate(this);
+				}
+				_image.crossOrigin = (data && (data.indexOf("data:") == 0)) ? null : "";
+				(data) && (_image.src = data);
+			} else if (data is ArrayBuffer) {
+				_src = def;
+				_url = _src;//也不是字符串，为啥要赋值给URL?
+				var readData:Byte = new Byte(data);
+				var magicNumber:String = readData.readUTFBytes(4);
+				var version:String = readData.readUTFBytes(2);
+				var dataType:int = readData.getInt16();
+				readData.endian = Byte.BIG_ENDIAN;
+				_w = readData.getInt16();//extendWidth
+				_h = readData.getInt16();//extendHeight
+				var originalWidth:int = readData.getInt16();
+				var originalHeight:int = readData.getInt16();
+				_image = new Uint8Array(data, readData.pos);
+				_format = WebGL.compressEtc1.COMPRESSED_RGB_ETC1_WEBGL;
+				(AtlasResourceManager.enabled) && (_w < AtlasResourceManager.atlasLimitWidth && _h < AtlasResourceManager.atlasLimitHeight) ? _allowMerageInAtlas = true : _allowMerageInAtlas = false;
+				
+			} else {
+				_src = def;
+				_url = _src;//也不是字符串，为啥要赋值给URL?
+				_image = data["source"] || data;//src["source"]为canvas,src为ImageBitmap
+				onresize();
 			}
-			_image.crossOrigin = (src && (src.indexOf("data:") == 0)) ? null : "";
-			(src) && (_image.src = src);
 			_enableMerageInAtlas = true;
 		}
 		
 		override protected function _init_(src:String, def:*):void {
+		
 		}
 		
 		private function _createWebGlTexture():void {
-			if (!_image && !_imageDatas) {//TODO:临时
+			if (!_image) {
 				throw "create GLTextur err:no data:" + _image;
 			}
-			
 			var gl:WebGLContext = WebGL.mainContext;
 			var glTex:* = _source = gl.createTexture();
 			
 			var preTarget:* = WebGLContext.curBindTexTarget;
 			var preTexture:* = WebGLContext.curBindTexValue;
 			WebGLContext.bindTexture(gl, WebGLContext.TEXTURE_2D, glTex);
-
-			if (_imageDatas)//TODO:临时
-				gl.texImage2D(WebGLContext.TEXTURE_2D, 0, WebGLContext.RGBA, _w, _h, 0, WebGLContext.RGBA, WebGLContext.UNSIGNED_BYTE, _imageDatas);
-			else
-				gl.texImage2D(WebGLContext.TEXTURE_2D, 0, WebGLContext.RGBA, WebGLContext.RGBA, WebGLContext.UNSIGNED_BYTE, _image);
 			
+			if (Render.isConchWebGL) {
+				switch (_format) {
+				case WebGLContext.RGBA: 
+					gl.texImage2DEx(true, WebGLContext.TEXTURE_2D, 0, _format, WebGLContext.RGBA, WebGLContext.UNSIGNED_BYTE, _image);
+					break;
+				case WebGL.compressEtc1.COMPRESSED_RGB_ETC1_WEBGL: 
+					gl.compressedTexImage2D(WebGLContext.TEXTURE_2D, 0, _format, _w, _h, 0, _image);
+					break;
+				}
+			}
+			else {
+				gl.pixelStorei(WebGLContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+				switch (_format) {
+				case WebGLContext.RGBA: 
+					gl.texImage2D(WebGLContext.TEXTURE_2D, 0, _format, WebGLContext.RGBA, WebGLContext.UNSIGNED_BYTE, _image);
+					break;
+				case WebGL.compressEtc1.COMPRESSED_RGB_ETC1_WEBGL: 
+					gl.compressedTexImage2D(WebGLContext.TEXTURE_2D, 0, _format, _w, _h, 0, _image);
+					break;
+				}
+				gl.pixelStorei(WebGLContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+			}
 			
 			var minFifter:int = this.minFifter;
 			var magFifter:int = this.magFifter;
@@ -153,11 +205,10 @@ package laya.webgl.resource {
 				gl.texParameteri(WebGLContext.TEXTURE_2D, WebGLContext.TEXTURE_WRAP_T, WebGLContext.CLAMP_TO_EDGE);
 			}
 			(preTarget && preTexture) && (WebGLContext.bindTexture(gl, preTarget, preTexture));
-			(_image) && (_image.onload = null);//TODO:临时
+			_image.onload = null;
 			_image = null;
-			_imageDatas = null;//TODO:临时
 			
-			if (isPot)
+			if (isPot && this.mipmap)
 				memorySize = _w * _h * 4 * (1 + 1 / 3);//使用mipmap则在原来的基础上增加1/3
 			else
 				memorySize = _w * _h * 4;
@@ -169,9 +220,8 @@ package laya.webgl.resource {
 			if (_src == null || _src === "")
 				return;
 			_needReleaseAgain = false;
-			if (!_image && !_imageDatas) {//TODO:临时
+			if (!_image) {
 				_recreateLock = true;
-				startCreate();
 				var _this:WebGLImage = this;
 				_image = new Browser.window.Image();
 				_image.crossOrigin = _src.indexOf("data:") == 0 ? null : "";
@@ -192,14 +242,13 @@ package laya.webgl.resource {
 				if (_recreateLock) {
 					return;
 				}
-				startCreate();
 				(!(_allowMerageInAtlas && _enableMerageInAtlas)) ? (_createWebGlTexture()) : (memorySize = 0, _recreateLock = false);
 				completeCreate();//处理创建完成后相关操作
 			}
 		}
 		
 		/***销毁资源*/
-		override protected function detoryResource():void {
+		override protected function disposeResource():void {
 			if (_recreateLock) {
 				_needReleaseAgain = true;
 			}
@@ -216,14 +265,6 @@ package laya.webgl.resource {
 			this._w = this._image.width;
 			this._h = this._image.height;
 			(AtlasResourceManager.enabled) && (_w < AtlasResourceManager.atlasLimitWidth && _h < AtlasResourceManager.atlasLimitHeight) ? _allowMerageInAtlas = true : _allowMerageInAtlas = false;
-			
-			if (!_allowMerageInAtlas) {//TODO:临时
-				Browser.canvas.size(_w, _h);
-				Browser.canvas.clear();
-				Browser.context.drawImage(_image, 0, 0, _w, _h);
-				_imageDatas = new Uint8Array(Browser.context.getImageData(0, 0, _w, _h).data.buffer);
-				_image = null;
-			}
 		}
 		
 		public function clearAtlasSource():void {

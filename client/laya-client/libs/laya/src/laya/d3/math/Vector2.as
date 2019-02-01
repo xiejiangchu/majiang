@@ -15,18 +15,34 @@ package laya.d3.math {
 		
 		/**
 		 * 获取X轴坐标。
-		 * @return	x  X轴坐标。
+		 * @return	X轴坐标。
 		 */
 		public function get x():Number {
 			return this.elements[0];
 		}
 		
 		/**
+		 * 设置X轴坐标。
+		 * @param value X轴坐标。
+		 */
+		public function set x(value:Number):void {
+			this.elements[0] = value;
+		}
+		
+		/**
 		 * 获取Y轴坐标。
-		 * @return	y  Y轴坐标。
+		 * @return Y轴坐标。
 		 */
 		public function get y():Number {
 			return this.elements[1];
+		}
+		
+		/**
+		 * 设置Y轴坐标。
+		 * @param value Y轴坐标。
+		 */
+		public function set y(value:Number):void {
+			this.elements[1] = value;
 		}
 		
 		/**
@@ -51,6 +67,16 @@ package laya.d3.math {
 			var f:Float32Array = a.elements;
 			e[0] = f[0] * b;
 			e[1] = f[1] * b;
+		}
+		
+		/**
+		 * 从Array数组拷贝值。
+		 * @param  array 数组。
+		 * @param  offset 数组偏移。
+		 */
+		public function fromArray(array:Array, offset:int = 0):void {
+			elements[0] = array[offset + 0];
+			elements[1] = array[offset + 1];
 		}
 		
 		/**

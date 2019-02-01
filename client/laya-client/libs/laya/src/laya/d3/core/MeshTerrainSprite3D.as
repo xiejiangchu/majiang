@@ -1,8 +1,4 @@
 package laya.d3.core {
-	import laya.d3.core.material.BaseMaterial;
-	import laya.d3.core.render.IRenderable;
-	import laya.d3.core.render.RenderElement;
-	import laya.d3.core.render.RenderQueue;
 	import laya.d3.core.render.RenderState;
 	import laya.d3.math.BoundBox;
 	import laya.d3.math.Matrix4x4;
@@ -10,10 +6,8 @@ package laya.d3.core {
 	import laya.d3.math.Vector2;
 	import laya.d3.math.Vector3;
 	import laya.d3.resource.Texture2D;
-	import laya.d3.resource.models.BaseMesh;
 	import laya.d3.resource.models.Mesh;
 	import laya.events.Event;
-	import laya.utils.Stat;
 	
 	/**
 	 * <code>TerrainMeshSprite3D</code> 类用于创建网格。
@@ -53,7 +47,7 @@ package laya.d3.core {
 			if (mesh.loaded)
 				meshTerrainSprite3D._initCreateFromMeshHeightMap(texture, minHeight, maxHeight);
 			else
-				mesh.once(Event.LOADED, meshTerrainSprite3D, meshTerrainSprite3D._createFromMeshAndHeightMapMeshLoaded, [texture, maxHeight]);
+				mesh.once(Event.LOADED, meshTerrainSprite3D, meshTerrainSprite3D._initCreateFromMeshHeightMap, [texture,minHeight, maxHeight]);
 			
 			return meshTerrainSprite3D;
 		}
@@ -162,13 +156,6 @@ package laya.d3.core {
 			var max:Vector3 = boundingBox.max;
 			_minX = min.x;
 			_minZ = min.z;
-		}
-		
-		/**
-		 * @private
-		 */
-		private function _createFromMeshAndHeightMapMeshLoaded(texture:Texture2D, minHeight:Number, maxHeight:Number):void {
-			_initCreateFromMeshHeightMap(texture, minHeight, maxHeight);
 		}
 		
 		/**

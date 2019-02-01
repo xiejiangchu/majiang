@@ -2,7 +2,7 @@ package laya.webgl.canvas {
 	import laya.utils.Color;
 	
 	public class DrawStyle {
-		public static var DEFAULT:DrawStyle =/*[STATIC SAFE]*/ new DrawStyle("#000000")
+		public static var DEFAULT:DrawStyle = new DrawStyle("#000000")
 		
 		public var _color:Color = Color.create("black");
 		
@@ -17,7 +17,7 @@ package laya.webgl.canvas {
 					return color._drawStyle || (color._drawStyle = new DrawStyle(value));
 				}
 			}
-			return null;
+			return DrawStyle.DEFAULT;
 		}
 		
 		public function DrawStyle(value:*) {

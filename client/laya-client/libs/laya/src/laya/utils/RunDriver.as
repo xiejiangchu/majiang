@@ -17,7 +17,7 @@ package laya.utils {
 		 * 滤镜动作集。
 		 */
 		public static var FILTER_ACTIONS:Array = [];
-		private static var pixelRatio:int =-1;
+		private static var pixelRatio:int = -1;
 		
 		/*[FILEINDEX:10000000]*/
 		private static var _charSizeTestDiv:*;
@@ -30,15 +30,12 @@ package laya.utils {
 			return __JS__('window');
 		}
 		
-		public static var newWebGLContext:Function = function(canvas:*, webGLName:String):* {
-			return canvas.getContext(webGLName, {stencil: true, alpha: Config.isAlpha, antialias: Config.isAntialias, premultipliedAlpha: Config.premultipliedAlpha});
-		}
-		
 		public static var getPixelRatio:Function = function():Number {
 			if (pixelRatio < 0) {
 				var ctx:* = Browser.context;
 				var backingStore:Number = ctx.backingStorePixelRatio || ctx.webkitBackingStorePixelRatio || ctx.mozBackingStorePixelRatio || ctx.msBackingStorePixelRatio || ctx.oBackingStorePixelRatio || ctx.backingStorePixelRatio || 1;
 				pixelRatio = (Browser.window.devicePixelRatio || 1) / backingStore;
+				if (pixelRatio < 1) pixelRatio = 1;
 			}
 			return pixelRatio;
 		}
@@ -49,23 +46,28 @@ package laya.utils {
 		
 		public static var createShaderCondition:Function = function(conditionScript:String):Function {
 			var fn:String = "(function() {return " + conditionScript + ";})";
-			return Browser.window.eval(fn);//生成条件判断函数
+			return Laya._runScript(fn);
+		}
+		private static var hanzi:RegExp = new RegExp("^[\u4E00-\u9FA5]$");
+		private static var fontMap:Array = [];
+		public static var measureText:Function = function(txt:String, font:String):* {
+			var isChinese:Boolean = hanzi.test(txt);
+			if (isChinese && fontMap[font]) {
+				return fontMap[font];
+			}
+			
+			var ctx:* = Browser.context;
+			ctx.font = font;
+			
+			var r:* = ctx.measureText(txt);
+			if (isChinese) fontMap[font] = r;
+			return r;
 		}
 		
-		public static var measureText:Function = function(txt:String, font:String):* {
-			if (Render.isConchApp) {
-				var ctx:* = __JS__("ConchTextCanvas");
-				ctx.font = font;
-				return ctx.measureText(txt);
-			}
-			if (_charSizeTestDiv == null) {
-				_charSizeTestDiv = Browser.createElement('div');
-				_charSizeTestDiv.style.cssText = "z-index:10000000;padding:0px;position: absolute;left:0px;visibility:hidden;top:0px;background:white";
-				Browser.container.appendChild(_charSizeTestDiv);
-			}
-			_charSizeTestDiv.style.font = font;
-			_charSizeTestDiv.innerText = txt == " " ? "i" : txt;
-			return {width: _charSizeTestDiv.offsetWidth, height: _charSizeTestDiv.offsetHeight};
+		/**
+		 * @private
+		 */
+		public static var getWebGLContext:Function = function(canvas:*):void {
 		}
 		
 		/**
@@ -145,8 +147,19 @@ package laya.utils {
 		/**
 		 * 清空纹理函数。
 		 */
+		public static var cancelLoadByUrl:Function = function(url:String):void {
+		};
+		
+		/**
+		 * 清空纹理函数。
+		 */
 		public static var clearAtlas:Function = function(value:String):void {
 		};
+		
+		/** @private */
+		public static var isAtlas:Function = function(bitmap:*):Boolean {
+			return false;
+		}
 		
 		/** @private */
 		public static var addTextureToAtlas:Function = function(value:Texture):void {
@@ -158,10 +171,13 @@ package laya.utils {
 		};
 		
 		/** @private */
-		public static var skinAniSprite:Function = function():*{
+		public static var skinAniSprite:Function = function():* {
 			return null;
 		}
-	
+		
+		/** @private */
+		public static var update3DLoop:Function = function():void {
+		}
 	}
 
 }

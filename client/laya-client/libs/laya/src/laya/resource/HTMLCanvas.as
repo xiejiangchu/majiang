@@ -41,20 +41,21 @@ package laya.resource {
 			if (type === "2D" || (type === "AUTO" && !Render.isWebGL)) {
 				_is2D = true;
 				_source = canvas || Browser.createElement("canvas");
+				this._w = _source.width;
+				this._h = _source.height;
 				var o:HTMLCanvas = this;
 				o.getContext = function(contextID:String, other:*=null):Context {
 					if (_ctx) return _ctx;
 					var ctx:* = _ctx = _source.getContext(contextID, other);
 					if (ctx) {
 						ctx._canvas = o;
-						if(!Render.isFlash) ctx.size = function(w:Number, h:Number):void {
+						if(!Render.isFlash&&!Browser.onLimixiu) ctx.size = function(w:Number, h:Number):void {
 						};
 					}
-					//contextID === "2d" && Context._init(o, ctx);
 					return ctx;
 				}
-			} 
-			else _source = {};
+			}
+			lock = true;
 		}
 		
 		/**
@@ -67,9 +68,10 @@ package laya.resource {
 		/**
 		 * 销毁。
 		 */
-		public function destroy():void {
+		override public function destroy():void {
 			_ctx && _ctx.destroy();
 			_ctx = null;
+			super.destroy();
 		}
 		
 		/**
@@ -126,12 +128,29 @@ package laya.resource {
 		 * @param	h 高度。
 		 */
 		public function size(w:Number, h:Number):void {
-			if (_w != w || _h != h) {
+			if (_w != w || _h != h ||(_source && (_source.width!=w || _source.height!=h))) {
 				_w = w;
 				_h = h;
+				memorySize = _w * _h * 4;
 				_ctx && _ctx.size(w, h);
 				_source && (_source.height = h, _source.width = w);
 			}
+		}
+		
+		public function getCanvas():*{
+			return _source;
+		}
+		public function toBase64(type:String, encoderOptions:Number, callBack:Function):void {
+			if (_source) {
+				if (Render.isConchApp && _source.toBase64) {
+					_source.toBase64(type, encoderOptions, callBack);
+				}
+				else {
+					var base64Data:String = _source.toDataURL(type, encoderOptions);
+					callBack.call(this, base64Data);
+				}
+			}
+			
 		}
 	}
 }

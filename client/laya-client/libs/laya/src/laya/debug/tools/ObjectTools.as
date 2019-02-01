@@ -151,6 +151,10 @@ package laya.debug.tools
 			var key:String;
 			for(key in obj)
 			{
+				if(obj[key]===null||obj[key]===undefined)
+				{
+					rst[key]=obj[key];
+				}else
 				if(obj[key] is Array)
 				{
 					rst[key]=copyArr(obj[key]);
@@ -310,6 +314,23 @@ package laya.debug.tools
 					tar[keys[i]]=src[keys[i]];
 			}
 		}
+		public static function getNoSameArr(arr:Array):Array
+		{
+			var i:int, len:int;
+			var rst:Array;
+			rst = [];
+			var tItem:Object;
+			len = arr.length;
+			for (i = 0; i < len; i++)
+			{
+				tItem = arr[i];
+				if (rst.indexOf(tItem) < 0)
+				{
+					rst.push(tItem);
+				}
+			}
+			return rst;
+		}
 		public static function insertValue(tar:Object, src:Object):void
 		{
 			var key:String;
@@ -379,7 +400,12 @@ package laya.debug.tools
 		}
 		public static function getAutoValue(value:*):*
 		{
-			if (parseFloat(value)==value) return parseFloat(value);
+			var tFloat:Number=parseFloat(value);
+			if(typeof(value)=="string")
+			{
+				if(tFloat+""===StringTool.trimSide(value)) return tFloat;
+			}
+//			if (parseFloat(value)==value) return parseFloat(value);
 			return value;
 		}
 		public static function isNumber(value:*):Boolean

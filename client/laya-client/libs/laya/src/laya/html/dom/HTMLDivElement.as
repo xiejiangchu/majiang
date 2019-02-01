@@ -32,11 +32,24 @@ package laya.html.dom {
 		 * 设置标签内容
 		 */
 		public function set innerHTML(text:String):void {
-			if (!text) this.size(0, 0);
+			//if (!text) this.size(0, 0);
 			this.destroyChildren();
 			appendHTML(text);
 		}
-		
+		override public function set width(value:Number):void 
+		{
+			var changed:Boolean;
+			if (value === 0)
+			{
+				changed = value != _width;
+			}else
+			{
+				changed = value != width;
+			}	
+			super.width = value;
+			if(changed)
+			layout();
+		}
 		/**
 		 * 追加内容，解析并对显示对象排版
 		 * @param	text
@@ -87,6 +100,7 @@ package laya.html.dom {
 		 * 对显示内容进行排版
 		 */
 		public function layout():void {
+			if (!style) return;
 			style._type |= CSSStyle.ADDLAYOUTED;
 			var tArray:Array = Layout.layout(this);
 			if (tArray) {

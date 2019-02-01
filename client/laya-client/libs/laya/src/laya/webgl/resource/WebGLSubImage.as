@@ -1,5 +1,6 @@
 package laya.webgl.resource {
 	import laya.maths.Arith;
+	import laya.renders.Render;
 	import laya.resource.Bitmap;
 	import laya.resource.Context;
 	import laya.webgl.WebGL;
@@ -62,7 +63,7 @@ package laya.webgl.resource {
 			_allowMerageInAtlas = value;
 		}
 		
-		public function WebGLSubImage(canvas:*, offsetX:int, offsetY:int, width:int, height:int, atlasImage:*, src:String, enableMerageInAtlas:Boolean = true) {
+		public function WebGLSubImage(canvas:*, offsetX:int, offsetY:int, width:int, height:int, atlasImage:*, src:String) {
 			super();
 			repeat = true;
 			mipmap = false;
@@ -73,13 +74,13 @@ package laya.webgl.resource {
 			
 			this.canvas = canvas;
 			_ctx = canvas.getContext('2d', undefined);
-			
 			_w = width;
 			_h = height;
 			this.offsetX = offsetX;
 			this.offsetY = offsetY;
 			this.src = src;
-			_enableMerageInAtlas = enableMerageInAtlas;
+			_enableMerageInAtlas = true;
+			(AtlasResourceManager.enabled) && (_w < AtlasResourceManager.atlasLimitWidth && _h < AtlasResourceManager.atlasLimitHeight) ? _allowMerageInAtlas = true : _allowMerageInAtlas = false;
 		}
 		
 		/*override public function copyTo(dec:Bitmap):void {
@@ -96,17 +97,15 @@ package laya.webgl.resource {
 		}
 		
 		override protected function recreateResource():void {
-			startCreate();
 			size(_w, _h);
 			_ctx.drawImage(atlasImage, offsetX, offsetY, _w, _h, 0, 0, _w, _h);
 			//imageData = _ctx.getImageData(0, 0, _w, _h);
-			(!(AtlasResourceManager.enabled && _allowMerageInAtlas)) && (createWebGlTexture());
+			(!(_allowMerageInAtlas && _enableMerageInAtlas)) ? (createWebGlTexture()) : (memorySize = 0/*, _recreateLock = false*/);
 			completeCreate();
 		}
 		
 		private function createWebGlTexture():void {
 			var gl:WebGLContext = WebGL.mainContext;
-			
 			if (!canvas) {
 				throw "create GLTextur err:no data:" + canvas;
 			}
@@ -114,7 +113,14 @@ package laya.webgl.resource {
 			var preTarget:* = WebGLContext.curBindTexTarget;
 			var preTexture:* = WebGLContext.curBindTexValue;
 			WebGLContext.bindTexture(gl, WebGLContext.TEXTURE_2D, glTex);
-			gl.texImage2D(WebGLContext.TEXTURE_2D, 0, WebGLContext.RGBA, WebGLContext.RGBA, WebGLContext.UNSIGNED_BYTE, canvas);
+			if (Render.isConchWebGL) {
+				gl.texImage2DEx(true, WebGLContext.TEXTURE_2D, 0, WebGLContext.RGBA, WebGLContext.RGBA, WebGLContext.UNSIGNED_BYTE, canvas);
+			}
+			else {
+				gl.pixelStorei(WebGLContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+				gl.texImage2D(WebGLContext.TEXTURE_2D, 0, WebGLContext.RGBA, WebGLContext.RGBA, WebGLContext.UNSIGNED_BYTE, canvas);
+				gl.pixelStorei(WebGLContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+			}
 			
 			var minFifter:int = this.minFifter;
 			var magFifter:int = this.magFifter;
@@ -145,10 +151,13 @@ package laya.webgl.resource {
 			(preTarget && preTexture) && (WebGLContext.bindTexture(gl, preTarget, preTexture));
 			
 			canvas = null;
-			memorySize = _w * _h * 4;
+			if (isPOT && this.mipmap)
+				memorySize = _w * _h * 4 * (1 + 1 / 3);//使用mipmap则在原来的基础上增加1/3
+			else
+				memorySize = _w * _h * 4;
 		}
 		
-		override protected function detoryResource():void {
+		override protected function disposeResource():void {
 			if (!(AtlasResourceManager.enabled && _allowMerageInAtlas) && _source) {
 				WebGL.mainContext.deleteTexture(_source);
 				_source = null;
@@ -156,13 +165,15 @@ package laya.webgl.resource {
 			}
 		}
 		
-		public function clearAtlasSource():void {
-			canvas = null;
-		}
+		///***调整尺寸*/
+		//override protected function onresize():void {
+		//this._w = this._image.width;
+		//this._h = this._image.height;
 		
-		override public function dispose():void {
-			resourceManager.removeResource(this);
-			super.dispose();
+		//}
+		
+		public function clearAtlasSource():void {
+			//canvas = null;//资源恢复时问题
 		}
 	
 	}
